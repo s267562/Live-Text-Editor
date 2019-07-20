@@ -12,3 +12,9 @@ texteditor/cmake-build-debug/Makefile
 texteditor/cmake-build-debug/
 
 texteditor/\.idea/
+
+cmake-build-debug/
+
+texteditor/
+
+\.idea/

@@ -18,5 +18,5 @@ list(APPEND LIBRARIES
         Qt5::Charts)
 list(REMOVE_DUPLICATES LIBRARIES)
 
-add_executable(texteditor main.cpp textedit.cpp textedit.h textedit.qrc)
+add_executable(texteditor texteditor/main.cpp texteditor/textedit.cpp texteditor/textedit.h texteditor/textedit.qrc)
 target_link_libraries(texteditor ${LIBRARIES})
