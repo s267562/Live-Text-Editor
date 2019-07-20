@@ -4,10 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/simone/CLionProjects/PDS-Project/texteditor/main.cpp" "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/main.cpp.o"
-  "/home/simone/CLionProjects/PDS-Project/texteditor/textedit.cpp" "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/textedit.cpp.o"
-  "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp" "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o"
-  "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp" "/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o"
+  "/home/simone/CLionProjects/texteditor/main.cpp" "/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/main.cpp.o"
+  "/home/simone/CLionProjects/texteditor/textedit.cpp" "/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/textedit.cpp.o"
+  "/home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp" "/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o"
+  "/home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp" "/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

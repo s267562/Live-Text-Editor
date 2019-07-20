@@ -59,10 +59,10 @@ RM = /opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/simone/CLionProjects/PDS-Project/texteditor
+CMAKE_SOURCE_DIR = /home/simone/CLionProjects/texteditor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug
+CMAKE_BINARY_DIR = /home/simone/CLionProjects/texteditor/cmake-build-debug
 
 #=============================================================================
 # Target rules for target CMakeFiles/texteditor.dir
@@ -71,7 +71,7 @@ CMAKE_BINARY_DIR = /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build
 CMakeFiles/texteditor.dir/all: CMakeFiles/texteditor_autogen.dir/all
 	$(MAKE) -f CMakeFiles/texteditor.dir/build.make CMakeFiles/texteditor.dir/depend
 	$(MAKE) -f CMakeFiles/texteditor.dir/build.make CMakeFiles/texteditor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target texteditor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target texteditor"
 .PHONY : CMakeFiles/texteditor.dir/all
 
 # Include target in all.
@@ -81,9 +81,9 @@ all: CMakeFiles/texteditor.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/texteditor.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles 7
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/texteditor.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/texteditor.dir/rule
 
 # Convenience name for target.
@@ -108,14 +108,14 @@ clean: CMakeFiles/texteditor.dir/clean
 CMakeFiles/texteditor_autogen.dir/all:
 	$(MAKE) -f CMakeFiles/texteditor_autogen.dir/build.make CMakeFiles/texteditor_autogen.dir/depend
 	$(MAKE) -f CMakeFiles/texteditor_autogen.dir/build.make CMakeFiles/texteditor_autogen.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=7 "Built target texteditor_autogen"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=7 "Built target texteditor_autogen"
 .PHONY : CMakeFiles/texteditor_autogen.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/texteditor_autogen.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/texteditor_autogen.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/texteditor_autogen.dir/rule
 
 # Convenience name for target.

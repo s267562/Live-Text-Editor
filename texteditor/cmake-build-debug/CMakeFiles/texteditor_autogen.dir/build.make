@@ -43,10 +43,10 @@ RM = /opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/simone/CLionProjects/PDS-Project/texteditor
+CMAKE_SOURCE_DIR = /home/simone/CLionProjects/texteditor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug
+CMAKE_BINARY_DIR = /home/simone/CLionProjects/texteditor/cmake-build-debug
 
 # Utility rule file for texteditor_autogen.
 
@@ -54,8 +54,8 @@ CMAKE_BINARY_DIR = /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build
 include CMakeFiles/texteditor_autogen.dir/progress.make
 
 CMakeFiles/texteditor_autogen:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target texteditor"
-	/opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E cmake_autogen /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/AutogenInfo.cmake Debug
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target texteditor"
+	/opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E cmake_autogen /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/AutogenInfo.cmake Debug
 
 texteditor_autogen: CMakeFiles/texteditor_autogen
 texteditor_autogen: CMakeFiles/texteditor_autogen.dir/build.make
@@ -72,6 +72,6 @@ CMakeFiles/texteditor_autogen.dir/clean:
 .PHONY : CMakeFiles/texteditor_autogen.dir/clean
 
 CMakeFiles/texteditor_autogen.dir/depend:
-	cd /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simone/CLionProjects/PDS-Project/texteditor /home/simone/CLionProjects/PDS-Project/texteditor /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/simone/CLionProjects/texteditor/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simone/CLionProjects/texteditor /home/simone/CLionProjects/texteditor /home/simone/CLionProjects/texteditor/cmake-build-debug /home/simone/CLionProjects/texteditor/cmake-build-debug /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/texteditor_autogen.dir/depend
 

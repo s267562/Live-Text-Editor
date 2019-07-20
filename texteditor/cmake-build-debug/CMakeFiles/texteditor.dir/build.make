@@ -43,10 +43,10 @@ RM = /opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/simone/CLionProjects/PDS-Project/texteditor
+CMAKE_SOURCE_DIR = /home/simone/CLionProjects/texteditor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug
+CMAKE_BINARY_DIR = /home/simone/CLionProjects/texteditor/cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/texteditor.dir/depend.make
@@ -100,60 +100,60 @@ texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp: ../images/mac/filenew.png
 texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp: ../images/mac/zoomout.png
 texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp: ../images/mac/fileopen.png
 texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp: /usr/lib/qt5/bin/rcc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic RCC for textedit.qrc"
-	/opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E cmake_autorcc /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/RCCtexteditInfo.cmake Debug
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic RCC for textedit.qrc"
+	/opt/clion-2019.1.2/bin/cmake/linux/bin/cmake -E cmake_autorcc /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor_autogen.dir/RCCtexteditInfo.cmake Debug
 
 CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o: CMakeFiles/texteditor.dir/flags.make
 CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o: texteditor_autogen/mocs_compilation.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o -c /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.o -c /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp
 
 CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp > CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp > CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.i
 
 CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp -o CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/mocs_compilation.cpp -o CMakeFiles/texteditor.dir/texteditor_autogen/mocs_compilation.cpp.s
 
 CMakeFiles/texteditor.dir/main.cpp.o: CMakeFiles/texteditor.dir/flags.make
 CMakeFiles/texteditor.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/texteditor.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/main.cpp.o -c /home/simone/CLionProjects/PDS-Project/texteditor/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/texteditor.dir/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/main.cpp.o -c /home/simone/CLionProjects/texteditor/main.cpp
 
 CMakeFiles/texteditor.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/texteditor.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/PDS-Project/texteditor/main.cpp > CMakeFiles/texteditor.dir/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/texteditor/main.cpp > CMakeFiles/texteditor.dir/main.cpp.i
 
 CMakeFiles/texteditor.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/texteditor.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/PDS-Project/texteditor/main.cpp -o CMakeFiles/texteditor.dir/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/texteditor/main.cpp -o CMakeFiles/texteditor.dir/main.cpp.s
 
 CMakeFiles/texteditor.dir/textedit.cpp.o: CMakeFiles/texteditor.dir/flags.make
 CMakeFiles/texteditor.dir/textedit.cpp.o: ../textedit.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/texteditor.dir/textedit.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/textedit.cpp.o -c /home/simone/CLionProjects/PDS-Project/texteditor/textedit.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/texteditor.dir/textedit.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/textedit.cpp.o -c /home/simone/CLionProjects/texteditor/textedit.cpp
 
 CMakeFiles/texteditor.dir/textedit.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/texteditor.dir/textedit.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/PDS-Project/texteditor/textedit.cpp > CMakeFiles/texteditor.dir/textedit.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/texteditor/textedit.cpp > CMakeFiles/texteditor.dir/textedit.cpp.i
 
 CMakeFiles/texteditor.dir/textedit.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/texteditor.dir/textedit.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/PDS-Project/texteditor/textedit.cpp -o CMakeFiles/texteditor.dir/textedit.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/texteditor/textedit.cpp -o CMakeFiles/texteditor.dir/textedit.cpp.s
 
 CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o: CMakeFiles/texteditor.dir/flags.make
 CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o: texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o -c /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.o -c /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp
 
 CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp > CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp > CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.i
 
 CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp -o CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simone/CLionProjects/texteditor/cmake-build-debug/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp -o CMakeFiles/texteditor.dir/texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp.s
 
 # Object files for target texteditor
 texteditor_OBJECTS = \
@@ -175,7 +175,7 @@ texteditor: /usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.12.2
 texteditor: /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.12.2
 texteditor: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.12.2
 texteditor: CMakeFiles/texteditor.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable texteditor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable texteditor"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/texteditor.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -188,6 +188,6 @@ CMakeFiles/texteditor.dir/clean:
 .PHONY : CMakeFiles/texteditor.dir/clean
 
 CMakeFiles/texteditor.dir/depend: texteditor_autogen/EWIEGA46WW/qrc_textedit.cpp
-	cd /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simone/CLionProjects/PDS-Project/texteditor /home/simone/CLionProjects/PDS-Project/texteditor /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug /home/simone/CLionProjects/PDS-Project/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/simone/CLionProjects/texteditor/cmake-build-debug && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simone/CLionProjects/texteditor /home/simone/CLionProjects/texteditor /home/simone/CLionProjects/texteditor/cmake-build-debug /home/simone/CLionProjects/texteditor/cmake-build-debug /home/simone/CLionProjects/texteditor/cmake-build-debug/CMakeFiles/texteditor.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/texteditor.dir/depend
 
