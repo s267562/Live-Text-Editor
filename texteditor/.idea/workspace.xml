@@ -113,9 +113,8 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../PDS-Project/texteditor" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -160,15 +159,15 @@
       <workItem from="1563547209092" duration="561000" />
       <workItem from="1563547781351" duration="919000" />
       <workItem from="1563548711631" duration="514000" />
-      <workItem from="1563552531154" duration="9761000" />
+      <workItem from="1563552531154" duration="9879000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11755000" />
+    <option name="totallyTimeSpent" value="11873000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="960" y="27" width="960" height="983" extended-state="5" />
+    <frame x="960" y="27" width="960" height="983" extended-state="4" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22757111" />
@@ -176,7 +175,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32979977" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32979977" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
