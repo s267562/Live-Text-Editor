@@ -18,6 +18,15 @@ list(APPEND LIBRARIES
         Qt5::Charts)
 list(REMOVE_DUPLICATES LIBRARIES)
 
-add_executable(textEditor textEditor.qrc main.cpp Editor.cpp Editor.h CRDT.cpp CRDT.h Character.cpp Character.h Pos.cpp Pos.h Identifier.cpp Identifier.h Version.cpp Version.h VersionVector.cpp VersionVector.h)
+add_executable(textEditor
+        textEditor/textEditor.qrc
+        textEditor/main.cpp
+        textEditor/Editor.cpp textEditor/Editor.h
+        textEditor/CRDT.cpp textEditor/CRDT.h
+        textEditor/Character.cpp textEditor/Character.h
+        textEditor/Pos.cpp textEditor/Pos.h
+        textEditor/Identifier.cpp textEditor/Identifier.h
+        textEditor/Version.cpp textEditor/Version.h
+        textEditor/VersionVector.cpp textEditor/VersionVector.h)
 
 target_link_libraries(textEditor ${LIBRARIES})

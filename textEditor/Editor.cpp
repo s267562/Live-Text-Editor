@@ -59,11 +59,12 @@ Editor::Editor(std::string siteId, CRDT crdt, QWidget *parent) : textEdit(new QT
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
-    if(position == 0 && charsAdded == charsRemoved) {
+    if(charsAdded == charsRemoved) {
         /* TODO risolvere questo BUG:
          * intercetta un segnale (errato) quando si toglie il focus dall'editor e poi si rimette il focus e si sposta il cursore
          * oppure appena si apre l'editor. Però è possibile rimuovere e inserire (sostituire) un carattere in posizione 0.
-         * il signal errato ha come parametri position=0; charsRemoved=charsAdded*/
+         * il signal errato ha come parametri position=(first line position); charsRemoved=charsAdded*/
+        // std::cout << "POSITION: " << position << " CHARS_REMOVED: " << charsRemoved << " CHARS_ADDED: " << charsAdded << std::endl;
     } else {
         std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
 

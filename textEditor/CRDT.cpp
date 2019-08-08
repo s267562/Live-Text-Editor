@@ -172,5 +172,5 @@ void CRDT::insertChar(Character character, Pos pos) {
 
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
-
+    // TODO
 }
