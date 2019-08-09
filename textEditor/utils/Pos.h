@@ -9,19 +9,17 @@
 
 class Pos {
 public:
-    Pos(int ch, int line, const std::string &sticky);
+    Pos(int ch, int line);
     int getCh() const;
     int getLine() const;
     void incrementCh();
     void resetCh();
     void incrementLine();
 
-    const std::string &getSticky() const;
 
 private:
     int ch; // position in the line
     int line;
-    std::string sticky;
 };
 
 

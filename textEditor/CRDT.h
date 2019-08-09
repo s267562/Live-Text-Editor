@@ -7,10 +7,10 @@
 
 #include <string>
 #include <vector>
-#include "Pos.h"
-#include "Character.h"
-#include "Identifier.h"
-#include "VersionVector.h"
+#include "utils/Pos.h"
+#include "utils/Character.h"
+#include "utils/Identifier.h"
+#include "utils/VersionVector.h"
 
 class CRDT {
 public:

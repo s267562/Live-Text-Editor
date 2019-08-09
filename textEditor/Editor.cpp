@@ -85,8 +85,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             int ch = cursor.positionInBlock();
             std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
 
-            Pos pos{ch, line, "sticky"}; // Pos(int ch, int line, const std::string &sticky);
-            // TODO sticky??
+            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
 
             crdt.localInsert(charsVector, pos);
         }
@@ -97,14 +96,14 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             cursor.setPosition(position);
             line = cursor.blockNumber();
             ch = cursor.positionInBlock();
-            Pos startPos{ch, line, "sticky"}; // Pos(int ch, int line, const std::string &sticky);
+            Pos startPos{ch, line}; // Pos(int ch, int line);
 
             // get endPos
             textEdit->undo();
             QTextCursor c = textEdit->textCursor();
             line = c.blockNumber();
             ch = c.positionInBlock();
-            Pos endPos{ch, line, "sticky"}; // Pos(int ch, int line, const std::string &sticky);
+            Pos endPos{ch, line}; // Pos(int ch, int line);
             textEdit->redo();
 
             std::cout << "chars removed." << std::endl;

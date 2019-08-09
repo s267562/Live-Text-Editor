@@ -4,7 +4,7 @@
 
 #include "Pos.h"
 
-Pos::Pos(int ch, int line, const std::string &sticky) : ch(ch), line(line), sticky(sticky) {}
+Pos::Pos(int ch, int line) : ch(ch), line(line) {}
 
 int Pos::getCh() const {
     return ch;
@@ -12,10 +12,6 @@ int Pos::getCh() const {
 
 int Pos::getLine() const {
     return line;
-}
-
-const std::string &Pos::getSticky() const {
-    return sticky;
 }
 
 void Pos::incrementCh() {
