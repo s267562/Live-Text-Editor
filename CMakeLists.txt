@@ -27,6 +27,6 @@ add_executable(textEditor
         textEditor/utils/Pos.cpp textEditor/utils/Pos.h
         textEditor/utils/Identifier.cpp textEditor/utils/Identifier.h
         textEditor/utils/Version.cpp textEditor/utils/Version.h
-        textEditor/utils/VersionVector.cpp textEditor/utils/VersionVector.h)
+        textEditor/utils/VersionVector.cpp textEditor/utils/VersionVector.h textEditor/Controller.cpp textEditor/Controller.h)
 
 target_link_libraries(textEditor ${LIBRARIES})

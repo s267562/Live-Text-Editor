@@ -3,34 +3,13 @@
 //
 
 #include "CRDT.h"
-#include <math.h>
-#include <iostream>
-
 
 CRDT::CRDT(std::string siteId) : siteId(siteId), vector(siteId) {
     this->structure = { { } }; // TODO inizializzare il vettore structure?
 }
 
-/**
- * User inserts character into their local text editor and sends the operation to all other users.
- * The only information needed is the character value and the editor index at which it is inserted.
- * A new character object will then be created using that information and inserted into the CRDT array.
- * Finally, the new character is returned so it can be sent to the other users.
- *
- * @param c
- * @param index
- * @return
- */
-void CRDT::localInsert(std::vector<char> chars, Pos startPos) {
-    for(int i = 0; i < chars.size(); i++) {
-        this->handleLocalInsert(chars[i], startPos);
-
-        startPos.incrementCh();
-        if(chars[i] == '\n') {
-            startPos.incrementLine();
-            startPos.resetCh();
-        }
-    }
+void CRDT::setController(Controller *controller) {
+    CRDT::controller = controller;
 }
 
 void CRDT::handleLocalInsert(char val, Pos pos) {
@@ -55,6 +34,33 @@ void CRDT::handleLocalInsert(char val, Pos pos) {
 
     // TODO this->controller.broadcastInsertion(char);
 }
+
+void CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
+    bool newlineRemoved = false;
+
+    // for multi-line deletes
+    if (startPos.getLine() != endPos.getLine()) {
+        // delete chars on first line from startPos.ch to end of line
+        newlineRemoved = true;
+        std::vector<Character> chars = this->deleteMultipleLines(startPos, endPos);
+
+        // single-line deletes
+    } else {
+        std::vector<Character> chars = this->deleteSingleLine(startPos, endPos);
+
+        for(Character c : chars) {
+            if(c.getValue() == '\n') newlineRemoved = true;
+        }
+    }
+
+    this->removeEmptyLines();
+
+    if (newlineRemoved && this->structure[startPos.getLine() + 1].size() > 0) {
+        this->mergeLines(startPos.getLine());
+    }
+}
+
+
 
 
 const Character CRDT::generateChar(char val, Pos pos) {
@@ -171,6 +177,52 @@ void CRDT::insertChar(Character character, Pos pos) {
 }
 
 
-void CRDT::localDelete(Pos startPos, Pos endPos) {
-    // TODO
+
+std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
+    // TODO check if correct
+    std::vector<Character> chars {structure[startPos.getLine()].begin(), structure[startPos.getLine()].begin() + startPos.getCh()};
+    structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh());
+
+    for (int line = startPos.getLine() + 1; line < endPos.getLine(); line++) {
+        chars.insert(chars.end(), structure[line + 1].begin(), structure[line + 1].end());
+    }
+
+    // to do for loop inside crdt
+    if (this->structure[endPos.getLine()].size() > 0) {
+        std::vector<Character> vec { this->structure[endPos.getLine()].begin(), this->structure[endPos.getLine()].begin() + endPos.getCh() };
+        chars.insert(chars.end(), vec.begin(), vec.end());
+    }
+
+    return chars;
+
+}
+
+std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
+    // TODO check if correct
+    int charNum = endPos.getCh() - startPos.getCh();
+    std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
+    this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
+
+    return chars;
+}
+
+void CRDT::removeEmptyLines() {
+    // TODO check if correct
+    for (int line = 0; line < this->structure.size(); line++) {
+        if (this->structure[line].size() == 0) {
+            this->structure.erase(this->structure.begin() + line);
+            line--;
+        }
+    }
+
+    if (this->structure.size() == 0) {
+        this->structure.push_back(std::vector<Character>{});
+    }
+}
+
+void CRDT::mergeLines(int line) {
+    // TODO check if correct
+    if(structure.size() > line + 1 && structure[line + 1].size() > 0) {
+        structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
+    }
 }

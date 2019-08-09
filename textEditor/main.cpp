@@ -1,4 +1,4 @@
-#include "Editor.h"
+#include "Controller.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -23,18 +23,22 @@ int main(int argc, char *argv[]) {
     parser.process(app);
 
     std::string siteId = "temp"; // TODO il server (?) genera un siteId univoco
+
     // model
-    CRDT crdt(siteId);
+    CRDT crdt{siteId};
 
-    // view-controller
-    Editor te(siteId, crdt);
+    // view
+    Editor editor{siteId};
 
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&te);
-    te.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    te.move((availableGeometry.width() - te.width()) / 2,
-            (availableGeometry.height() - te.height()) / 2);
+    // controller
+    Controller controller{&crdt, &editor};
 
-    te.show();
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
+    editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    editor.move((availableGeometry.width() - editor.width()) / 2,
+            (availableGeometry.height() - editor.height()) / 2);
+
+    editor.show();
 
     return app.exec();
 }

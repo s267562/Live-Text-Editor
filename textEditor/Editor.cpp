@@ -4,12 +4,8 @@
 
 #include "Editor.h"
 
-#include <QApplication>
-#include <QTextEdit>
-#include <iostream>
 
-
-Editor::Editor(std::string siteId, CRDT crdt, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), crdt(crdt), QMainWindow(parent) {
+Editor::Editor(std::string siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent) {
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
 
@@ -58,6 +54,10 @@ Editor::Editor(std::string siteId, CRDT crdt, QWidget *parent) : textEdit(new QT
 
 }
 
+void Editor::setController(Controller *controller) {
+    Editor::controller = controller;
+}
+
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     if(charsAdded == charsRemoved) {
         /* TODO risolvere questo BUG:
@@ -79,15 +79,14 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 else std::cout << c.toLatin1() << " ";
             }
 
-            // get position
+            // get start position
             cursor.setPosition(position);
             int line = cursor.blockNumber();
             int ch = cursor.positionInBlock();
             std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
+            Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
 
-            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-
-            crdt.localInsert(charsVector, pos);
+            this->controller->localInsert(charsVector, startPos);
         }
 
         if(charsRemoved) {
@@ -100,9 +99,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
             // get endPos
             textEdit->undo();
-            QTextCursor c = textEdit->textCursor();
-            line = c.blockNumber();
-            ch = c.positionInBlock();
+            cursor.setPosition(position + charsRemoved);
+            line = cursor.blockNumber();
+            ch = cursor.positionInBlock();
             Pos endPos{ch, line}; // Pos(int ch, int line);
             textEdit->redo();
 
@@ -110,11 +109,15 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             std::cout << "startPos (ch, line): (" << startPos.getCh() << ", " << startPos.getLine() << ")" << std::endl;
             std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
 
-            crdt.localDelete(startPos, endPos);
+            this->controller->localDelete(startPos, endPos);
         }
     }
 }
 
 const std::string &Editor::getSiteId() const {
     return siteId;
+}
+
+QTextEdit *Editor::getTextEdit() const {
+    return textEdit;
 }

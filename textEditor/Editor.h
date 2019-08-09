@@ -5,14 +5,19 @@
 #ifndef TEXTEDITOR_EDITOR_H
 #define TEXTEDITOR_EDITOR_H
 
+#include "Controller.h"
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QTextEdit>
-#include "CRDT.h"
+#include <QApplication>
+#include <QTextEdit>
+#include <iostream>
 
 class Editor : public QMainWindow {
 public:
-    Editor(std::string siteId, CRDT crdt, QWidget *parent = nullptr);
+    Editor(std::string siteId, QWidget *parent = nullptr);
+    void setController(Controller *controller);
     const std::string &getSiteId() const;
+    QTextEdit *getTextEdit() const;
 
 private slots:
     void onTextChanged(int position, int charsRemoved, int charsAdded);
@@ -20,8 +25,8 @@ private slots:
 private:
     QTextEdit *textEdit;
     std::string siteId;
-    CRDT crdt;
     QTextCursor cursor;
+    Controller *controller;
 };
 
 #endif //TEXTEDITOR_EDITOR_H
