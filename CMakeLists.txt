@@ -6,18 +6,22 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+set(CMAKE_PREFIX_PATH /Users/andrea/Qt5.13.0/5.13.0/clang_64/lib/cmake)
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Charts REQUIRED)
 find_package(Qt5Sql REQUIRED)
+find_package(Qt5Network REQUIRED)
 
 list(APPEND LIBRARIES
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
         Qt5::Charts
-        Qt5::Sql)
+        Qt5::Sql
+        Qt5::Network)
 list(REMOVE_DUPLICATES LIBRARIES)
 
 add_executable(client
@@ -29,10 +33,20 @@ add_executable(client
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
         client/utils/Version.cpp client/utils/Version.h
-        client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h)
+        client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h
+        client/Networking/Client.h
+        client/Networking/Client.cpp
+        client/utils/Constants.h)
 
 add_executable(server
-        server/main.cpp server/Database.cpp server/Database.h)
+        server/main.cpp
+        server/DB/Database.cpp
+        server/DB/Database.h
+        server/Networking/Server.cpp
+        server/Networking/Server.h
+        server/Networking/Thread.cpp
+        server/Networking/Thread.h
+        server/utils/Constants.h)
 
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})

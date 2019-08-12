@@ -9,10 +9,15 @@
  */
 
 #include <iostream>
+#include <QCoreApplication>
+#include "Networking/Server.h"
 
 int main(int argc, char *argv[]) {
+	QCoreApplication a(argc, argv);
 
-	std::cout << "SERVER MAIN TEST PRINT" << std::endl;
+	// Make a server and starts it
+	Server server;
+	server.startServer(1234);
 
-	return 0;
+	return a.exec();
 }
