@@ -2,6 +2,7 @@
 // Created by simone on 05/08/19.
 //
 
+#include <ctime>
 #include "CRDT.h"
 
 CRDT::CRDT(std::string siteId) : siteId(siteId), vector(siteId) {
