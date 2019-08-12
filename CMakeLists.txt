@@ -20,19 +20,19 @@ list(APPEND LIBRARIES
         Qt5::Sql)
 list(REMOVE_DUPLICATES LIBRARIES)
 
-add_executable(textEditor
-        textEditor/textEditor.qrc
-        textEditor/main.cpp
-        textEditor/Editor.cpp textEditor/Editor.h
-        textEditor/CRDT.cpp textEditor/CRDT.h
-        textEditor/utils/Character.cpp textEditor/utils/Character.h
-        textEditor/utils/Pos.cpp textEditor/utils/Pos.h
-        textEditor/utils/Identifier.cpp textEditor/utils/Identifier.h
-        textEditor/utils/Version.cpp textEditor/utils/Version.h
-        textEditor/utils/VersionVector.cpp textEditor/utils/VersionVector.h textEditor/Controller.cpp textEditor/Controller.h)
+add_executable(client
+        client/textEditor.qrc
+        client/main.cpp
+        client/Editor.cpp client/Editor.h
+        client/CRDT.cpp client/CRDT.h
+        client/utils/Character.cpp client/utils/Character.h
+        client/utils/Pos.cpp client/utils/Pos.h
+        client/utils/Identifier.cpp client/utils/Identifier.h
+        client/utils/Version.cpp client/utils/Version.h
+        client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h)
 
 add_executable(server
         server/main.cpp server/Database.cpp server/Database.h)
 
-target_link_libraries(textEditor ${LIBRARIES})
+target_link_libraries(client ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})
