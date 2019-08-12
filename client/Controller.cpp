@@ -4,7 +4,7 @@
 
 #include "Controller.h"
 
-Controller::Controller(CRDT *crdt, Editor *editor) : crdt(crdt), editor(editor) {
+Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client) {
     editor->setController(this);
     crdt->setController(this);
 }
@@ -29,8 +29,13 @@ void Controller::localInsert(std::vector<char> chars, Pos startPos) {
             startPos.resetCh();
         }
     }
+
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
     this->crdt->handleLocalDelete(startPos, endPos);
+}
+
+Client* Controller::getClient() {
+    return client;
 }

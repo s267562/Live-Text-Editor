@@ -7,16 +7,17 @@
 
 
 int main(int argc, char *argv[]) {
-    /* Networking */
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
     Client c(&app);
     c.connectTo("127.0.0.1");
     c.logIn("username","password");
     c.requestForFile("CiaoTy!");
-    c.insert("c", 1);
-    c.deleteChar("c", 1);
-
-    /* Editor */
+    std::vector<int> numbers{1,2,3,4,5};
+    //c.writeOnSocket(QString("lin\r\n"));
+    //c.writeOnSocket(QString("fil\r\nCiaoQ!"));
+    //c.writeOnSocket(QString("Ciao!"));
+    //c.insert("c", numbers);
+    //c.deleteChar("c", 1);
     Q_INIT_RESOURCE(textEditor);
 
     // The QApplication class manages the GUI application's control flow and main settings.
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
     Editor editor{siteId};
 
     // controller
-    Controller controller{&crdt, &editor};
+    Controller controller{&crdt, &editor,&c};
 
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
     editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);

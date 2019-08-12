@@ -6,6 +6,7 @@
 #include <QString>
 #include <queue>
 #include "../utils/Constants.h"
+#include "../utils/Identifier.h"
 
 class Client: public QObject{
     Q_OBJECT
@@ -17,7 +18,8 @@ private:
 public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
-    void insert(QString,int pos);
+    void insert(QString,std::vector<Identifier> pos);
+    void insert(QString str, std::vector<int> pos);
     void deleteChar(QString,int pos);
     bool writeOnSocket(std::string str);
     bool connectTo(QString host);

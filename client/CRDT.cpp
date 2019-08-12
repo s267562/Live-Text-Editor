@@ -3,6 +3,7 @@
 //
 
 #include <ctime>
+#include <QString>
 #include "CRDT.h"
 
 CRDT::CRDT(std::string siteId) : siteId(siteId), vector(siteId) {
@@ -34,6 +35,7 @@ void CRDT::handleLocalInsert(char val, Pos pos) {
     }
 
     // TODO this->controller.broadcastInsertion(char);
+    controller->getClient()->insert(QString(character.getValue()),character.getPosition());
 }
 
 void CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
