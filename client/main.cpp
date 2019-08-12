@@ -13,11 +13,10 @@ int main(int argc, char *argv[]) {
     c.connectTo("127.0.0.1");
     c.logIn("username","password");
     c.requestForFile("CiaoTy!");
-    //c.writeOnSocket(QString("lin\r\n"));
-    //c.writeOnSocket(QString("fil\r\nCiaoQ!"));
-    //c.writeOnSocket(QString("Ciao!"));
     c.insert("c", 1);
     c.deleteChar("c", 1);
+
+    /* Editor */
     Q_INIT_RESOURCE(textEditor);
 
     // The QApplication class manages the GUI application's control flow and main settings.
@@ -48,7 +47,7 @@ int main(int argc, char *argv[]) {
     editor.move((availableGeometry.width() - editor.width()) / 2,
             (availableGeometry.height() - editor.height()) / 2);
 
-    editor.show();*/
+    editor.show();
 
     return app.exec();
 }
