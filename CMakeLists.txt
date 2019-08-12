@@ -10,12 +10,14 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Charts REQUIRED)
+find_package(Qt5Sql REQUIRED)
 
 list(APPEND LIBRARIES
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-        Qt5::Charts)
+        Qt5::Charts
+        Qt5::Sql)
 list(REMOVE_DUPLICATES LIBRARIES)
 
 add_executable(textEditor
@@ -29,4 +31,8 @@ add_executable(textEditor
         textEditor/utils/Version.cpp textEditor/utils/Version.h
         textEditor/utils/VersionVector.cpp textEditor/utils/VersionVector.h textEditor/Controller.cpp textEditor/Controller.h)
 
+add_executable(server
+        server/main.cpp server/Database.cpp server/Database.h)
+
 target_link_libraries(textEditor ${LIBRARIES})
+target_link_libraries(server ${LIBRARIES})
