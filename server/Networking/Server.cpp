@@ -14,39 +14,43 @@ void Server::startServer(quint16 port){
 }
 
 void Server::connection(){
-    socket = this->nextPendingConnection();
+    QTcpSocket *soc = this->nextPendingConnection();
 
     QMetaObject::Connection *c = new QMetaObject::Connection();
 
-    *c = connect(socket, &QTcpSocket::readyRead, this, [this,c]{
-        /* diconnect from main thread */
-        disconnect(*c);
-        delete c;
+    *c = connect(soc, &QTcpSocket::readyRead, this, [this,c,soc]{
 
-        QByteArray data = socket->read(5);
+
+        QByteArray data = soc->read(5);
 
         if (data.toStdString() == LOGIN_MESSAGE){
             qDebug() << "ok, login";
             if (logIn()){
-                socket->write(OK_MESSAGE);
+                writeOkMessage(soc);
+
+                qintptr socketDescriptor = soc->socketDescriptor();
+                soc->waitForReadyRead(3000);
+                data = soc->read(5);
+                if (data.toStdString() == REQUEST_FILE_MESSAGE){
+                    /* disconnect from main thread */
+                    disconnect(*c);
+                    delete c;
+
+                    readFileName(socketDescriptor, soc);
+                    qDebug() << "ok, file";
+                }else{
+                    //error in file request phase
+                    qDebug() << "err, file";
+                    writeErrMessage(soc);
+                }
             }else{
                 //error in login phase
-                socket->write(ERR_MESSAGE);
+                qDebug() << "error login";
+                writeErrMessage(soc);
             }
-        }else{
-            qDebug() << "err, login";
-            socket->write(ERR_MESSAGE);
-        }
-
-        qintptr socketDescriptor = socket->socketDescriptor();
-        socket->waitForReadyRead(3000);
-        data = socket->read(5);
-
-        if (data.toStdString() == REQUEST_FILE_MESSAGE){
-            readFileName(socketDescriptor);
-            qDebug() << "ok, file";
-        }else{
-            qDebug() << "err, file";
+        }else {
+            qDebug() << "error message";
+            writeErrMessage(soc);
         }
     }, Qt::DirectConnection);
 }
@@ -56,9 +60,9 @@ bool Server::logIn(){
     return true;
 }
 
-bool Server::readFileName(qintptr socketDescriptor){
-    socket->waitForReadyRead(30);
-    QByteArray data = socket->readAll();
+bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
+    soc->waitForReadyRead(30);
+    QByteArray data = soc->readAll();
 
     std::string key = data.toStdString();                           /* file name */
     qDebug() << data;
@@ -77,10 +81,35 @@ bool Server::readFileName(qintptr socketDescriptor){
         thread->start();
     }
 
-    socket->write(OK_MESSAGE);
-    if (socket->waitForBytesWritten(30)){
-        qDebug() << "secondo, Ok scritto";
+    writeOkMessage(soc);
+}
+
+bool Server::writeOkMessage(QTcpSocket *soc){
+    if (soc == nullptr){
+        return false;
+    }
+
+    soc->write(OK_MESSAGE);
+    if (soc->waitForBytesWritten(30)){
+        qDebug() << "Ok, scritto";
+        return true;
     }else{
-        qDebug() << "Ok non scritto";
+        qDebug() << "Ok, non scritto";
+        return false;
+    }
+}
+
+bool Server::writeErrMessage(QTcpSocket *soc){
+    if (soc == nullptr){
+        return false;
+    }
+
+    soc->write(ERR_MESSAGE);
+    if (soc->waitForBytesWritten(30)){
+        qDebug() << "Err, scritto";
+        return true;
+    }else{
+        qDebug() << "Err, non scritto";
+        return false;
     }
 }

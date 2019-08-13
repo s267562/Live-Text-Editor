@@ -20,7 +20,9 @@ public:
 
 private:
     bool logIn();
-    bool readFileName(qintptr socketDescriptor);
+    bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
+    bool writeOkMessage(QTcpSocket *soc);
+    bool writeErrMessage(QTcpSocket *soc);
 
 signals:
 

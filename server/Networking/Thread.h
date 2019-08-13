@@ -16,6 +16,8 @@ public:
 private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
+    bool writeOkMessage(QTcpSocket *soc);
+    bool writeErrMessage(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

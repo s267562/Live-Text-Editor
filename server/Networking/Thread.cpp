@@ -43,10 +43,12 @@ void Thread::readyRead(QTcpSocket *soc){
 
     if (data.toStdString() == INSERT_MESSAGE){
         readInsert(soc);
-        soc->write(OK_MESSAGE);
+        writeOkMessage(soc);
     }else if (data.toStdString() == DELETE_MESSAGE){
         readDelete(soc);
-        soc->write(OK_MESSAGE);
+        writeOkMessage(soc);
+    }else{
+        writeErrMessage(soc);
     }
 }
 
@@ -70,8 +72,6 @@ bool Thread::readInsert(QTcpSocket *soc){
             soc->read(1);
         }
     }
-    /*QByteArray pos = soc->read(1);
-    qDebug() << letter << " pos: " << pos;*/
     return true;
 }
 
@@ -91,4 +91,34 @@ void Thread::disconnected(QTcpSocket *soc){
 
     soc->deleteLater();
     /* TO-DO: delete socket in structure */
+}
+
+bool Thread::writeOkMessage(QTcpSocket *soc){
+    if (soc == nullptr){
+        return false;
+    }
+
+    soc->write(OK_MESSAGE);
+    if (soc->waitForBytesWritten(30)){
+        qDebug() << "Ok, scritto";
+        return true;
+    }else{
+        qDebug() << "Ok, non scritto";
+        return false;
+    }
+}
+
+bool Thread::writeErrMessage(QTcpSocket *soc){
+    if (soc == nullptr){
+        return false;
+    }
+
+    soc->write(ERR_MESSAGE);
+    if (soc->waitForBytesWritten(30)){
+        qDebug() << "Err, scritto";
+        return true;
+    }else{
+        qDebug() << "Err, non scritto";
+        return false;
+    }
 }
