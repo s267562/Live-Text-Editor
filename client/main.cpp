@@ -12,12 +12,11 @@ int main(int argc, char *argv[]) {
     c.connectTo("127.0.0.1");
     c.logIn("username","password");
     c.requestForFile("CiaoTy!");
-    std::vector<int> numbers{1,2,3,4,5};
-    //c.writeOnSocket(QString("lin\r\n"));
-    //c.writeOnSocket(QString("fil\r\nCiaoQ!"));
-    //c.writeOnSocket(QString("Ciao!"));
-    //c.insert("c", numbers);
+    //std::vector<int> numbers{1,2,3,4,5};
+    //c.insert("c", 1);
     //c.deleteChar("c", 1);
+    //c.deleteChar("c", numbers);
+
     Q_INIT_RESOURCE(textEditor);
 
     // The QApplication class manages the GUI application's control flow and main settings.

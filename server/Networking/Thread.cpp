@@ -53,13 +53,13 @@ void Thread::readyRead(QTcpSocket *soc){
 }
 
 bool Thread::readInsert(QTcpSocket *soc){
-    qDebug() << "ok, ins";
+    qDebug() << "-------------INS-------------";
     soc->read(1);
     QByteArray letter = soc->read(1);
     soc->read(1);
     QByteArray size = soc->read(1);
     bool ok;
-    qDebug() << " size:" << size << " size Int:" << size.toHex().toInt(&ok,16);
+    qDebug() << " size Int:" << size.toHex().toInt(&ok,16);
     soc->read(1);
     std::vector<int> position;
     qDebug() << letter;
@@ -76,13 +76,25 @@ bool Thread::readInsert(QTcpSocket *soc){
 }
 
 bool Thread::readDelete(QTcpSocket *soc){
-    qDebug() << "ok, del";
-    QByteArray size = soc->read(1);
+    qDebug() << "-------------ERR-------------";
     soc->read(1);
     QByteArray letter = soc->read(1);
     soc->read(1);
-    QByteArray pos = soc->read(1);
-    qDebug() << letter << " pos: " << pos;
+    QByteArray size = soc->read(1);
+    bool ok;
+    qDebug() << " size:" << size << " size Int:" << size.toHex().toInt(&ok,16);
+    soc->read(1);
+    std::vector<int> position;
+    qDebug() << letter;
+
+    for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
+        int pos = soc->read(1).toHex().toInt(&ok,16);
+        position.push_back(pos);
+        qDebug() << " pos:" << pos;
+        if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
+            soc->read(1);
+        }
+    }
     return true;
 }
 

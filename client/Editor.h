@@ -12,7 +12,6 @@
 #include <QTextEdit>
 #include <iostream>
 
-class Controller;
 
 class Editor : public QMainWindow {
 public:

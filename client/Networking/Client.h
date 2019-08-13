@@ -18,9 +18,12 @@ private:
 public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
-    void insert(QString,std::vector<Identifier> pos);
+    void insert(QString, int pos);
+    void insert(QString, std::vector<Identifier> pos);
     void insert(QString str, std::vector<int> pos);
     void deleteChar(QString,int pos);
+    void deleteChar(QString str, std::vector<int> pos);
+    void deleteChar(QString str, std::vector<Identifier> pos);
     bool writeOnSocket(std::string str);
     bool connectTo(QString host);
     void logIn(QString username, QString passsword);

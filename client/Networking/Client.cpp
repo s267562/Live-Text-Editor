@@ -56,6 +56,24 @@ void Client::requestForFile(QString fileName){
     }
 }
 
+void Client::insert(QString str, int pos){
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(INSERT_MESSAGE);
+        QByteArray data;
+        data.append(" " + str + " " + "\x01" + " "+ pos);
+        //message.append(data.size());
+        message.append(data);
+        qDebug() << message;
+        messages.push(message);
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            this->socket->write(message);
+            messages.pop();
+        }
+    }
+}
+
+
 void Client::insert(QString str, std::vector<Identifier> pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
@@ -110,12 +128,66 @@ void Client::insert(QString str, std::vector<int> pos){
     }
 }
 
+void Client::deleteChar(QString str, std::vector<int> pos){
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(DELETE_MESSAGE);
+        QByteArray data;
+        data.append(" " + str + " " + pos.size() + " ");
+        QByteArray position;
+
+        for (int i = 0; i < pos.size(); i++){
+            position.append(pos[i]);
+            if (i != pos.size() - 1 || pos.size() != 1){
+                position.append(" ");
+            }
+        }
+
+        data.append(position);
+        //message.append(data.size());
+        message.append(data);
+        qDebug() << message;
+        messages.push(message);
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            this->socket->write(message);
+            messages.pop();
+        }
+    }
+}
+
+void Client::deleteChar(QString str, std::vector<Identifier> pos){
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(DELETE_MESSAGE);
+        QByteArray data;
+        data.append(" " + str + " " + pos.size() + " ");
+        QByteArray position;
+
+        for (int i = 0; i < pos.size(); i++){
+            position.append(pos[i].getDigit());
+            if (i != pos.size() - 1 || pos.size() != 1){
+                position.append(" ");
+            }
+        }
+
+        data.append(position);
+        //message.append(data.size());
+        message.append(data);
+        qDebug() << message;
+        messages.push(message);
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            this->socket->write(message);
+            messages.pop();
+        }
+    }
+}
+
 void Client::deleteChar(QString str, int pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
         QByteArray data;
-        data.append(" " + str + " " + pos);
-        message.append(data.size());
+        data.append(" " + str + " " + "\x01" + " "+ pos);
+        //message.append(data.size());
         message.append(data);
         qDebug() << message;
         messages.push(message);
