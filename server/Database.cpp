@@ -33,6 +33,7 @@ Database::Database() {
 							   "password VARCHAR(256),"
 							   "salt VARCHAR(128),"
 							   "avatar BLOB)";
+
 	// Query executions
 	QSqlQuery qry;
 	if (qry.exec(checkEmptyQuery)) { // check db is empty
@@ -53,11 +54,11 @@ Database::Database() {
  * Function for generating salt hashed sha256
  * @return sha256 hash of salt
  */
-std::string Database::generateSalt() {
+QString Database::generateSalt() {
 	auto timestamp = std::chrono::system_clock::now().time_since_epoch();
-	std::string salt = std::to_string(timestamp.count());
-	auto hashedSalt = QCryptographicHash::hash(QByteArray(salt.data()), QCryptographicHash::Sha256);
-	return hashedSalt.toHex().toStdString();
+	QString salt = QString::fromStdString(std::to_string(timestamp.count()));
+	auto hashedSalt = QCryptographicHash::hash(salt.toLocal8Bit(), QCryptographicHash::Sha256);
+	return QString(hashedSalt.toHex());
 }
 
 /**
@@ -65,10 +66,10 @@ std::string Database::generateSalt() {
  * @param username : username to hash
  * @return : hashed username
  */
-std::string Database::hashUsername(std::string username) {
-	std::string toHash = std::move(username);
-	auto hashedUsername = QCryptographicHash::hash(QByteArray(toHash.data()), QCryptographicHash::Sha256);
-	return hashedUsername.toHex().toStdString();
+QString Database::hashUsername(QString username) {
+	QString toHash = std::move(username);
+	auto hashedUsername = QCryptographicHash::hash(QByteArray(toHash.toLocal8Bit()), QCryptographicHash::Sha256);
+	return QString(hashedUsername.toHex());
 }
 
 /**
@@ -77,10 +78,10 @@ std::string Database::hashUsername(std::string username) {
  * @param salt : salt to add to password before hash
  * @return : hashed password SHA256
  */
-std::string Database::hashPassword(std::string password, std::string salt) {
-	std::string toHash = std::move(password) + std::move(salt);
-	auto hashedPassword = QCryptographicHash::hash(QByteArray(toHash.data()), QCryptographicHash::Sha256);
-	return hashedPassword.toHex().toStdString();
+QString Database::hashPassword(QString password, QString salt) {
+	QString toHash = password + salt;
+	auto hashedPassword = QCryptographicHash::hash(toHash.toLocal8Bit(), QCryptographicHash::Sha256);
+	return QString(hashedPassword.toHex());
 }
 
 /**
@@ -89,22 +90,22 @@ std::string Database::hashPassword(std::string password, std::string salt) {
  * @param password : password to use
  * @return : true if correctly registered, false if username already registered
  */
-bool Database::registerUser(std::string username, std::string password) {
+bool Database::registerUser(QString username, QString password) {
 	bool result = false; // result of registration
-	std::string hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(std::move(username));
 
 	// Connect to db
 	db.open();
 
-	QString querySelect = QString::fromStdString("SELECT * FROM users WHERE username='" + hashedUsername + "'");
+	QString querySelect = "SELECT * FROM users WHERE username='" + hashedUsername + "'";
 	QSqlQuery checkUsernameQuery;
 
 	if (checkUsernameQuery.exec(querySelect)) {
 		if (checkUsernameQuery.isActive()) {
 			if (!checkUsernameQuery.next()) {
 				// Username free for use, we can register the user
-				std::string salt = generateSalt();
-				std::string hashedPassword = hashPassword(std::move(password), salt);
+				QString salt = generateSalt();
+				QString hashedPassword = hashPassword(std::move(password), salt);
 
 				QSqlQuery qry;
 				qry.prepare("INSERT INTO users ("
@@ -113,9 +114,9 @@ bool Database::registerUser(std::string username, std::string password) {
 							"salt)"
 							"VALUES (?,?,?);");
 
-				qry.addBindValue(QString::fromStdString(hashedUsername));
-				qry.addBindValue(QString::fromStdString(hashedPassword));
-				qry.addBindValue(QString::fromStdString(salt));
+				qry.addBindValue(hashedUsername);
+				qry.addBindValue(hashedPassword);
+				qry.addBindValue(salt);
 
 				if (!qry.exec())
 					qDebug() << "Error inserting query";
@@ -133,24 +134,24 @@ bool Database::registerUser(std::string username, std::string password) {
  * @param password : password given
  * @return : true if all correct
  */
-bool Database::authenticateUser(std::string username, std::string password) {
+bool Database::authenticateUser(QString username, QString password) {
 	bool result = false;
-	std::string hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(std::move(username));
 
 	// Connect to db
 	db.open();
 
 	QSqlQuery authenticationQuery;
 	authenticationQuery.prepare("SELECT username, password, salt FROM users WHERE username=:username");
-	authenticationQuery.bindValue(":username", QString::fromStdString(hashedUsername));
+	authenticationQuery.bindValue(":username", hashedUsername);
 
 	if (authenticationQuery.exec()) {
 		if (authenticationQuery.isActive()) {
 			if (authenticationQuery.first()) {
 				// Username is registered
-				std::string salt = authenticationQuery.value(2).toString().toStdString();
-				std::string hashedPassword = hashPassword(std::move(password), salt);
-				std::string passwordFromDB = authenticationQuery.value(1).toString().toStdString();
+				QString salt = authenticationQuery.value(2).toString();
+				QString hashedPassword = hashPassword(std::move(password), salt);
+				QString passwordFromDB = authenticationQuery.value(1).toString();
 
 				if (passwordFromDB == hashedPassword)
 					// OK, username and password are true
@@ -168,9 +169,9 @@ bool Database::authenticateUser(std::string username, std::string password) {
  * @param image :QByteArray of the image to load
  * @return true if image changed, else false
  */
-bool Database::changeAvatar(std::string username, const QByteArray &image) {
+bool Database::changeAvatar(QString username, const QByteArray &image) {
 	bool result = false;
-	std::string hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(std::move(username));
 
 	// Connect to db
 	if (!db.open())
@@ -179,7 +180,7 @@ bool Database::changeAvatar(std::string username, const QByteArray &image) {
 	QSqlQuery query;
 	query.prepare("UPDATE users SET avatar=:avatar WHERE username=:username");
 	query.bindValue(":avatar", image);
-	query.bindValue(":username", QString::fromStdString(hashedUsername));
+	query.bindValue(":username", hashedUsername);
 
 	if (!query.exec()) {
 		qDebug() << "Error inserting image into table:\n" << query.lastError();
@@ -195,8 +196,8 @@ bool Database::changeAvatar(std::string username, const QByteArray &image) {
  * @param username : usrname of the user requested avatar
  * @return : QbyteArray of the avatar, may be NULL if user doesn't have an avatar yet
  */
-QByteArray Database::getAvatar(std::string username) {
-	std::string hashedUsername = hashUsername(std::move(username));
+QByteArray Database::getAvatar(QString username) {
+	QString hashedUsername = hashUsername(std::move(username));
 
 	// Connect to db
 	if (!db.open())
@@ -204,7 +205,7 @@ QByteArray Database::getAvatar(std::string username) {
 
 	QSqlQuery query;
 	query.prepare("SELECT avatar FROM users WHERE username=:username");
-	query.bindValue(":username", QString::fromStdString(hashedUsername));
+	query.bindValue(":username", hashedUsername);
 
 	if (!query.exec())
 		qDebug() << "Error getting image from table:\n" << query.lastError();
@@ -213,3 +214,4 @@ QByteArray Database::getAvatar(std::string username) {
 	db.close();
 	return avatar;
 }
+

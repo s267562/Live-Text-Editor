@@ -19,22 +19,22 @@ class Database {
 private:
 	QSqlDatabase db;
 
-	static std::string generateSalt();
+	static QString generateSalt();
 
-	static std::string hashUsername(std::string username);
+	static QString hashUsername(QString username);
 
-	static std::string hashPassword(std::string password, std::string salt);
+	static QString hashPassword(QString password, QString salt);
 
 public:
 	Database();
 
-	bool registerUser(std::string username, std::string password);
+	bool registerUser(QString username,QString password);
 
-	bool authenticateUser(std::string username, std::string password);
+	bool authenticateUser(QString username, QString password);
 
-	bool changeAvatar(std::string username, const QByteArray &image);
+	bool changeAvatar(QString username, const QByteArray &image);
 
-	QByteArray getAvatar(std::string username);
+	QByteArray getAvatar(QString username);
 };
 
 
