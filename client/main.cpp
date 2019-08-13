@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     Editor editor{siteId};
 
     // controller
-    Controller controller{&crdt, &editor,&c};
+    Controller controller{&crdt, &editor};
 
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
     editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
