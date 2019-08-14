@@ -32,7 +32,7 @@ add_executable(client
         client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h)
 
 add_executable(server
-        server/main.cpp server/Database.cpp server/Database.h)
+        server/main.cpp server/DB/Database.cpp server/DB/Database.h)
 
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})

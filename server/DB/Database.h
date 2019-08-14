@@ -16,6 +16,11 @@
 #include <string>
 
 class Database {
+public:
+	enum class Permission {
+		READ, WRITE
+	};
+
 private:
 	QSqlDatabase db;
 
@@ -28,13 +33,21 @@ private:
 public:
 	Database();
 
-	bool registerUser(QString username,QString password);
+	bool registerUser(QString username, QString password);
 
 	bool authenticateUser(QString username, QString password);
 
 	bool changeAvatar(QString username, const QByteArray &image);
 
 	QByteArray getAvatar(QString username);
+
+	bool createFile(QString fileID, QString userOwner);
+
+	bool isOwner(QString fileID, QString username);
+
+	bool addPermission(QString fileID, QString username,Permission permission);
+
+	QList<Permission>  getPermissions(QString fileID, QString username);
 };
 
 
