@@ -18,9 +18,9 @@ private:
 public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
-    void insert(QString, int pos);
-    void insert(QString, std::vector<Identifier> pos);
-    void insert(QString str, std::vector<int> pos);
+    void insert(QString, QString, int pos);
+    /*void insert(QString, std::vector<Identifier> pos);
+    void insert(QString str, std::vector<int> pos);*/
     void deleteChar(QString,int pos);
     void deleteChar(QString str, std::vector<int> pos);
     void deleteChar(QString str, std::vector<Identifier> pos);
@@ -30,6 +30,7 @@ public:
     void logOut();
     void registration(QString username, QString passsword, QString pathAvatar);
     void requestForFile(QString fileName);
+    bool readInsert();
 
 public slots:
     void onReadyRead();

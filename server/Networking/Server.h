@@ -6,7 +6,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "Thread.h"
-#include "../utils/Constants.h"
+#include "../Utils/Constants.h"
 
 class Server: public QTcpServer{
     Q_OBJECT

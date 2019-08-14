@@ -2,14 +2,14 @@
 #define THREAD_H
 #include <QThread>
 #include <QTcpSocket>
-#include "../utils/Constants.h"
+#include "../Utils/Constants.h"
+#include "../../client/utils/Identifier.h"
 
 class Thread : public QThread{
 Q_OBJECT
 private:
-    //std::list<std::shared_ptr<QTcpSocket>> sockets;
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;
-    qintptr socketDescriptor;
+
 public:
     explicit Thread(QObject *parent = nullptr);
     void run();
@@ -19,6 +19,8 @@ private:
     bool readDelete(QTcpSocket *soc);
     bool writeOkMessage(QTcpSocket *soc);
     bool writeErrMessage(QTcpSocket *soc);
+    void insert(QString str, QString siteId, std::vector<int> pos);
+    //void insert(QString str, std::vector<Identifier> pos);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

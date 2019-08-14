@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define OK_MESSAGE "OK\r\n"
+#define OK_MESSAGE "OKY\r\n"
 #define ERR_MESSAGE "ERR\r\n"
 #define LOGIN_MESSAGE "LIN\r\n"
 #define LOGOUT_MESSAGE "LOG\r\n"

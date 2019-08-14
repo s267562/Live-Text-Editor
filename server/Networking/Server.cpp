@@ -96,6 +96,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
     }
 
     writeOkMessage(soc);
+    return true;
 }
 
 bool Server::registration(QTcpSocket *soc){
@@ -146,6 +147,8 @@ bool Server::registration(QTcpSocket *soc){
     }
 
     qDebug() << "avatar size" << sizeAvatar << " size read" << avatarDef.size();
+
+    return true;
 }
 
 bool Server::readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size){
