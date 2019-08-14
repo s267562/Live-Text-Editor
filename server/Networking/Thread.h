@@ -7,7 +7,8 @@
 class Thread : public QThread{
 Q_OBJECT
 private:
-    std::list<std::shared_ptr<QTcpSocket>> sockets;
+    //std::list<std::shared_ptr<QTcpSocket>> sockets;
+    std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;
     qintptr socketDescriptor;
 public:
     explicit Thread(QObject *parent = nullptr);

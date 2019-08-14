@@ -27,6 +27,8 @@ public:
     bool writeOnSocket(std::string str);
     bool connectTo(QString host);
     void logIn(QString username, QString passsword);
+    void logOut();
+    void registration(QString username, QString passsword, QString pathAvatar);
     void requestForFile(QString fileName);
 
 public slots:

@@ -1,5 +1,7 @@
 #include "Client.h"
 #include "../utils/Identifier.h"
+#include <QFile>
+#include <QPixmap>
 
 Client::Client(QObject *parent):QObject (parent){
     this->socket = new QTcpSocket(this);
@@ -21,7 +23,12 @@ void Client::onReadyRead(){
     qDebug() << datas;
     if (datas.toStdString() == OK_MESSAGE){
         if (!messages.empty()){
+
             QByteArray message = messages.front();
+            if (message == LOGOUT_MESSAGE){
+                socket->deleteLater();
+                return;
+            }
             messages.pop();
             socket->write(message);
             reciveOkMessage = false;
@@ -31,11 +38,22 @@ void Client::onReadyRead(){
     }
 }
 
-
 void Client::logIn(QString username, QString password){
     if (!clientIsLogged){
         writeOnSocket(QString(LOGIN_MESSAGE));
         /* TO-DO: send username and password */
+        clientIsLogged = true;
+    }
+}
+
+void Client::logOut(){
+    if (clientIsLogged){
+        QByteArray message(LOGOUT_MESSAGE);
+        messages.push(message);
+        if (reciveOkMessage){
+            messages.pop();
+            socket->deleteLater();
+        }
     }
 }
 
@@ -44,7 +62,7 @@ void Client::requestForFile(QString fileName){
         QByteArray message(REQUEST_FILE_MESSAGE);
         QByteArray data;
         data.append(fileName);
-        //message.append(data.size());
+        //
         message.append(data);
         qDebug() << message;
         messages.push(message);
@@ -221,5 +239,56 @@ bool Client::writeOnSocket(std::string str){
 
 void Client::onDisconnect(){
     qDebug() << "Disconnected";
-    socket->deleteLater();
+    if (socket != nullptr){
+        socket->deleteLater();
+    }
+}
+
+void Client::registration(QString username, QString password, QString pathAvatar){
+    QPixmap pix;
+    pix.load(pathAvatar);
+    QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
+
+    QByteArray uSize, pSize, aSize;
+    uSize.setNum(username.size());
+    pSize.setNum(password.size());
+    aSize.setNum(pix.toImage().sizeInBytes());
+
+    //socket->write(REGISTRATION_MESSAGE);
+    QByteArray uname;
+    uname.append(" " + uSize + " " + username);
+    QByteArray pword;
+    pword.append(" " + pSize + " " + password + " ");
+    QByteArray img;
+    img.append(aSize + " " + image);
+    /*QByteArray message;
+    message.append(REGISTRATION_MESSAGE).append(uname).append(pword).append(img);*/
+
+    QDataStream out(socket);
+    socket->write(REGISTRATION_MESSAGE);
+
+    //username
+    socket->write(" ");
+    out << username.size();
+    socket->write(" ");
+    socket->write(username.toLocal8Bit());
+    socket->write(" ");
+
+    //password
+    out << password.size();
+    socket->write(" ");
+    socket->write(password.toLocal8Bit());
+    socket->write(" ");
+
+    //avatar
+    out << pix.toImage().sizeInBytes();
+    socket->write(" ");
+    socket->write(image);
+
+
+    qDebug() << username << " " << password << " " << aSize;
+    qDebug() << sizeof(pix.toImage().sizeInBytes());
+    qDebug() << sizeof(username.size());
+    //socket->write(message);
+    //qDebug() << image;
 }

@@ -17,7 +17,8 @@ void Thread::addSocket(qintptr socketDescriptor){
     }
 
     /* insert new socket into structure */
-    sockets.push_back(std::shared_ptr<QTcpSocket>(soc));
+    //sockets.push_back(std::shared_ptr<QTcpSocket>(soc));
+    sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
     qDebug() << "size" << sockets.size();
 
     /* connect socket and signal */
@@ -103,6 +104,8 @@ void Thread::disconnected(QTcpSocket *soc){
 
     soc->deleteLater();
     /* TO-DO: delete socket in structure */
+
+    sockets.erase(soc->socketDescriptor());
 }
 
 bool Thread::writeOkMessage(QTcpSocket *soc){

@@ -1,3 +1,5 @@
+#include <QDataStream>
+#include <QPixmap>
 #include "Server.h"
 
 Server::Server(QObject *parent):QTcpServer(parent){}
@@ -21,7 +23,12 @@ void Server::connection(){
     *c = connect(soc, &QTcpSocket::readyRead, this, [this,c,soc]{
 
 
-        QByteArray data = soc->read(5);
+        QByteArray data;
+        if (!readChunck(soc, data, 5)){
+            writeErrMessage(soc);
+        }
+
+        qDebug() << data;
 
         if (data.toStdString() == LOGIN_MESSAGE){
             qDebug() << "ok, login";
@@ -29,8 +36,12 @@ void Server::connection(){
                 writeOkMessage(soc);
 
                 qintptr socketDescriptor = soc->socketDescriptor();
-                soc->waitForReadyRead(3000);
-                data = soc->read(5);
+
+                if (!readChunck(soc, data, 5)){
+                    qDebug() << data;
+                    writeErrMessage(soc);
+                }
+
                 if (data.toStdString() == REQUEST_FILE_MESSAGE){
                     /* disconnect from main thread */
                     disconnect(*c);
@@ -41,6 +52,7 @@ void Server::connection(){
                 }else{
                     //error in file request phase
                     qDebug() << "err, file";
+                    qDebug() << data;
                     writeErrMessage(soc);
                 }
             }else{
@@ -48,7 +60,9 @@ void Server::connection(){
                 qDebug() << "error login";
                 writeErrMessage(soc);
             }
-        }else {
+        }else if (data.toStdString() == REGISTRATION_MESSAGE){
+            registration(soc);
+        }else{
             qDebug() << "error message";
             writeErrMessage(soc);
         }
@@ -82,6 +96,70 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
     }
 
     writeOkMessage(soc);
+}
+
+bool Server::registration(QTcpSocket *soc){
+    if (soc == nullptr){
+        return false;
+    }
+
+    QDataStream in(soc);
+
+    soc->read(1);               // " "
+    int sizeUsername;
+    in >> sizeUsername;
+    soc->read(1);               // " "
+
+    //username
+    QByteArray username;
+    if (!readChunck(soc, username, sizeUsername)){
+        writeErrMessage(soc);
+    }
+    soc->read(1);               // " "
+
+    int sizePassword;
+    in >> sizePassword;
+    soc->read(1);// " "
+
+    //password
+    QByteArray password;
+    if (!readChunck(soc, password, sizePassword)){
+        writeErrMessage(soc);
+    }
+    soc->read(1);               // " "
+
+    qsizetype sizeAvatar;
+    in >> sizeAvatar;
+    soc->read(1);
+
+    qDebug() << username << " " << sizeUsername;
+    qDebug() << password << " " << sizePassword;
+    qDebug() << "avatar size" << sizeAvatar;
+
+    //avatar
+    QByteArray avatarDef;
+
+    if (readChunck(soc, avatarDef, sizeAvatar)){
+        writeOkMessage(soc);
+    }else{
+        writeErrMessage(soc);
+    }
+
+    qDebug() << "avatar size" << sizeAvatar << " size read" << avatarDef.size();
+}
+
+bool Server::readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size){
+    result = QByteArray();
+    qsizetype read = 0, left = size;
+
+    while (left != 0){
+        soc->waitForReadyRead(3000);
+        QByteArray resultI = soc->read(left);
+        read = resultI.size();
+        result.append(resultI);
+        left -= read;
+    }
+    return left == 0;
 }
 
 bool Server::writeOkMessage(QTcpSocket *soc){

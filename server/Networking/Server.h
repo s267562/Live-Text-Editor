@@ -23,6 +23,8 @@ private:
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool writeOkMessage(QTcpSocket *soc);
     bool writeErrMessage(QTcpSocket *soc);
+    bool registration(QTcpSocket *soc);
+    bool readChunck(QTcpSocket *soc, QByteArray& result, qsizetype size);
 
 signals:
 
