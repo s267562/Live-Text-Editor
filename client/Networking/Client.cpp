@@ -36,6 +36,8 @@ void Client::onReadyRead(){
         }
     }else if (datas.toStdString() == INSERT_MESSAGE){
         readInsert();
+    }else if (datas.toStdString() == DELETE_MESSAGE){
+        readDelete();
     }
 }
 
@@ -75,7 +77,7 @@ void Client::requestForFile(QString fileName){
     }
 }
 
-void Client::insert(QString str, QString siteId,int pos){
+void Client::insert(QString str, QString siteId, int pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
         QByteArray data;
@@ -83,7 +85,7 @@ void Client::insert(QString str, QString siteId,int pos){
         data.append(" ");
         in << str.size();
 
-        data.append(" " + str + " " + siteId.size()+ " " + siteId + " " + pos);
+        data.append(" " + str + " " + siteId.size() + " " + siteId + " " + pos);
         message.append(data);
         qDebug() << message;
         messages.push(message);
@@ -130,6 +132,40 @@ bool Client::readInsert(){
     return true;
 }
 
+bool Client::readDelete(){
+    qDebug() << "-------------DEL-------------";
+    bool ok;
+    QDataStream in(socket);
+    int sizeString;
+    in >> sizeString;
+    socket->read(1);
+    QByteArray letter = socket->read(sizeString);
+    socket->read(1);
+
+    //siteID
+    QByteArray sizeSiteId = socket->read(1);
+    socket->read(1);
+    QByteArray siteID = socket->read(sizeSiteId.toHex().toInt(&ok,16));
+    qDebug()<< siteID << " size" << sizeSiteId.toHex().toInt(&ok,16);
+    socket->read(1);
+
+    QByteArray size = socket->read(1);
+
+    qDebug() << " size pos:" << size.toHex().toInt(&ok,16);
+    socket->read(1);
+    std::vector<int> position;
+    qDebug() << letter;
+
+    for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
+        int pos = socket->read(1).toHex().toInt(&ok,16);
+        position.push_back(pos);
+        qDebug() << " pos:" << pos;
+        if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
+            socket->read(1);
+        }
+    }
+    return true;
+}
 /*void Client::insert(QString str, std::vector<Identifier> pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
@@ -184,11 +220,11 @@ void Client::insert(QString str, std::vector<int> pos){
     }
 }*/
 
-void Client::deleteChar(QString str, std::vector<int> pos){
+void Client::deleteChar(QString str, QString siteId, std::vector<int> pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
         QByteArray data;
-        data.append(" " + str + " " + pos.size() + " ");
+        data.append(" " + str + " "  + siteId.size() + " " + siteId + " " + pos.size() + " ");
         QByteArray position;
 
         for (int i = 0; i < pos.size(); i++){
@@ -211,11 +247,11 @@ void Client::deleteChar(QString str, std::vector<int> pos){
     }
 }
 
-void Client::deleteChar(QString str, std::vector<Identifier> pos){
+void Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
         QByteArray data;
-        data.append(" " + str + " " + pos.size() + " ");
+        data.append(" " + str + " "  + siteId.size() + " " + siteId + " " + pos.size() + " ");
         QByteArray position;
 
         for (int i = 0; i < pos.size(); i++){
@@ -229,6 +265,7 @@ void Client::deleteChar(QString str, std::vector<Identifier> pos){
         //message.append(data.size());
         message.append(data);
         qDebug() << message;
+
         messages.push(message);
         if (reciveOkMessage){
             reciveOkMessage = false;
