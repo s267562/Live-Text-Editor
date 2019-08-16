@@ -4,6 +4,7 @@
 #include <QTcpSocket>
 #include "../Utils/Constants.h"
 #include "../../client/utils/Identifier.h"
+#include "common/commonFunctions.h"
 
 class Thread : public QThread{
 Q_OBJECT
@@ -17,12 +18,8 @@ public:
 private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
-    bool writeOkMessage(QTcpSocket *soc);
-    bool writeErrMessage(QTcpSocket *soc);
     void insert(QString str, QString siteId, std::vector<int> pos);
     void deleteChar(QString str, QString siteId, std::vector<int> pos);
-    //void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
-    //void insert(QString str, std::vector<Identifier> pos);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

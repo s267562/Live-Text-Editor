@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<int> numbers{1,2,3,4,5};
     c.deleteChar("c", "123", numbers);
-    //c.insert("c", "123", 1);
+    c.insert("c", "123", 1);
     //c.logOut();
     //c.deleteChar("c", 1);
     //c.deleteChar("c", numbers);

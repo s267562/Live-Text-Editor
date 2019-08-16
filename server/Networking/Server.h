@@ -7,6 +7,7 @@
 #include <QTcpSocket>
 #include "Thread.h"
 #include "../Utils/Constants.h"
+#include "common/commonFunctions.h"
 
 class Server: public QTcpServer{
     Q_OBJECT
@@ -21,10 +22,7 @@ public:
 private:
     bool logIn();
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
-    bool writeOkMessage(QTcpSocket *soc);
-    bool writeErrMessage(QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
-    bool readChunck(QTcpSocket *soc, QByteArray& result, qsizetype size);
 
 signals:
 
