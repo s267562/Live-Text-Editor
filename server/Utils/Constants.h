@@ -1,6 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define TIMEOUT 15000
 #define OK_MESSAGE "OKY\r\n"
 #define ERR_MESSAGE "ERR\r\n"
 #define LOGIN_MESSAGE "LIN\r\n"

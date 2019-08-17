@@ -44,7 +44,7 @@ add_executable(server
         server/Networking/Server.h
         server/Networking/Thread.cpp
         server/Networking/Thread.h
-        server/utils/Constants.h server/Networking/common/commonFunctions.h server/Networking/common/commonFunctions.cpp)
+        server/utils/Constants.h server/Networking/common/commonFunctions.h server/Networking/common/commonFunctions.cpp server/Networking/message/Message.h)
 
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})

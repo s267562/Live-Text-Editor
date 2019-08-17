@@ -9,7 +9,13 @@ bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size){
     qsizetype read = 0, left = size;
 
     while (left != 0){
-        soc->waitForReadyRead(3000);
+        if (soc->bytesAvailable() == 0 ){
+            if (!soc->waitForReadyRead(TIMEOUT)){
+                qDebug() << "Timeout! " << soc;
+                return false;
+            }
+        }
+
         QByteArray resultI = soc->read(left);
         read = resultI.size();
         result.append(resultI);
@@ -26,7 +32,7 @@ bool writeOkMessage(QTcpSocket *soc){
     }
 
     soc->write(OK_MESSAGE);
-    if (soc->waitForBytesWritten(30)){
+    if (soc->waitForBytesWritten(TIMEOUT)){
         qDebug() << "Ok, scritto";
         return true;
     }else{
@@ -41,7 +47,7 @@ bool writeErrMessage(QTcpSocket *soc){
     }
 
     soc->write(ERR_MESSAGE);
-    if (soc->waitForBytesWritten(30)){
+    if (soc->waitForBytesWritten(TIMEOUT)){
         qDebug() << "Err, scritto";
         return true;
     }else{

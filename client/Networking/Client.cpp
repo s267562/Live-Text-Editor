@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "../utils/Identifier.h"
+
 #include <QFile>
 #include <QPixmap>
 
@@ -110,25 +111,32 @@ bool Client::readInsert(){
     //siteID
     QByteArray sizeSiteId = socket->read(1);
     socket->read(1);
-    QByteArray siteID = socket->read(sizeSiteId.toHex().toInt(&ok,16));
-    qDebug()<< siteID << " size" << sizeSiteId.toHex().toInt(&ok,16);
+    QByteArray siteId = socket->read(sizeSiteId.toHex().toInt(&ok,16));
+    qDebug()<< siteId << " size" << sizeSiteId.toHex().toInt(&ok,16);
     socket->read(1);
 
     QByteArray size = socket->read(1);
 
     qDebug() << " size pos:" << size.toHex().toInt(&ok,16);
     socket->read(1);
-    std::vector<int> position;
+    std::vector<Identifier> position;
     qDebug() << letter;
 
     for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
         int pos = socket->read(1).toHex().toInt(&ok,16);
-        position.push_back(pos);
+        Identifier identifier(pos, siteId.toStdString());
+        position.push_back(identifier);
         qDebug() << " pos:" << pos;
         if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
             socket->read(1);
         }
     }
+
+    Character character(letter[0], 0, siteId.toStdString(), position);
+    Message message(character, socket->socketDescriptor(), INSERT);
+    incomingMessagesQueue.push(message);
+    /* TO-DO: emit signal */
+
     return true;
 }
 
@@ -145,25 +153,32 @@ bool Client::readDelete(){
     //siteID
     QByteArray sizeSiteId = socket->read(1);
     socket->read(1);
-    QByteArray siteID = socket->read(sizeSiteId.toHex().toInt(&ok,16));
-    qDebug()<< siteID << " size" << sizeSiteId.toHex().toInt(&ok,16);
+    QByteArray siteId = socket->read(sizeSiteId.toHex().toInt(&ok,16));
+    qDebug()<< siteId << " size" << sizeSiteId.toHex().toInt(&ok,16);
     socket->read(1);
 
     QByteArray size = socket->read(1);
 
     qDebug() << " size pos:" << size.toHex().toInt(&ok,16);
     socket->read(1);
-    std::vector<int> position;
+    std::vector<Identifier> position;
     qDebug() << letter;
 
     for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
         int pos = socket->read(1).toHex().toInt(&ok,16);
-        position.push_back(pos);
+        Identifier identifier(pos, siteId.toStdString());
+        position.push_back(identifier);
         qDebug() << " pos:" << pos;
         if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
             socket->read(1);
         }
     }
+
+    Character character(letter[0], 0, siteId.toStdString(), position);
+    Message message(character, socket->socketDescriptor(), DELETE);
+    incomingMessagesQueue.push(message);
+    /* TO-DO: emit signal */
+
     return true;
 }
 /*void Client::insert(QString str, std::vector<Identifier> pos){
@@ -275,7 +290,7 @@ void Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos
     }
 }
 
-void Client::deleteChar(QString str, int pos){
+/*void Client::deleteChar(QString str, int pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
         QByteArray data;
@@ -290,7 +305,7 @@ void Client::deleteChar(QString str, int pos){
             messages.pop();
         }
     }
-}
+}*/
 
 bool Client::writeOnSocket(QString str){
     if (this->socket->state() == QTcpSocket::ConnectedState){
