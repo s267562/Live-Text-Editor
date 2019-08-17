@@ -20,7 +20,7 @@ public:
     void startServer(quint16 port);
 
 private:
-    bool logIn();
+    bool logIn(QTcpSocket *soc);
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
 

@@ -44,8 +44,21 @@ void Client::onReadyRead(){
 
 void Client::logIn(QString username, QString password){
     if (!clientIsLogged){
-        writeOnSocket(QString(LOGIN_MESSAGE));
+        //writeOnSocket(QString(LOGIN_MESSAGE));
         /* TO-DO: send username and password */
+        QByteArray message(LOGIN_MESSAGE);
+        QByteArray data;
+        QDataStream in(&data,  QIODevice::WriteOnly);
+        data.append(" ");
+        in << username.size();
+
+        //data.append(" " + username.size());
+        data.append(" "+ username + " " + password.size() + " " + password);
+        message.append(data);
+        qDebug() << message;
+
+        socket->write(message);
+
         clientIsLogged = true;
     }
 }

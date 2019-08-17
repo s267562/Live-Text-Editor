@@ -9,12 +9,15 @@
 #include "common/commonFunctions.h"
 #include "message/Message.h"
 
+class Identifier;
+class Character;
+
 class Thread : public QThread{
 Q_OBJECT
 private:
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
     std::queue<Message> messagesQueue;
-    
+
 public:
     explicit Thread(QObject *parent = nullptr);
     void run();

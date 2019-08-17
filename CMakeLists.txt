@@ -24,6 +24,8 @@ list(REMOVE_DUPLICATES LIBRARIES)
 
 add_executable(client
         client/textEditor.qrc
+        client/ui/login.ui
+        client/ui/login.cpp
         client/main.cpp
         client/Editor.cpp client/Editor.h
         client/CRDT.cpp client/CRDT.h
@@ -44,6 +46,10 @@ add_executable(server
         server/Networking/Server.h
         server/Networking/Thread.cpp
         server/Networking/Thread.h
+        client/utils/Identifier.h
+        client/utils/Identifier.cpp
+        client/utils/Character.h
+        client/utils/Character.cpp
         server/utils/Constants.h server/Networking/common/commonFunctions.h server/Networking/common/commonFunctions.cpp server/Networking/message/Message.h)
 
 target_link_libraries(client ${LIBRARIES})

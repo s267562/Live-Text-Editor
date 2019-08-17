@@ -1,6 +1,8 @@
 #include "Thread.h"
-#include "../../client/utils/Identifier.h"
 #include <QDataStream>
+
+class Identifier;
+class Character;
 
 Thread::Thread(QObject *parent):QThread(parent){}
 

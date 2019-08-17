@@ -32,7 +32,7 @@ void Server::connection(){
 
         if (data.toStdString() == LOGIN_MESSAGE){
             qDebug() << "ok, login";
-            if (logIn()){
+            if (logIn(soc)){
                 writeOkMessage(soc);
 
                 qintptr socketDescriptor = soc->socketDescriptor();
@@ -69,8 +69,39 @@ void Server::connection(){
     }, Qt::DirectConnection);
 }
 
-bool Server::logIn(){
+bool Server::logIn(QTcpSocket *soc){
     /* read user and password on socket*/
+    bool ok;
+    QByteArray data;
+    QDataStream in(soc);
+    data.append(" ");
+    /*in << str.size();
+    soc->read(1);*/
+    int usernameSize; /*= soc->read(1).toHex().toInt(&ok,16);*/
+    in >> usernameSize;
+
+    qDebug() << "usernameSize: " <<usernameSize;
+
+    soc->read(1);
+    QByteArray username;
+    if (!readChunck(soc, username, usernameSize)){
+        return false;
+    }
+    soc->read(1);
+
+    int passwordSize = soc->read(1).toHex().toInt(&ok,16);
+    soc->read(1);
+
+    qDebug() << "passwordSize: " <<usernameSize;
+
+    QByteArray password;
+    if (!readChunck(soc, password, passwordSize)){
+        return false;
+    }
+
+    qDebug() << "username: " << username << " password: " << password;
+
+    
     return true;
 }
 
