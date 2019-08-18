@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
 
     //c.logIn("username","password");
     //c.requestForFile("CiaoTy!");
-
-    std::vector<int> numbers{1,2,3,4,5};
+    
+    //std::vector<int> numbers{1,2,3,4,5};
     /*c.deleteChar("c", "123", numbers);
     c.insert("c", "123", 1);*/
     //c.logOut();
@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
     login.setClient(&c);
     login.show();
     c.connectTo("127.0.0.1");
+    //c.logIn("username","password");
     c.requestForFile("CiaoTy!");
     c.insert("c", "123", 1);
 

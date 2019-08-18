@@ -30,9 +30,9 @@ void Thread::addSocket(qintptr socketDescriptor){
         Thread::readyRead(soc);
     }, Qt::DirectConnection);
 
-    connect(soc, &QAbstractSocket::disconnected, this, [this,soc](){
+    connect(soc, &QAbstractSocket::disconnected, this, [this,soc, socketDescriptor](){
         qDebug() << soc;
-        Thread::disconnected(soc);
+        Thread::disconnected(soc,socketDescriptor);
     }, Qt::DirectConnection);
 
     qDebug() << socketDescriptor << " Client connected" << soc;
@@ -262,9 +262,10 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
     }
 }
 
-void Thread::disconnected(QTcpSocket *soc){
-    qDebug() << soc->socketDescriptor() << " Disconnected";
-
-    soc->deleteLater();
+void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor){
+    qDebug() << socketDescriptor << " Disconnected";
+    QTcpSocket socket;
+    socket.setSocketDescriptor(socketDescriptor);
+    socket.deleteLater();
     sockets.erase(soc->socketDescriptor());
 }

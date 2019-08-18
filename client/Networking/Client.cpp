@@ -21,6 +21,7 @@ bool Client::connectTo(QString host){
         emit errorConnection();
         return false;
     }
+    socketDescriptor = socket->socketDescriptor();
     qDebug() << socket->socketDescriptor() <<" connected";
     return true;
 }
@@ -353,11 +354,12 @@ bool Client::writeOnSocket(std::string str){
 }
 
 void Client::onDisconnect(){
-    qDebug() << socket->socketDescriptor() <<" Disconnected";
-
-    if (socket != nullptr){
-        socket->deleteLater();
-    }
+    qDebug() << socketDescriptor <<" Disconnected";
+    
+    QTcpSocket soc;
+    soc.setSocketDescriptor(socketDescriptor);
+    soc.deleteLater();
+    
     //emit errorConnection();
 }
 

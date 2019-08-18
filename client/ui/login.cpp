@@ -15,7 +15,7 @@ void Login::setClient(Client *client) {
     this->client = client;
     connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
     connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
-    //connect(this, &Login::disconnect, this->client, &Client::onDisconnect);
+    connect(this, &Login::disconnect, this->client, &Client::onDisconnect);
 }
 
 void Login::on_pushButton_clicked()
@@ -41,6 +41,6 @@ void Login::loginFailed(){
 }
 
 void Login::closeEvent(QCloseEvent *event){
-    //emit disconnect();
+    emit disconnect();
     //client->logOut();
 }

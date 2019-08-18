@@ -35,7 +35,7 @@ signals:
 
 public slots:
     void readyRead(QTcpSocket *socket);
-    void disconnected(QTcpSocket *socket);
+    void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
 };
 
 #endif // THREAD_H

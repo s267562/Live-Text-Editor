@@ -14,6 +14,7 @@ class Client: public QObject{
     Q_OBJECT
 private:
     QTcpSocket *socket;
+    qintptr socketDescriptor;
     bool reciveOkMessage;
     bool clientIsLogged;
     std::queue<QByteArray> messages;
