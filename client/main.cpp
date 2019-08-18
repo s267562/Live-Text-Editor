@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     Client c(&app);
-    c.connectTo("127.0.0.1");
+
     //c.logIn("username","password");
     //c.requestForFile("CiaoTy!");
 
@@ -25,6 +25,9 @@ int main(int argc, char *argv[]) {
     Login login;
     login.setClient(&c);
     login.show();
+    c.connectTo("127.0.0.1");
+    c.requestForFile("CiaoTy!");
+    c.insert("c", "123", 1);
 
     /*Q_INIT_RESOURCE(textEditor);
 

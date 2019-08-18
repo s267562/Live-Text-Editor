@@ -16,36 +16,50 @@ Client::Client(QObject *parent):QObject (parent){
 
 bool Client::connectTo(QString host){
     socket->connectToHost(host, 1234);
-    return socket->waitForConnected();      /* possibile gestione con un eccezione per il retry */
+    //return socket->waitForConnected();      /* possibile gestione con un eccezione per il retry */
+    if (!socket->waitForConnected(30)){
+        emit errorConnection();
+        return false;
+    }
+    qDebug() << socket->socketDescriptor() <<" connected";
+    return true;
 }
 
 void Client::onReadyRead(){
     QByteArray datas = socket->read(5);
     qDebug() << datas;
-    if (datas.toStdString() == OK_MESSAGE){
-        if (!messages.empty()){
-            QByteArray message = messages.front();
-            if (message == LOGOUT_MESSAGE){
-                socket->deleteLater();
-                return;
+
+    if (datas.toStdString() == OK_MESSAGE && !clientIsLogged){
+        clientIsLogged = true;
+    }else if (!clientIsLogged && datas.toStdString() == ERR_MESSAGE){
+        emit loginFailed();
+        return;
+    }
+
+    if (clientIsLogged){
+        if (datas.toStdString() == OK_MESSAGE){
+            if (!messages.empty()){
+                QByteArray message = messages.front();
+                if (message == LOGOUT_MESSAGE){
+                    socket->deleteLater();
+                    return;
+                }
+                messages.pop();
+                socket->write(message);
+                reciveOkMessage = false;
+            }else{
+                reciveOkMessage = true;
             }
-            messages.pop();
-            socket->write(message);
-            reciveOkMessage = false;
-        }else{
-            reciveOkMessage = true;
+        }else if (datas.toStdString() == INSERT_MESSAGE){
+            readInsert();
+        }else if (datas.toStdString() == DELETE_MESSAGE){
+            readDelete();
         }
-    }else if (datas.toStdString() == INSERT_MESSAGE){
-        readInsert();
-    }else if (datas.toStdString() == DELETE_MESSAGE){
-        readDelete();
     }
 }
 
 void Client::logIn(QString username, QString password){
     if (!clientIsLogged){
-        //writeOnSocket(QString(LOGIN_MESSAGE));
-        /* TO-DO: send username and password */
         QByteArray message(LOGIN_MESSAGE);
         QByteArray data;
         QDataStream in(&data,  QIODevice::WriteOnly);
@@ -58,8 +72,6 @@ void Client::logIn(QString username, QString password){
         qDebug() << message;
 
         socket->write(message);
-
-        clientIsLogged = true;
     }
 }
 
@@ -341,10 +353,12 @@ bool Client::writeOnSocket(std::string str){
 }
 
 void Client::onDisconnect(){
-    qDebug() << "Disconnected";
+    qDebug() << socket->socketDescriptor() <<" Disconnected";
+
     if (socket != nullptr){
         socket->deleteLater();
     }
+    //emit errorConnection();
 }
 
 void Client::registration(QString username, QString password, QString pathAvatar){

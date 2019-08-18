@@ -21,10 +21,19 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    void errorConnection();
+    void loginFailed();
+    //void loginDone();
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
+signals:
+    void disconnect();
 
 private:
     Ui::Login *ui;
-    std::shared_ptr<Client> client;
+    Client* client;
 };
 
 #endif // MAINWINDOW_H

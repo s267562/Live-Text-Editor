@@ -33,7 +33,7 @@ void Thread::addSocket(qintptr socketDescriptor){
     connect(soc, &QAbstractSocket::disconnected, this, [this,soc](){
         qDebug() << soc;
         Thread::disconnected(soc);
-    });
+    }, Qt::DirectConnection);
 
     qDebug() << socketDescriptor << " Client connected" << soc;
 }

@@ -11,4 +11,9 @@
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 
+enum SocketState{
+    UNLOGGED,
+    LOGGED
+};
+
 #endif // CONSTANTS_H

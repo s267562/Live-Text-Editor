@@ -13,6 +13,7 @@ class Server: public QTcpServer{
     Q_OBJECT
 private:
     std::map<std::string,std::shared_ptr<Thread>> threads;
+    std::map<qintptr, SocketState> socketsState;
     QTcpSocket *socket;
 
 public:

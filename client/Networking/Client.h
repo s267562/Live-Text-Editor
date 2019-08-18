@@ -40,6 +40,10 @@ public:
 public slots:
     void onReadyRead();
     void onDisconnect();
+
+signals:
+    void errorConnection();
+    void loginFailed();
 };
 
 #endif // CLIENT_H
