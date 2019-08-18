@@ -161,8 +161,8 @@ bool Client::readInsert(){
     Character character(letter[0], 0, siteId.toStdString(), position);
     Message message(character, socket->socketDescriptor(), INSERT);
     incomingMessagesQueue.push(message);
-    /* TO-DO: emit signal */
 
+    emit newMessage();
     return true;
 }
 
@@ -203,8 +203,8 @@ bool Client::readDelete(){
     Character character(letter[0], 0, siteId.toStdString(), position);
     Message message(character, socket->socketDescriptor(), DELETE);
     incomingMessagesQueue.push(message);
-    /* TO-DO: emit signal */
 
+    emit newMessage();
     return true;
 }
 /*void Client::insert(QString str, std::vector<Identifier> pos){
@@ -355,11 +355,11 @@ bool Client::writeOnSocket(std::string str){
 
 void Client::onDisconnect(){
     qDebug() << socketDescriptor <<" Disconnected";
-    
+
     QTcpSocket soc;
     soc.setSocketDescriptor(socketDescriptor);
     soc.deleteLater();
-    
+
     //emit errorConnection();
 }
 

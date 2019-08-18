@@ -106,6 +106,7 @@ bool Thread::readInsert(QTcpSocket *soc){
         Message message(character, soc->socketDescriptor(), INSERT);
         messagesQueue.push(message);
         /* TO-DO: emit signal */
+        emit newMessage();
     }
 
     return true;
@@ -153,8 +154,8 @@ bool Thread::readDelete(QTcpSocket *soc){
     Character character(letter[0], 0, siteId.toStdString(), position);
     Message message(character, soc->socketDescriptor(), DELETE);
     messagesQueue.push(message);
-    /* TO-DO: emit signal */
-
+    
+    emit newMessage();
     return true;
 }
 

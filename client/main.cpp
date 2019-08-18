@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
     //c.logIn("username","password");
     //c.requestForFile("CiaoTy!");
-    
+
     //std::vector<int> numbers{1,2,3,4,5};
     /*c.deleteChar("c", "123", numbers);
     c.insert("c", "123", 1);*/

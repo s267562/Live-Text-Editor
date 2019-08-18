@@ -32,6 +32,7 @@ private:
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
+    void newMessage();
 
 public slots:
     void readyRead(QTcpSocket *socket);

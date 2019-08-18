@@ -7,6 +7,8 @@
 Controller::Controller(CRDT *crdt, Editor *editor) : crdt(crdt), editor(editor) {
     editor->setController(this);
     crdt->setController(this);
+
+    // TO-DO: connect(client, &Client::newMessage, this, &Controller::/* metodo che vuoi richimare della classe */);
 }
 
 /**

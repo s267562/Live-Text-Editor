@@ -45,6 +45,7 @@ public slots:
 signals:
     void errorConnection();
     void loginFailed();
+    void newMessage();
 };
 
 #endif // CLIENT_H
