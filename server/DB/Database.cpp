@@ -25,6 +25,7 @@ Database::Database() {
 		qDebug() << "Error opening DB";
 
 	// Check DB was created empty
+
 	QString checkEmptyQuery = "SELECT * FROM sqlite_master WHERE name = 'users' OR name = 'files'";
 
 	// CREATE TABLE query string
@@ -44,6 +45,7 @@ Database::Database() {
 			"write INT,"
 			"PRIMARY KEY (fileID, username));";
 
+
 	// Query executions
 	QSqlQuery qry;
 	if (qry.exec(checkEmptyQuery)) { // check db is empty
@@ -53,9 +55,11 @@ Database::Database() {
 			qDebug() << "DB need table creation";
 			// Query execution
 			if (!qry.exec(createTableQuery))
+
 				qDebug() << "Error creating table users";
 			if (!qry.exec(createTableQueryFiles))
 				qDebug() << "Error creating table files\n" << qry.lastError();
+
 		}
 
 	}
@@ -110,12 +114,13 @@ bool Database::registerUser(QString username, QString password) {
 	db.open();
 
 	QString querySelect = "SELECT * FROM users WHERE username='" + hashedUsername + "'";
-	QSqlQuery checkUsernameQuery;
+QSqlQuery checkUsernameQuery;
 
 	if (checkUsernameQuery.exec(querySelect)) {
 		if (checkUsernameQuery.isActive()) {
 			if (!checkUsernameQuery.next()) {
 				// Username free for use, we can register the user
+
 				QString salt = generateSalt();
 				QString hashedPassword = hashPassword(std::move(password), salt);
 
@@ -125,6 +130,7 @@ bool Database::registerUser(QString username, QString password) {
 							"password,"
 							"salt)"
 							"VALUES (?,?,?);");
+
 
 				qry.addBindValue(hashedUsername);
 				qry.addBindValue(hashedPassword);
@@ -146,6 +152,7 @@ bool Database::registerUser(QString username, QString password) {
  * @param password : password given
  * @return : true if all correct
  */
+
 bool Database::authenticateUser(QString username, QString password) {
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
@@ -155,7 +162,9 @@ bool Database::authenticateUser(QString username, QString password) {
 
 	QSqlQuery authenticationQuery;
 	authenticationQuery.prepare("SELECT username, password, salt FROM users WHERE username=:username");
+
 	authenticationQuery.bindValue(":username", hashedUsername);
+
 
 	if (authenticationQuery.exec()) {
 		if (authenticationQuery.isActive()) {

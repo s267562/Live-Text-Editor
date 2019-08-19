@@ -12,6 +12,7 @@
 #include <QTextEdit>
 #include <iostream>
 
+
 class Editor : public QMainWindow {
 public:
     Editor(std::string siteId, QWidget *parent = nullptr);
