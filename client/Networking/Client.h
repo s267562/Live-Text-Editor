@@ -8,6 +8,7 @@
 #include "../utils/Constants.h"
 #include "../utils/Identifier.h"
 #include "../utils/Character.h"
+#include "../utils/Pos.h"
 #include "message/Message.h"
 
 class Client: public QObject{
@@ -23,7 +24,7 @@ private:
 public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
-    void insert(QString, QString, int pos);
+    void insert(QString, QString, Pos pos);
     /*void insert(QString, std::vector<Identifier> pos);                        // Testing
     void insert(QString str, std::vector<int> pos);                             // Testing
     void deleteChar(QString, int pos);*/                                        // Testing

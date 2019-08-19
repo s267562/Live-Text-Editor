@@ -104,7 +104,7 @@ void Client::requestForFile(QString fileName){
     }
 }
 
-void Client::insert(QString str, QString siteId, int pos){
+void Client::insert(QString str, QString siteId, Pos pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
         QByteArray data;
@@ -112,7 +112,7 @@ void Client::insert(QString str, QString siteId, int pos){
         data.append(" ");
         in << str.size();
 
-        data.append(" " + str + " " + siteId.size() + " " + siteId + " " + pos);
+        data.append(" " + str + " " + siteId.size() + " " + siteId + " " + pos.getCh() + " " + pos.getLine());
         message.append(data);
         qDebug() << message;
         messages.push(message);

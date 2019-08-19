@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     c.connectTo("127.0.0.1");
     //c.logIn("username","password");
     c.requestForFile("CiaoTy!");
-    c.insert("c", "123", 1);
+    c.insert("c", "123", Pos(1,1));
 
     /*Q_INIT_RESOURCE(textEditor);
 

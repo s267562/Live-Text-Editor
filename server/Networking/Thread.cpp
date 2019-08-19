@@ -90,24 +90,30 @@ bool Thread::readInsert(QTcpSocket *soc){
     qDebug()<< siteId << " size" << sizeSiteId.toHex().toInt(&ok,16);
     soc->read(1);
 
-    QByteArray pos;
-    if (!readChunck(soc, pos, 1)){
+    QByteArray posCh;
+    if (!readChunck(soc, posCh, 1)){
         return false;
     }
-    qDebug()<< letter << " pos" << pos.toHex().toInt(&ok,16);
-    int posInt = pos.toHex().toInt(&ok,16);
+    soc->read(1);
+    QByteArray posLine;
+    if (!readChunck(soc, posLine, 1)){
+        return false;
+    }
+    qDebug()<< letter << " posCh" << posCh.toHex().toInt(&ok,16) << " posLine" << posLine.toHex().toInt(&ok,16);
+    int posChInt = posCh.toHex().toInt(&ok,16);
+    int posLineInt = posLine.toHex().toInt(&ok,16);
     //soc->read(1);
 
-    for (int i = 0; i < sizeString; i++){
+    /*for (int i = 0; i < sizeString; i++){
         std::vector<Identifier> vectorPos;
         vectorPos.push_back(Identifier(posInt + i,siteId.toStdString()));
 
         Character character(letter[i], 0, siteId.toStdString(), vectorPos);
         Message message(character, soc->socketDescriptor(), INSERT);
         messagesQueue.push(message);
-        /* TO-DO: emit signal */
+        /* TO-DO: emit signal
         emit newMessage();
-    }
+    }*/
 
     return true;
 }
