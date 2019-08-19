@@ -21,8 +21,6 @@ bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size){
         result.append(resultI);
         left -= read;
     }
-
-    qDebug() << read << " " << left;
     return left == 0;
 }
 

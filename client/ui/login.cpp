@@ -4,7 +4,7 @@
 
 Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login){
     ui->setupUi(this);
-
+    ui->label_3->setVisible(false);
 }
 
 Login::~Login(){
@@ -23,13 +23,22 @@ void Login::on_pushButton_clicked()
     QString username = ui->username->text();
     QString password = ui->password->text();
 
-    /*if(username ==  "test" && password == "test") {
-        QMessageBox::information(this, "Login", "Username and password is correct");
-    }else {
-        QMessageBox::warning(this,"Login", "Username and password is not correct");
-    }*/
-
-    client->logIn(username,password);
+    if (ui->username->text() == "" && ui->password->text() == ""){
+        ui->label_3->setText("Insert username and password");
+        ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
+        ui->label_3->setVisible(true);
+    }else if (ui->username->text() == ""){
+        ui->label_3->setText("Insert username");
+        ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
+        ui->label_3->setVisible(true);
+    }else if (ui->password->text() == "") {
+        ui->label_3->setText("Insert password");
+        ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
+        ui->label_3->setVisible(true);
+    }else{
+        client->logIn(username,password);
+        ui->label_3->setVisible(false);
+    }
 }
 
 void Login::errorConnection(){
