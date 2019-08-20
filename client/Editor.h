@@ -12,20 +12,21 @@
 #include <QTextEdit>
 #include <iostream>
 
+class Controller;
 
 class Editor : public QMainWindow {
 public:
-    Editor(std::string siteId, QWidget *parent = nullptr);
+    Editor(QString siteId, QWidget *parent = nullptr);
     void setController(Controller *controller);
-    const std::string &getSiteId() const;
-    QTextEdit *getTextEdit() const;
+    void insertChar(char character, Pos pos);
+    void deleteChar(Pos pos);
 
 private slots:
     void onTextChanged(int position, int charsRemoved, int charsAdded);
 
 private:
     QTextEdit *textEdit;
-    std::string siteId;
+    QString siteId;
     QTextCursor cursor;
     Controller *controller;
 };

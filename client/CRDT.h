@@ -14,38 +14,37 @@
 #include <math.h>
 #include <iostream>
 
-class Controller;
-
 class CRDT {
 public:
-    CRDT(std::string siteId);
-    void setController(Controller *controller);
+    CRDT(QString siteId);
 
-    void handleLocalInsert(char val, Pos pos);
-    void handleLocalDelete(Pos startPos, Pos endPos);
+    std::vector<Character> handleDelete(Pos startPos, Pos endPos);
+    Pos insert(Character character);
+    Pos handleRemoteDelete(const Character &character);
 
 private:
-    Controller *controller;
-    std::string siteId;
+    QString siteId;
     std::vector<std::vector<Character>> structure;
     VersionVector vector;
     static const int base = 32;
 
-    int remoteInsert(Character character);
-    int remoteDelete(char);
-
-    const Character generateChar(char val, Pos pos);
-    const std::vector<Identifier> findPosBefore(Pos pos);
-    const std::vector<Identifier> findPosAfter(Pos pos);
-    std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, std::vector<Identifier> newPos = std::vector<Identifier>{}, int level = 0);
-    int generateIdBetween(int min, int max);
+    // insert
+    Pos findInsertPosition(Character character);
+    Pos findEndPosition(Character lastChar, std::vector<Character> lastLine, int totalLines);
+    int findInsertIndexInLine(Character character, std::vector<Character> line);
     void insertChar(Character character, Pos pos);
+
+    // delete
+    Pos findPosition(Character character);
+    int findIndexInLine(Character character, std::vector<Character> line);
+
 
     std::vector<Character> deleteMultipleLines(Pos startPos, Pos endPos);
     std::vector<Character> deleteSingleLine(Pos startPos, Pos endPos);
     void removeEmptyLines();
 
     void mergeLines(int line);
+
 };
 
 

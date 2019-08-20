@@ -14,7 +14,7 @@
 
 class VersionVector {
 public:
-    VersionVector(std::string siteId);
+    VersionVector(QString siteId = {});
 
     const Version &getLocalVersion() const;
     const std::vector<Version> &getVersions() const;

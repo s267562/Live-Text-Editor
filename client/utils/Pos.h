@@ -15,7 +15,10 @@ public:
     void incrementCh();
     void resetCh();
     void incrementLine();
-
+    operator bool() const {
+        if(ch < 0 || line < 0 ) return false;
+        else return true;
+    }
 
 private:
     int ch; // position in the line

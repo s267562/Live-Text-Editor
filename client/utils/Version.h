@@ -7,18 +7,19 @@
 
 
 #include <string>
+#include <QtCore/QString>
 
 class Version {
 public:
-    Version(std::string siteId);
+    Version(QString siteId);
 
     int getCounter() const;
-    const std::string &getSiteId() const;
+    const QString &getSiteId() const;
     void increment();
 
 private:
     int counter;
-    std::string siteId;
+    QString siteId;
 };
 
 

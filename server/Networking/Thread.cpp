@@ -4,7 +4,7 @@
 class Identifier;
 class Character;
 
-Thread::Thread(QObject *parent):QThread(parent){}
+Thread::Thread(QObject *parent, CRDT *crdt) : QThread(parent), crdt(crdt) {}
 
 void Thread::run(){
     exec();
@@ -102,18 +102,14 @@ bool Thread::readInsert(QTcpSocket *soc){
     qDebug()<< letter << " posCh" << posCh.toHex().toInt(&ok,16) << " posLine" << posLine.toHex().toInt(&ok,16);
     int posChInt = posCh.toHex().toInt(&ok,16);
     int posLineInt = posLine.toHex().toInt(&ok,16);
+    Pos startPos{posChInt, posLineInt};
+
+    for(char c : letter) {
+        Character character = crdt->handleInsert(c, startPos, QString{siteId});
+        // send character (broadcast)
+        this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+    }
     //soc->read(1);
-
-    /*for (int i = 0; i < sizeString; i++){
-        std::vector<Identifier> vectorPos;
-        vectorPos.push_back(Identifier(posInt + i,siteId.toStdString()));
-
-        Character character(letter[i], 0, siteId.toStdString(), vectorPos);
-        Message message(character, soc->socketDescriptor(), INSERT);
-        messagesQueue.push(message);
-        /* TO-DO: emit signal
-        emit newMessage();
-    }*/
 
     return true;
 }
@@ -149,7 +145,7 @@ bool Thread::readDelete(QTcpSocket *soc){
 
     for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
         int pos = soc->read(1).toHex().toInt(&ok,16);
-        Identifier identifier(pos, siteId.toStdString());
+        Identifier identifier(pos, siteId);
         position.push_back(identifier);
         qDebug() << " pos:" << pos;
         if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
@@ -157,11 +153,16 @@ bool Thread::readDelete(QTcpSocket *soc){
         }
     }
 
-    Character character(letter[0], 0, siteId.toStdString(), position);
-    Message message(character, soc->socketDescriptor(), DELETE);
-    messagesQueue.push(message);
-    
-    emit newMessage();
+    Character character(letter[0], 0, siteId, position);
+    // Message message(character, soc->socketDescriptor(), DELETE);
+    // messagesQueue.push(message);
+    // emit newMessage();
+
+    crdt->handleDelete(character);
+
+    // send character (broadcast)
+    this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+
     return true;
 }
 

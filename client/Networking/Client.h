@@ -18,8 +18,11 @@ private:
     qintptr socketDescriptor;
     bool reciveOkMessage;
     bool clientIsLogged;
+
+private:
     std::queue<QByteArray> messages;
-    std::queue<Message> incomingMessagesQueue;
+    std::queue<Message> incomingInsertMessagesQueue;
+    std::queue<Message> incomingDeleteMessagesQueue;
 
 public:
     Client(QObject *parent = nullptr);
@@ -38,6 +41,8 @@ public:
     void requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
+
+    Message getMessage();
 
 public slots:
     void onReadyRead();

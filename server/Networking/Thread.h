@@ -8,6 +8,8 @@
 #include "../../client/utils/Character.h"
 #include "common/commonFunctions.h"
 #include "message/Message.h"
+#include "../../client/utils/Pos.h"
+#include "../CRDT.h"
 
 class Identifier;
 class Character;
@@ -17,9 +19,10 @@ Q_OBJECT
 private:
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
     std::queue<Message> messagesQueue;
+    CRDT *crdt;
 
 public:
-    explicit Thread(QObject *parent = nullptr);
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr);
     void run();
     void addSocket(qintptr socketDescriptor);
 private:

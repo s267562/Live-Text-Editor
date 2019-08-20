@@ -2,9 +2,10 @@
 // Created by simone on 07/08/19.
 //
 
+#include <QtCore/QString>
 #include "VersionVector.h"
 
-VersionVector::VersionVector(std::string siteId) : localVersion(siteId) {
+VersionVector::VersionVector(QString siteId) : localVersion(siteId) {
     this->versions = std::vector<Version> {};
     this->versions.push_back(this->localVersion);
 }

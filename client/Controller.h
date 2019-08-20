@@ -7,21 +7,26 @@
 
 #include "CRDT.h"
 #include "Editor.h"
+#include "Networking/Client.h"
 #include <iostream>
 
 class Editor;
 
-class Controller {
+class Controller : public QObject {
 private:
     CRDT *crdt;
     Editor *editor;
-    std::string siteId;
+    Client *client;
+    QString siteId;
+
+private slots:
+    void newMessage();
 
 public:
-    Controller(CRDT *crdt, Editor *editor);
-    void localInsert(std::vector<char> chars, Pos startPos);
+    Controller(CRDT *crdt, Editor *editor, Client *client);
+    void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
-    // TODO handleRemoteOperation -> remoteInsert, remoteDelete
+    void insertIntoEditor(char character, Pos pos);
 
 };
 

@@ -6,17 +6,20 @@
 #define TEXTEDITOR_IDENTIFIER_H
 
 #include <string>
+#include <QtCore/QString>
 
 class Identifier {
 public:
-    Identifier(int digit, const std::string &siteId);
+    Identifier(int digit, const QString &siteId);
 
     int getDigit() const;
-    const std::string &getSiteId() const;
+    const QString &getSiteId() const;
+
+    int compareTo(Identifier otherIdentifier);
 
 private:
     int digit;
-    std::string siteId;
+    QString siteId;
 };
 
 

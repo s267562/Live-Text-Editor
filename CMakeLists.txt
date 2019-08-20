@@ -39,7 +39,6 @@ add_executable(client
         client/utils/Constants.h)
 
 add_executable(server
-
         server/main.cpp
         server/DB/Database.cpp
         server/DB/Database.h
@@ -47,11 +46,22 @@ add_executable(server
         server/Networking/Server.h
         server/Networking/Thread.cpp
         server/Networking/Thread.h
+        server/CRDT.cpp
+        server/CRDT.h
         client/utils/Identifier.h
         client/utils/Identifier.cpp
         client/utils/Character.h
         client/utils/Character.cpp
-        server/utils/Constants.h server/Networking/common/commonFunctions.h server/Networking/common/commonFunctions.cpp server/Networking/message/Message.h)
+        client/utils/Pos.h
+        client/utils/Pos.cpp
+        client/utils/Version.h
+        client/utils/Version.cpp
+        client/utils/VersionVector.h
+        client/utils/VersionVector.cpp
+        server/Utils/Constants.h
+        server/Networking/common/commonFunctions.h
+        server/Networking/common/commonFunctions.cpp
+        server/Networking/message/Message.h)
 
 
 target_link_libraries(client ${LIBRARIES})

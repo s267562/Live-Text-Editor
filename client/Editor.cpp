@@ -5,7 +5,7 @@
 #include "Editor.h"
 
 
-Editor::Editor(std::string siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent) {
+Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent) {
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
 
@@ -71,14 +71,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         if(charsAdded) {
             QString chars = textEdit->toPlainText().mid(position, charsAdded);
 
-            std::vector<char> charsVector;
-            std::cout << "char(s): ";
-            for (QChar c : chars) {
-                charsVector.push_back(c.toLatin1());
-                if (c.toLatin1() == '\n') std::cout << "\\n ";
-                else std::cout << c.toLatin1() << " ";
-            }
-
             // get start position
             cursor.setPosition(position);
             int line = cursor.blockNumber();
@@ -86,7 +78,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
             Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
 
-            this->controller->localInsert(charsVector, startPos);
+            this->controller->localInsert(chars, startPos);
         }
 
         if(charsRemoved) {
@@ -114,10 +106,24 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     }
 }
 
-const std::string &Editor::getSiteId() const {
-    return siteId;
+void Editor::insertChar(char character, Pos pos) {
+    QTextCursor oldCursor = cursor;
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    cursor.insertText(QString{character});
+
+    this->cursor = oldCursor;
 }
 
-QTextEdit *Editor::getTextEdit() const {
-    return textEdit;
+void Editor::deleteChar(Pos pos) {
+    QTextCursor oldCursor = cursor;
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    cursor.deleteChar();
+
+    this->cursor = oldCursor;
 }

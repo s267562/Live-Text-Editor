@@ -150,7 +150,7 @@ bool Client::readInsert(){
 
     for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
         int pos = socket->read(1).toHex().toInt(&ok,16);
-        Identifier identifier(pos, siteId.toStdString());
+        Identifier identifier(pos, siteId);
         position.push_back(identifier);
         qDebug() << " pos:" << pos;
         if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
@@ -158,9 +158,9 @@ bool Client::readInsert(){
         }
     }
 
-    Character character(letter[0], 0, siteId.toStdString(), position);
+    Character character(letter[0], 0, siteId, position);
     Message message(character, socket->socketDescriptor(), INSERT);
-    incomingMessagesQueue.push(message);
+    incomingInsertMessagesQueue.push(message);
 
     emit newMessage();
     return true;
@@ -192,7 +192,7 @@ bool Client::readDelete(){
 
     for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
         int pos = socket->read(1).toHex().toInt(&ok,16);
-        Identifier identifier(pos, siteId.toStdString());
+        Identifier identifier(pos, siteId);
         position.push_back(identifier);
         qDebug() << " pos:" << pos;
         if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
@@ -200,9 +200,9 @@ bool Client::readDelete(){
         }
     }
 
-    Character character(letter[0], 0, siteId.toStdString(), position);
+    Character character(letter[0], 0, siteId, position);
     Message message(character, socket->socketDescriptor(), DELETE);
-    incomingMessagesQueue.push(message);
+    incomingDeleteMessagesQueue.push(message);
 
     emit newMessage();
     return true;
@@ -410,4 +410,17 @@ void Client::registration(QString username, QString password, QString pathAvatar
     qDebug() << sizeof(username.size());
     //socket->write(message);
     //qDebug() << image;
+}
+
+Message Client::getMessage() {
+    // give priority to insert messages.
+    if(!incomingInsertMessagesQueue.empty()) {
+        Message message = incomingInsertMessagesQueue.front();
+        incomingInsertMessagesQueue.pop();
+        return message;
+    } else {
+        Message message = incomingDeleteMessagesQueue.front();
+        incomingDeleteMessagesQueue.pop();
+        return message;
+    }
 }

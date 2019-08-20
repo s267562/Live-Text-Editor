@@ -4,35 +4,53 @@
 
 #include "Controller.h"
 
-Controller::Controller(CRDT *crdt, Editor *editor) : crdt(crdt), editor(editor) {
+Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client) {
     editor->setController(this);
-    crdt->setController(this);
+
+    // Controller
+    connect(client, &Client::newMessage,
+              this, &Controller::newMessage);
 
     // TO-DO: connect(client, &Client::newMessage, this, &Controller::/* metodo che vuoi richimare della classe */);
 }
 
-/**
- * User inserts character into their local text editor and sends the operation to all other users.
- * The only information needed is the character value and the editor index at which it is inserted.
- * A new character object will then be created using that information and inserted into the CRDT array.
- * Finally, the new character is returned so it can be sent to the other users.
- *
- * @param c
- * @param index
- * @return
- */
-void Controller::localInsert(std::vector<char> chars, Pos startPos) {
-    for(int i = 0; i < chars.size(); i++) {
-        this->crdt->handleLocalInsert(chars[i], startPos);
-
-        startPos.incrementCh();
-        if(chars[i] == '\n') {
-            startPos.incrementLine();
-            startPos.resetCh();
-        }
-    }
+void Controller::localInsert(QString chars, Pos startPos) {
+    // send insert at the server. To insert it in the model we need the position computed by the server.
+    this->client->insert(chars, this->siteId, startPos);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
-    this->crdt->handleLocalDelete(startPos, endPos);
+    std::vector<Character> removedChars = this->crdt->handleDelete(startPos, endPos);
+
+    for(Character c : removedChars) {
+        this->client->deleteChar(QString{c.getValue()}, this->siteId, c.getPosition());
+    }
+}
+
+void Controller::newMessage() {
+    Message message = this->client->getMessage();
+
+    if(message.getType() == INSERT) {
+        Character character = message.getCharacter();
+        // insert into the model
+        Pos pos = this->crdt->insert(character);
+
+        if(character.getSiteId().compare(this->siteId) == 0) { // if QStrings are equal it returns 0
+            // local insert - only in the model; the char is already in the view.
+        } else {
+            // remote insert - the char is to insert in the model and in the view.
+            // insert into the editor.
+            this->editor->insertChar(character.getValue(), pos);
+        }
+
+    } else if(message.getType() == DELETE) {
+        if(!(message.getCharacter().getSiteId() == this->siteId)) {
+            Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
+
+            if(pos) {
+                // delete from the editor.
+                this->editor->deleteChar(pos);
+            }
+        }
+    }
 }

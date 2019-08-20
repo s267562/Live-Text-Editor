@@ -4,13 +4,13 @@
 
 #include "Version.h"
 
-Version::Version(std::string siteId) :siteId(siteId), counter() { }
+Version::Version(QString siteId) : siteId(siteId), counter() { }
 
 int Version::getCounter() const {
     return counter;
 }
 
-const std::string &Version::getSiteId() const {
+const QString &Version::getSiteId() const {
     return siteId;
 }
 

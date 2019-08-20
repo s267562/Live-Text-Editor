@@ -7,21 +7,24 @@
 
 #include <string>
 #include <vector>
+#include <QtCore/QString>
 #include "Identifier.h"
 
 class Character {
 public:
-    Character(char value, int counter, const std::string &siteId, const std::vector<Identifier> &position);
+    Character(char value, int counter, const QString &siteId, const std::vector<Identifier> &position);
 
     char getValue() const;
     int getCounter() const;
-    const std::string &getSiteId() const;
+    const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
+
+    int compareTo(Character otherCharacter);
 
 private:
     char value;
     int counter;
-    std::string siteId;
+    QString siteId;
     std::vector<Identifier> position;
 };
 
