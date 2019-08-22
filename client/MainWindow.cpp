@@ -29,7 +29,9 @@ void MainWindow::showEditor(){
 }
 
 void MainWindow::connectClient(QString address) {
-    this->client->connectTo(address);
-    this->connection->close();
-    this->login->show();
+    bool res=this->client->connectTo(address);
+    if(res) {
+        this->connection->close();
+        this->login->show();
+    }
 }
