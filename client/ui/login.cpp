@@ -36,9 +36,11 @@ void Login::on_pushButton_clicked()
         ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
         ui->label_3->setVisible(true);
     }else{
-        client->logIn(username,password);
+        bool result=client->logIn(username,password);
         ui->label_3->setVisible(false);
-        emit loginSuccessful();
+        if( result ) {
+            emit loginSuccessful();
+        }
     }
 }
 
