@@ -3,6 +3,7 @@
 //
 
 #include <ctime>
+#include <cmath>
 #include "CRDT.h"
 
 CRDT::CRDT(QString siteId) : siteId(siteId), vector(siteId) {

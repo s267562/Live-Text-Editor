@@ -23,13 +23,15 @@ private slots:
     void on_pushButton_clicked();
     void errorConnection();
     void loginFailed();
-    //void loginDone();
+   // void loginDone();
+   // void onOkButtonClicked();
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 signals:
     void disconnect();
+    void loginSuccessful();
 
 private:
     Ui::Login *ui;

@@ -15,7 +15,7 @@ void Login::setClient(Client *client) {
     this->client = client;
     connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
     connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
-    connect(this, &Login::disconnect, this->client, &Client::onDisconnect);
+    connect(this,SIGNAL(loginSuccessful()),this->parent(),SLOT(showEditor()));
 }
 
 void Login::on_pushButton_clicked()
@@ -38,6 +38,7 @@ void Login::on_pushButton_clicked()
     }else{
         client->logIn(username,password);
         ui->label_3->setVisible(false);
+        emit loginSuccessful();
     }
 }
 
@@ -53,3 +54,26 @@ void Login::closeEvent(QCloseEvent *event){
     emit disconnect();
     //client->logOut();
 }
+
+/**
+void Login::onOkButtonClicked()
+{
+    QString username = ui->username->text();
+    QString password = ui->password->text();
+
+    if (username == "test" &&
+        password == "test") {
+        emit loginSuccessful();
+    } else {
+            QMessageBox::warning(this, tr("Error"), tr("Invalid username/password combination"));
+        ui->username->clear();
+        ui->password->clear();
+    }
+}
+
+
+void Login::loginDone(){
+    //this->client->requestForFile("CiaoTy!");
+    emit loginSuccessful();
+}
+ */

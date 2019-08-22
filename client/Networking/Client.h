@@ -35,12 +35,14 @@ public:
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
     bool writeOnSocket(std::string str);                                        // Testing
     bool connectTo(QString host);
-    void logIn(QString username, QString passsword);
+    bool logIn(QString username, QString passsword);
     void logOut();
     void registration(QString username, QString passsword, QString pathAvatar);
     void requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
+
+
 
     Message getMessage();
 
@@ -52,6 +54,7 @@ signals:
     void errorConnection();
     void loginFailed();
     void newMessage();
+    void userVerified();
 };
 
 #endif // CLIENT_H

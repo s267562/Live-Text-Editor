@@ -6,10 +6,19 @@
 #include <QCommandLineParser>
 #include "ui/login.h"
 #include "ui/ui_login.h"
+#include "MainWindow.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-    Client client(&app);
+
+
+    MainWindow mw("temp");
+
+    mw.show();
+
+
+
+
 
     //c.logIn("username","password");
     //c.requestForFile("CiaoTy!");
@@ -21,7 +30,7 @@ int main(int argc, char *argv[]) {
     //client.deleteChar("c", 1);
     //client.deleteChar("c", numbers);
     //client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
-
+/*
     Login login;
     login.setClient(&client);
     login.show();
@@ -61,6 +70,6 @@ int main(int argc, char *argv[]) {
             (availableGeometry.height() - editor.height()) / 2);
 
     editor.show();
-
+*/
     return app.exec();
 }

@@ -9,6 +9,8 @@ Client::Client(QObject *parent):QObject (parent){
     reciveOkMessage = false;
     clientIsLogged = false;
 
+   // this->connectTo("127.0.0.1");
+
     /* define connection */
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
@@ -59,7 +61,13 @@ void Client::onReadyRead(){
     }
 }
 
-void Client::logIn(QString username, QString password){
+bool Client::logIn(QString username, QString password){
+    //TODO: Connessione al server, verifica di credenziali...
+    if( username=="test" && password=="test" ){
+        return true;
+    }
+
+    /**
     if (!clientIsLogged){
         QByteArray message(LOGIN_MESSAGE);
         QByteArray data;
@@ -74,6 +82,8 @@ void Client::logIn(QString username, QString password){
 
         socket->write(message);
     }
+     */
+     return false;
 }
 
 void Client::logOut(){
@@ -424,3 +434,5 @@ Message Client::getMessage() {
         return message;
     }
 }
+
+

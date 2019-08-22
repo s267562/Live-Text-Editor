@@ -36,7 +36,8 @@ add_executable(client
         client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h
         client/Networking/Client.h
         client/Networking/Client.cpp
-        client/utils/Constants.h)
+        client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
+        client/MainWindow.cpp client/MainWindow.h)
 
 add_executable(server
         server/main.cpp
