@@ -37,7 +37,8 @@ add_executable(client
         client/Networking/Client.h
         client/Networking/Client.cpp
         client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
-        client/MainWindow.cpp client/MainWindow.h)
+        client/MainWindow.cpp client/MainWindow.h
+        client/ui/connection.cpp client/ui/connection.ui)
 
 add_executable(server
         server/main.cpp

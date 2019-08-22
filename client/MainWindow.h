@@ -10,6 +10,7 @@
 #include "Editor.h"
 #include "ui/login.h"
 #include "Networking/Client.h"
+#include "ui/connection.h"
 
 class MainWindow : public QMainWindow {
 
@@ -25,9 +26,11 @@ private:
     Client *client;
     CRDT *crdt;
     Controller *controller;
+    Connection *connection;
 
 private slots:
     void showEditor();
+    void connectClient(QString address);
 
     signals:
         void loginSuccessful();
