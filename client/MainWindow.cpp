@@ -27,6 +27,7 @@ void MainWindow::show() {
 
 void MainWindow::showFileFinder(){
     this->login->close();
+    //TODO: Popolare la WidgetList con i nomi dei file che arrivano dal server
     this->finder->show();
 }
 
