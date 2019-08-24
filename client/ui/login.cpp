@@ -7,6 +7,7 @@ Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login) {
     ui->setupUi(this);
     ui->label_3->setVisible(false);
     connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
+    connect(this,SIGNAL(loginSuccessful()),this->parent(),SLOT(showFileFinder()));
 }
 
 Login::~Login(){
@@ -17,7 +18,7 @@ void Login::setClient(Client *client) {
     this->client = client;
     connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
     connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
-    connect(this,SIGNAL(loginSuccessful()),this->parent(),SLOT(showEditor()));
+
 }
 
 void Login::on_pushButton_clicked()
@@ -38,7 +39,9 @@ void Login::on_pushButton_clicked()
         ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
         ui->label_3->setVisible(true);
     }else{
+
         bool result=client->logIn(username,password);
+
         ui->label_3->setVisible(false);
         if( result ) {
             emit loginSuccessful();

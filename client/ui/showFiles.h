@@ -21,6 +21,9 @@ private slots:
 
     void on_pushButton_newFile_clicked();
 
+    signals:
+    void newFile(QString filename);
+
 private:
     Ui::ShowFiles *ui;
 };

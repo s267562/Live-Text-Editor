@@ -38,7 +38,7 @@ public:
     bool logIn(QString username, QString passsword);
     void logOut();
     void registration(QString username, QString passsword, QString pathAvatar);
-    void requestForFile(QString fileName);
+    bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
 

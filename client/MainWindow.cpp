@@ -25,6 +25,11 @@ void MainWindow::show() {
     this->connection->show();
 }
 
+void MainWindow::showFileFinder(){
+    this->login->close();
+    this->finder->show();
+}
+
 void MainWindow::showEditor(){
     this->login->close();
     this->editor->show();
@@ -46,4 +51,13 @@ void MainWindow::connectClient(QString address) {
 void MainWindow::showRegistration(){
     this->login->close();
     this->registration->show();
+}
+
+void MainWindow::requestForFile(QString filename){
+
+    bool result = this->client->requestForFile(filename);
+
+    if ( result ){
+        this->editor->show();
+    }
 }

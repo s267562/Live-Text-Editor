@@ -97,7 +97,7 @@ void Client::logOut(){
     }
 }
 
-void Client::requestForFile(QString fileName){
+bool Client::requestForFile(QString fileName){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(REQUEST_FILE_MESSAGE);
         QByteArray data;
@@ -111,7 +111,9 @@ void Client::requestForFile(QString fileName){
             this->socket->write(message);
             messages.pop();
         }
+        return true;
     }
+    return false;
 }
 
 void Client::insert(QString str, QString siteId, Pos pos){

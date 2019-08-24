@@ -6,6 +6,7 @@ ShowFiles::ShowFiles(QWidget *parent) :
     ui(new Ui::ShowFiles)
 {
     ui->setupUi(this);
+    connect(this,SIGNAL(newFile(QString)),this->parent(), SLOT(requestForFile(QString)));
 //    QStringList l;
 //    l.append("A");
 //    l.append("B");
@@ -31,5 +32,6 @@ void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
 
 void ShowFiles::on_pushButton_newFile_clicked()
 {
-
+    QString filename = this->ui->filename->text();
+    emit newFile(filename);
 }

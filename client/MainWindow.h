@@ -11,7 +11,7 @@
 #include "ui/login.h"
 #include "Networking/Client.h"
 #include "ui/connection.h"
-#include "ui/ShowFiles.h"
+#include "ui/showFiles.h"
 
 class MainWindow : public QMainWindow {
 
@@ -36,6 +36,8 @@ private slots:
     void connectClient(QString address);
     void showLogin();
     void showRegistration();
+    void showFileFinder();
+    void requestForFile(QString);
 
     signals:
         void loginSuccessful();
