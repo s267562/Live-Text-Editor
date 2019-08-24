@@ -27,10 +27,13 @@ private:
     CRDT *crdt;
     Controller *controller;
     Connection *connection;
+    Registration *registration;
 
 private slots:
     void showEditor();
     void connectClient(QString address);
+    void showLogin();
+    void showRegistration();
 
     signals:
         void loginSuccessful();

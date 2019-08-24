@@ -3,9 +3,10 @@
 #include <QMessageBox>
 #include <iostream>
 
-Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login), reg(new Registration){
+Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login) {
     ui->setupUi(this);
     ui->label_3->setVisible(false);
+    connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
 }
 
 Login::~Login(){
@@ -59,8 +60,7 @@ void Login::closeEvent(QCloseEvent *event){
 }
 
 void Login::on_pushButton_2_clicked() {
-    this->hide();
-    this->reg->show();
+    emit showRegistration();
 }
 
 /**

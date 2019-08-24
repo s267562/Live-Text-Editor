@@ -22,6 +22,13 @@ private slots:
 
     void on_toolButton_clicked();
 
+    void on_pushButton_registration_clicked();
+
+    void on_pushButton_login_clicked();
+
+    signals:
+    void showLogin();
+
 private:
     Ui::Registration *ui;
 

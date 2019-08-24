@@ -10,7 +10,8 @@ MainWindow::MainWindow(QString siteId)
           client(new Client(this)),
           crdt(new CRDT(siteId)),
           controller(new Controller(this->crdt,this->editor,this->client)),
-          connection(new Connection(this))
+          connection(new Connection(this)),
+          registration(new Registration(this))
 {
     this->login->setClient(this->client);
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
@@ -28,10 +29,20 @@ void MainWindow::showEditor(){
     this->editor->show();
 }
 
+void MainWindow::showLogin(){
+    this->registration->close();
+    this->login->show();
+}
+
 void MainWindow::connectClient(QString address) {
     bool res=this->client->connectTo(address);
     if(res) {
         this->connection->close();
         this->login->show();
     }
+}
+
+void MainWindow::showRegistration(){
+    this->login->close();
+    this->registration->show();
 }

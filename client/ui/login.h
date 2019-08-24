@@ -34,11 +34,11 @@ protected:
 signals:
     void disconnect();
     void loginSuccessful();
+    void showRegistration();
 
 private:
     Ui::Login *ui;
     Client* client;
-    Registration* reg;
 };
 
 #endif // MAINWINDOW_H

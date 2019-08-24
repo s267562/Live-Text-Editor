@@ -9,6 +9,7 @@ Registration::Registration(QWidget *parent) :
     ui(new Ui::Registration)
 {
     this->ui->setupUi(this);
+    connect(this, SIGNAL(showLogin()), this->parent(), SLOT(showLogin()));
 }
 
 Registration::~Registration()
@@ -44,4 +45,14 @@ void Registration::setDefaultProfileIcon(){
     int w=ui->label->width();
     int h=ui->label->height();
     ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+}
+
+
+void Registration::on_pushButton_registration_clicked(){
+
+}
+
+void Registration::on_pushButton_login_clicked(){
+    this->hide();
+    emit this->showLogin();
 }
