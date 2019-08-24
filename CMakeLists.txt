@@ -38,7 +38,10 @@ add_executable(client
         client/Networking/Client.cpp
         client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
         client/MainWindow.cpp client/MainWindow.h
-        client/ui/connection.cpp client/ui/connection.ui)
+        client/ui/connection.cpp client/ui/connection.ui
+        client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
+        client/ui/clickablelabel.cpp client/ui/clickablelabel.h
+        )
 
 add_executable(server
         server/main.cpp

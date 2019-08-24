@@ -1,8 +1,9 @@
 #include "login.h"
 #include "ui_login.h"
 #include <QMessageBox>
+#include <iostream>
 
-Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login){
+Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login), reg(new Registration){
     ui->setupUi(this);
     ui->label_3->setVisible(false);
 }
@@ -55,6 +56,11 @@ void Login::loginFailed(){
 void Login::closeEvent(QCloseEvent *event){
     emit disconnect();
     //client->logOut();
+}
+
+void Login::on_pushButton_2_clicked() {
+    this->hide();
+    this->reg->show();
 }
 
 /**
