@@ -11,7 +11,8 @@ MainWindow::MainWindow(QString siteId)
           crdt(new CRDT(siteId)),
           controller(new Controller(this->crdt,this->editor,this->client)),
           connection(new Connection(this)),
-          registration(new Registration(this))
+          registration(new Registration(this)),
+          finder(new ShowFiles(this))
 {
     this->login->setClient(this->client);
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));

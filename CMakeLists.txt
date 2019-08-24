@@ -41,6 +41,7 @@ add_executable(client
         client/ui/connection.cpp client/ui/connection.ui
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
+        client/ui/showFiles.cpp client/ui/showFiles.ui
         )
 
 add_executable(server

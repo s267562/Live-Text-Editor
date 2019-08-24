@@ -11,6 +11,7 @@
 #include "ui/login.h"
 #include "Networking/Client.h"
 #include "ui/connection.h"
+#include "ui/ShowFiles.h"
 
 class MainWindow : public QMainWindow {
 
@@ -28,6 +29,7 @@ private:
     Controller *controller;
     Connection *connection;
     Registration *registration;
+    ShowFiles *finder;
 
 private slots:
     void showEditor();
