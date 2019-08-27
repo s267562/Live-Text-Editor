@@ -13,12 +13,13 @@
 class Character {
 public:
     Character(char value, int counter, const QString &siteId, const std::vector<Identifier> &position);
-
+	Character();
     char getValue() const;
     int getCounter() const;
     const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
-
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
     int compareTo(Character otherCharacter);
 
 private:

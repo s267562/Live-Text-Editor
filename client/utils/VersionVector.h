@@ -19,6 +19,8 @@ public:
     const Version &getLocalVersion() const;
     const std::vector<Version> &getVersions() const;
     void increment();
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
 
 private:
     Version localVersion;

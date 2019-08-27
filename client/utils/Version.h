@@ -8,6 +8,7 @@
 
 #include <string>
 #include <QtCore/QString>
+#include <QtCore/QJsonObject>
 
 class Version {
 public:
@@ -16,6 +17,8 @@ public:
     int getCounter() const;
     const QString &getSiteId() const;
     void increment();
+    void read(const QJsonObject &json);
+    void write( QJsonObject &json) const;
 
 private:
     int counter;
