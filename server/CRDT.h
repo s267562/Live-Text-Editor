@@ -20,6 +20,8 @@ public:
 
     Character handleInsert(char val, Pos pos, QString siteId);
     void handleDelete(const Character &character);
+	bool loadCRDT(QString filename);
+	bool saveCRDT(QString filename);
 
 
 private:
@@ -41,6 +43,9 @@ private:
     int findIndexInLine(Character character, std::vector<Character> line);
     void removeEmptyLines();
     void mergeLines(int line);
+
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
 };
 
 

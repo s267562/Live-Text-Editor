@@ -4,16 +4,28 @@
 
 #include "Version.h"
 
-Version::Version(QString siteId) : siteId(siteId), counter() { }
+Version::Version(QString siteId) : siteId(siteId), counter() {}
 
 int Version::getCounter() const {
-    return counter;
+	return counter;
 }
 
 const QString &Version::getSiteId() const {
-    return siteId;
+	return siteId;
 }
 
 void Version::increment() {
-    this->counter++;
+	this->counter++;
+}
+
+void Version::read(const QJsonObject &json) {
+	if (json.contains("counter") && json["counter"].isDouble())
+		counter = json["counter"].toInt();
+	if (json.contains("siteId") && json["siteId"].isString())
+		siteId = json["counter"].toString();
+}
+
+void Version::write(QJsonObject &json) const {
+	json["counter"] = counter;
+	json["siteId"] = siteId;
 }

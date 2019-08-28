@@ -7,14 +7,17 @@
 
 #include <string>
 #include <QtCore/QString>
+#include <QtCore/QJsonObject>
 
 class Identifier {
 public:
     Identifier(int digit, const QString &siteId);
+    Identifier();
 
     int getDigit() const;
     const QString &getSiteId() const;
-
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
     int compareTo(Identifier otherIdentifier);
 
 private:
