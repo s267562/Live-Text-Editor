@@ -14,4 +14,6 @@ cmake-build-debug/textEditor
 
 cmake-build-debug/textEditor\.cbp
 
+cmake-build-debug/
+
 \.idea/
