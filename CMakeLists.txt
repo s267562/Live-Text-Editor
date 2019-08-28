@@ -42,11 +42,6 @@ add_executable(client
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
         client/ui/showFiles.cpp client/ui/showFiles.ui
-        cmake-build-debug/client_autogen/include/ui_registration.h
-        cmake-build-debug/client_autogen/include/ui/ui_login.h
-        cmake-build-debug/client_autogen/include/ui_connection.h
-        cmake-build-debug/client_autogen/include/ui_showFiles.h
-        cmake-build-debug/client_autogen/include/ui_login.h
         )
 
 add_executable(server
