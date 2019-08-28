@@ -277,3 +277,12 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor){
     socket.deleteLater();
     sockets.erase(soc->socketDescriptor());
 }
+
+void Thread::addSocket2(QTcpSocket *soc) {
+    /* connect socket and signal */
+    connect(soc, &QAbstractSocket::readyRead, this, [this,soc](){
+        qDebug() << soc;
+        std::cout << "Something is arrived..." << std::endl;
+        Thread::readyRead(soc);
+    }, Qt::DirectConnection);
+}

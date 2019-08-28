@@ -163,6 +163,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         Thread *thread = new Thread(this, crdt);     /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
         thread->addSocket(socketDescriptor);                        /* socket transition to secondary thread */
+        thread->addSocket2(soc);
         thread->start();
     }
 
