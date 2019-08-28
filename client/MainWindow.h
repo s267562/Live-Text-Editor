@@ -36,7 +36,7 @@ private slots:
     void connectClient(QString address);
     void showLogin();
     void showRegistration();
-    void showFileFinder();
+    void showFileFinder(QStringList fileList);
     void requestForFile(QString);
 
     signals:

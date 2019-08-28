@@ -15,19 +15,20 @@ MainWindow::MainWindow(QString siteId)
           finder(new ShowFiles(this))
 {
     this->login->setClient(this->client);
-    connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
 
-    //this->client->connectTo("127.0.0.1");
-   // this->client->requestForFile("CiaoTy!");
+    /* define connection */
+    connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
+    connect(this->client, SIGNAL(fileNames(QStringList)),this, SLOT(showFileFinder(QStringList)));
 }
 
 void MainWindow::show() {
     this->connection->show();
 }
 
-void MainWindow::showFileFinder(){
+void MainWindow::showFileFinder(QStringList fileList){
     this->login->close();
     //TODO: Popolare la WidgetList con i nomi dei file che arrivano dal server
+    this->finder->addFiles(fileList);
     this->finder->show();
 }
 

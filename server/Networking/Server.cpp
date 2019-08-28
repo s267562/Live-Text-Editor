@@ -34,7 +34,8 @@ void Server::connection(){
         if (data.toStdString() == LOGIN_MESSAGE){
             qDebug() << "ok, login";
             if (logIn(soc)){
-                writeOkMessage(soc);
+                //writeOkMessage(soc);
+                sendFileNames(soc);
                 socketsState[soc->socketDescriptor()] = LOGGED;
                 qDebug() << "socketsSize: " << socketsState.size();
 
@@ -114,6 +115,47 @@ bool Server::logIn(QTcpSocket *soc){
     qDebug() << "username: " << username << " password: " << password;
 
 
+    return true;
+}
+
+bool Server::sendFileNames(QTcpSocket *soc){
+    /* ritrovare file per l'utente */
+    /*QByteArray data;
+    QString fileName("file1");
+    QByteArray numFiles;
+    numFiles.setNum(166777);
+    QByteArray fileNameSize;
+    fileNameSize.setNum(fileName.toUtf8().size());
+    data.append(LIST_OF_FILE);
+    data.append(" " + numFiles);
+    data.append(" " + fileNameSize);
+    data.append(" " + fileName.toUtf8());
+    soc->write(data);
+    qDebug() << data;*/
+
+    int nFiles = 1;
+    QString fileName;
+    fileName = "file1";
+    QByteArray message(LIST_OF_FILE);
+
+    QByteArray numFiles;
+    QDataStream inNumFiles(&numFiles, QIODevice::WriteOnly);
+    inNumFiles << nFiles;
+
+    QByteArray fileNameSize;
+    QDataStream inFileNameSize(&fileNameSize, QIODevice::WriteOnly);
+    inFileNameSize << fileName.size();
+
+    message.append(" " + numFiles + " " + fileNameSize + " " + fileName.toUtf8());
+    qDebug() << message;
+    soc->write(message);
+    if (soc->waitForBytesWritten(TIMEOUT)){
+        qDebug() << "LF, scritto";
+        return true;
+    }else{
+        qDebug() << "LF, non scritto";
+        return false;
+    }
     return true;
 }
 

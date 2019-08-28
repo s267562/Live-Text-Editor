@@ -9,8 +9,6 @@ Client::Client(QObject *parent):QObject (parent){
     reciveOkMessage = false;
     clientIsLogged = false;
 
-   // this->connectTo("127.0.0.1");
-
     /* define connection */
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
@@ -18,11 +16,13 @@ Client::Client(QObject *parent):QObject (parent){
 
 bool Client::connectTo(QString host){
     socket->connectToHost(host, 1234);
+
     //return socket->waitForConnected();      /* possibile gestione con un eccezione per il retry */
     if (!socket->waitForConnected(30)){
         emit errorConnection();
         return false;
     }
+
     socketDescriptor = socket->socketDescriptor();
     qDebug() << socket->socketDescriptor() <<" connected";
     return true;
@@ -32,7 +32,7 @@ void Client::onReadyRead(){
     QByteArray datas = socket->read(5);
     qDebug() << datas;
 
-    if (datas.toStdString() == OK_MESSAGE && !clientIsLogged){
+    if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
         clientIsLogged = true;
     }else if (!clientIsLogged && datas.toStdString() == ERR_MESSAGE){
         emit loginFailed();
@@ -57,6 +57,9 @@ void Client::onReadyRead(){
             readInsert();
         }else if (datas.toStdString() == DELETE_MESSAGE){
             readDelete();
+        }else if (datas.toStdString() == LIST_OF_FILE){
+            readFileNames();
+            reciveOkMessage = true;
         }
     }
 }
@@ -67,23 +70,49 @@ bool Client::logIn(QString username, QString password){
         return true;
     }
 
-    /**
-    if (!clientIsLogged){
+
+    if (!clientIsLogged) {
         QByteArray message(LOGIN_MESSAGE);
         QByteArray data;
-        QDataStream in(&data,  QIODevice::WriteOnly);
+        QDataStream in(&data, QIODevice::WriteOnly);
         data.append(" ");
         in << username.size();
 
         //data.append(" " + username.size());
-        data.append(" "+ username + " " + password.size() + " " + password);
+        data.append(" " + username + " " + password.size() + " " + password);
         message.append(data);
         qDebug() << message;
 
         socket->write(message);
     }
-     */
      return false;
+}
+
+bool Client::readFileNames(){
+    qDebug() << "-------------READ FILE NAMES-------------";
+    QStringList fileList;
+    socket->read(1);
+    QDataStream inNumFiles(socket);
+    int numFiles;
+    inNumFiles >> numFiles;
+    qDebug () << "numFiles" << numFiles;
+    socket->read(1);
+
+    QDataStream inFileNameSize(socket);
+    int fileNameSize;
+    inFileNameSize >> fileNameSize;
+
+    qDebug () << "filesSize" << fileNameSize;
+
+    socket->read(1);
+    QString fileName = socket->read(fileNameSize);
+    fileList.append(fileName);
+
+    emit fileNames(fileList);
+
+    qDebug () << "fileName" << fileName;
+
+    return true;
 }
 
 void Client::logOut(){

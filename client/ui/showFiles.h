@@ -15,6 +15,7 @@ class ShowFiles : public QMainWindow
 public:
     explicit ShowFiles(QWidget *parent = nullptr);
     ~ShowFiles();
+    void addFiles(QStringList l);
 
 private slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);

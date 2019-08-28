@@ -36,6 +36,7 @@ public:
     bool writeOnSocket(std::string str);                                        // Testing
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
+    bool readFileNames();
     void logOut();
     void registration(QString username, QString passsword, QString pathAvatar);
     bool requestForFile(QString fileName);
@@ -55,6 +56,7 @@ signals:
     void loginFailed();
     void newMessage();
     void userVerified();
+    void fileNames(QStringList fileList);
 };
 
 #endif // CLIENT_H

@@ -27,7 +27,13 @@ ShowFiles::~ShowFiles()
 
 void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
 {
+    QString filename = item->text();
 
+    emit newFile(filename);
+}
+
+void ShowFiles::addFiles(QStringList l){
+    this->ui->listWidget->addItems(l);
 }
 
 void ShowFiles::on_pushButton_newFile_clicked()
