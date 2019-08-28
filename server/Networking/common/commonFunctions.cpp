@@ -2,6 +2,7 @@
 // Created by andrea settimo on 2019-08-16.
 //
 
+#include <QDataStream>
 #include "commonFunctions.h"
 
 bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size){
@@ -52,4 +53,18 @@ bool writeErrMessage(QTcpSocket *soc){
         qDebug() << "Err, non scritto";
         return false;
     }
+}
+
+QByteArray convertionNumber(int number){
+    QByteArray numberResult;
+    QDataStream outNumberResult(&numberResult, QIODevice::WriteOnly);
+    outNumberResult << number;
+    return numberResult;
+}
+
+int readNumberFromSocket(QTcpSocket &socket){
+    QDataStream outNumberResult(&socket);
+    int result;
+    outNumberResult >> result;
+    return result;
 }

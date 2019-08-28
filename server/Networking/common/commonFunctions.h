@@ -11,5 +11,7 @@
 bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size);
 bool writeOkMessage(QTcpSocket *soc);
 bool writeErrMessage(QTcpSocket *soc);
+QByteArray convertionNumber(int number);
+int readNumberFromSocket(QTcpSocket &socket);
 
 #endif //TEXTEDITOR_COMMONFUNCTIONS_H

@@ -18,7 +18,7 @@ private:
 
 public:
     explicit Server(QObject *parent = nullptr);
-    void startServer(quint16 port);
+    bool startServer(quint16 port);
 
 private:
     bool logIn(QTcpSocket *soc);

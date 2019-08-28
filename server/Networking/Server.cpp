@@ -4,14 +4,15 @@
 
 Server::Server(QObject *parent):QTcpServer(parent){}
 
-void Server::startServer(quint16 port){
+bool Server::startServer(quint16 port){
     connect(this,SIGNAL(newConnection()),this,SLOT(connection()));
 
     if(!this->listen(QHostAddress::Any, port)){
         qDebug() << "Could not start server";
-    }
-    else{
+        return false;
+    }else{
         qDebug() << "Listening to port " << port << "...";
+        return true;
     }
 }
 
@@ -22,51 +23,33 @@ void Server::connection(){
     QMetaObject::Connection *c = new QMetaObject::Connection();
 
     *c = connect(soc, &QTcpSocket::readyRead, this, [this,c,soc]{
-
-
         QByteArray data;
         if (!readChunck(soc, data, 5)){
             writeErrMessage(soc);
+            soc->flush();
+            return;
         }
 
         qDebug() << data;
 
         if (data.toStdString() == LOGIN_MESSAGE){
-            qDebug() << "ok, login";
             if (logIn(soc)){
-                //writeOkMessage(soc);
                 sendFileNames(soc);
                 socketsState[soc->socketDescriptor()] = LOGGED;
                 qDebug() << "socketsSize: " << socketsState.size();
-
-                /*qintptr socketDescriptor = soc->socketDescriptor();
-
-                if (!readChunck(soc, data, 5)){
-                    qDebug() << data;
-                    writeErrMessage(soc);
-                }*/
-
-                /* if (data.toStdString() == REQUEST_FILE_MESSAGE){
-                disconnect from main thread
-                    disconnect(*c);
-                    delete c;
-
-                    readFileName(socketDescriptor, soc);
-                    qDebug() << "ok, file";
-                }else{
-                    //error in file request phase
-                    qDebug() << "err, file";
-                    qDebug() << data;
-                    writeErrMessage(soc);
-                }*/
             }else{
                 //error in login phase
                 qDebug() << "error login";
                 writeErrMessage(soc);
+                return;
             }
         }else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[soc->socketDescriptor()] == UNLOGGED){
-            registration(soc);
-            socketsState[soc->socketDescriptor()] = LOGGED;
+            if (registration(soc)){
+                socketsState[soc->socketDescriptor()] = LOGGED;
+            }else{
+                writeErrMessage(soc);
+                return;
+            }
         }else if (data.toStdString() == REQUEST_FILE_MESSAGE && socketsState[soc->socketDescriptor()] == LOGGED) {
             /* disconnect from main thread */
             disconnect(*c);
@@ -74,7 +57,9 @@ void Server::connection(){
             socketsState.erase(soc->socketDescriptor());
             qDebug() << "socketsSize: " << socketsState.size();
             
-            readFileName(soc->socketDescriptor(), soc);
+            if (!readFileName(soc->socketDescriptor(), soc)){
+                writeErrMessage(soc);
+            }
         }else{
             qDebug() << "error message";
             writeErrMessage(soc);
@@ -105,7 +90,7 @@ bool Server::logIn(QTcpSocket *soc){
     int passwordSize = soc->read(1).toHex().toInt(&ok,16);
     soc->read(1);
 
-    qDebug() << "passwordSize: " <<usernameSize;
+    qDebug() << "passwordSize: " <<passwordSize;
 
     QByteArray password;
     if (!readChunck(soc, password, passwordSize)){

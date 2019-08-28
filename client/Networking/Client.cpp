@@ -157,7 +157,7 @@ void Client::insert(QString str, QString siteId, Pos pos){
         message.append(data);
         qDebug() << message;
         messages.push(message);
-        if (reciveOkMessage){
+        if (/*reciveOkMessage*/ true){
             reciveOkMessage = false;
             this->socket->write(message);
             messages.pop();
@@ -203,7 +203,7 @@ bool Client::readInsert(){
     Message message(character, socket->socketDescriptor(), INSERT);
     incomingInsertMessagesQueue.push(message);
 
-    emit newMessage();
+    //emit newMessage();
     return true;
 }
 
