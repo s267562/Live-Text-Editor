@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QTcpSocket>
 #include <queue>
+#include <QtCore/QTimer>
 #include "../Utils/Constants.h"
 #include "../../client/utils/Identifier.h"
 #include "../../client/utils/Character.h"
@@ -14,15 +15,16 @@
 class Identifier;
 class Character;
 
-class Thread : public QThread{
-Q_OBJECT
+class Thread : public QThread {
 private:
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
     std::queue<Message> messagesQueue;
     CRDT *crdt;
+    QString filename;
+    QTimer *saveTimer;
 
 public:
-    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr);
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = nullptr);
     void run();
     void addSocket(QTcpSocket *soc);
 private:
@@ -39,6 +41,8 @@ signals:
 public slots:
     void readyRead(QTcpSocket *socket);
     void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
+    //TODO funzione di callback che si occupa di salvare il CRDT
+//    void saveCRDTToFile()
 };
 
 #endif // THREAD_H
