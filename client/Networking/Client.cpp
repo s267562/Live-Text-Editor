@@ -58,12 +58,16 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == INSERT_MESSAGE){
             if (readInsert()){
                 reciveOkMessage = true;
-                onReadyRead(); // TODO da risolvere (messaggio ok)
+                if (socket->waitForReadyRead(0)){
+                    onReadyRead(); // TODO da risolvere (messaggio ok)
+                }
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
             if (readDelete()){
                 reciveOkMessage = true;
-                onReadyRead(); // TODO da risolvere (messaggio ok)
+                if (socket->waitForReadyRead(0)){
+                    onReadyRead(); // TODO da risolvere (messaggio ok)
+                }
             }
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();

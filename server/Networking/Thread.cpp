@@ -39,15 +39,11 @@ void Thread::readyRead(QTcpSocket *soc){
     }
 
     if (data.toStdString() == INSERT_MESSAGE){
-        if (readInsert(soc)){
-            writeOkMessage(soc);
-        }else{
+        if (!readInsert(soc)){
             writeErrMessage(soc);
         }
     }else if (data.toStdString() == DELETE_MESSAGE){
-        if (readDelete(soc)){
-            writeOkMessage(soc);
-        }else{
+        if (!readDelete(soc)){
             writeErrMessage(soc);
         }
     }else{
