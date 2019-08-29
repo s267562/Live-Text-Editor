@@ -200,6 +200,9 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
     //std::cout << "startPos.getCh(): " << startPos.getCh() << std::endl;
     //std::cout << "startPos.getCh() + charNum: " << startPos.getCh() + charNum << std::endl;
     //std::cout << "structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size() << std::endl;
+    if(structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
+        std::cout << "ATTENZIONE: impossibile cancellare. Char/s non presente/i\n";
+    }
     std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
     this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
 

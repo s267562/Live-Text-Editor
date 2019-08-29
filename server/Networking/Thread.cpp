@@ -169,6 +169,7 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
         socket.second->write(message);
+        std::cout << "msg sent\n";
     }
 }
 

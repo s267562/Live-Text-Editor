@@ -66,7 +66,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
          * il signal errato ha come parametri position=(first line position); charsRemoved=charsAdded*/
         // std::cout << "POSITION: " << position << " CHARS_REMOVED: " << charsRemoved << " CHARS_ADDED: " << charsAdded << std::endl;
     } else {
-        std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
+        //std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
 
         if(charsAdded) {
             QString chars = textEdit->toPlainText().mid(position, charsAdded);
@@ -75,7 +75,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             cursor.setPosition(position);
             int line = cursor.blockNumber();
             int ch = cursor.positionInBlock();
-            std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
+            //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
             Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
 
             this->controller->localInsert(chars, startPos);
@@ -97,9 +97,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             Pos endPos{ch, line}; // Pos(int ch, int line);
             textEdit->redo();
 
-            std::cout << "chars removed." << std::endl;
-            std::cout << "startPos (ch, line): (" << startPos.getCh() << ", " << startPos.getLine() << ")" << std::endl;
-            std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
+            //std::cout << "chars removed." << std::endl;
+            //std::cout << "startPos (ch, line): (" << startPos.getCh() << ", " << startPos.getLine() << ")" << std::endl;
+            //std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
 
             this->controller->localDelete(startPos, endPos);
         }

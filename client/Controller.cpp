@@ -28,7 +28,6 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
 }
 
 void Controller::newMessage() {
-    std::cout << "msg n° " << this->count++;
     Message message = this->client->getMessage();
 
     if(message.getType() == INSERT) {
