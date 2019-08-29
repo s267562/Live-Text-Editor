@@ -4,7 +4,7 @@
 
 #include "Controller.h"
 
-Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client) {
+Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client), count(0) {
     editor->setController(this);
 
     // Controller
@@ -28,11 +28,11 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
 }
 
 void Controller::newMessage() {
+    std::cout << "msg n° " << this->count++;
     Message message = this->client->getMessage();
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
-        // insert into the model
         Pos pos = this->crdt->insert(character);
 
         if(character.getSiteId().compare(this->siteId) == 0) { // if QStrings are equal it returns 0
@@ -42,7 +42,6 @@ void Controller::newMessage() {
             // insert into the editor.
             this->editor->insertChar(character.getValue(), pos);
         }
-
     } else if(message.getType() == DELETE) {
         if(!(message.getCharacter().getSiteId() == this->siteId)) {
             Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());

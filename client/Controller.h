@@ -28,6 +28,7 @@ public:
     void localDelete(Pos startPos, Pos endPos);
     void insertIntoEditor(char character, Pos pos);
 
+    int count;
 };
 
 

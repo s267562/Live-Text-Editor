@@ -7,7 +7,7 @@
 #include "CRDT.h"
 
 CRDT::CRDT(QString siteId) : siteId(siteId), vector(siteId) {
-    this->structure = { { } }; // TODO inizializzare il vettore structure?
+    this->structure = { }; // TODO giusto inizializzare il vettore structure cosi?
 }
 
 
@@ -62,18 +62,19 @@ Pos CRDT::findInsertPosition(Character character) {
 
     if (character.compareTo(minLastChar) <= 0) {
         int charIdx = this->findInsertIndexInLine(character, minCurrentLine);
-        return Pos { minLine, charIdx };
+        return Pos { charIdx, minLine };
     } else {
         int charIdx = this->findInsertIndexInLine(character, maxCurrentLine);
-        return { maxLine, charIdx };
+        return Pos { charIdx, maxLine };
     }
+
 }
 
 Pos CRDT::findEndPosition(Character lastChar, std::vector<Character> lastLine, int totalLines) {
     if (lastChar.getValue() == '\n') {
-        return Pos { totalLines, 0 };
+        return Pos { 0, totalLines };
     } else {
-        return { totalLines - 1, (int) lastLine.size() };
+        return Pos { (int) lastLine.size(), totalLines - 1 };
     }
 }
 
@@ -123,6 +124,22 @@ void CRDT::insertChar(Character character, Pos pos) {
         }
     }
     structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
+
+
+    // print the structure for debugging
+    std::cout << "-----------------------" << std::endl << "STRUCTURE:" << std::endl;
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            std::cout << "val = " << ((val == '\n') ? '\n' : val) << "; counter = " << counter << "; position: ";
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                std::cout << id.getDigit() << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
 }
 
 
@@ -233,7 +250,7 @@ Pos CRDT::findPosition(Character character) {
         lastChar = currentLine[currentLine.size() - 1];
 
         if (character.compareTo(lastChar) == 0) {
-            return Pos {  midLine, (int) currentLine.size() - 1 };
+            return Pos { (int) currentLine.size() - 1, midLine };
         } else if (character.compareTo(lastChar) < 0) {
             maxLine = midLine;
         } else {
@@ -250,10 +267,10 @@ Pos CRDT::findPosition(Character character) {
 
     if (character.compareTo(minLastChar) <= 0) {
         int charIdx = this->findIndexInLine(character, minCurrentLine);
-        return { minLine, charIdx };
+        return Pos { charIdx, minLine };
     } else {
         int charIdx = this->findIndexInLine(character, maxCurrentLine);
-        return { maxLine, charIdx };
+        return Pos { charIdx, maxLine };
     }
 }
 
@@ -290,16 +307,12 @@ int CRDT::findIndexInLine(Character character, std::vector<Character> line) {
 }
 
 void CRDT::removeEmptyLines() {
-    // TODO check if correct
+
     for (int line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].size() == 0) {
             this->structure.erase(this->structure.begin() + line);
             line--;
         }
-    }
-
-    if (this->structure.size() == 0) {
-        this->structure.push_back(std::vector<Character>{});
     }
 }
 

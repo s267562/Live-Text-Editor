@@ -4,6 +4,7 @@
 
 #include <QFile>
 #include <QPixmap>
+#include <iostream>
 
 Client::Client(QObject *parent):QObject (parent){
     this->socket = new QTcpSocket(this);
@@ -178,7 +179,6 @@ void Client::insert(QString str, QString siteId, Pos pos){
         message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine);
         qDebug() << message;
         messages.push(message);
-
         if (reciveOkMessage){
             reciveOkMessage = false;
             this->socket->write(message);
@@ -227,7 +227,7 @@ bool Client::readInsert(){
     Message message(character, socket->socketDescriptor(), INSERT);
     incomingInsertMessagesQueue.push(message);
 
-    //emit newMessage();
+    emit newMessage();
     return true;
 }
 
