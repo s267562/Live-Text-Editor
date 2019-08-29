@@ -11,33 +11,19 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+    /* MAINWINDOW
     MainWindow mw("temp");
-    mw.show();
+    mw.show();*/
 
     /* TEST: REGISTRATION FEATURE
     Client client;
     client.connectTo("127.0.0.1");
-    client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");*/ 
+    client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");*/
 
-
-    //c.logIn("username","password");
-    //c.requestForFile("CiaoTy!");
-
-    //std::vector<int> numbers{1,2,3,4,5};
-    /*client.deleteChar("c", "123", numbers);
-    client.insert("c", "123", 1);*/
-    //client.logOut();
-    //client.deleteChar("c", 1);
-    //client.deleteChar("c", numbers);
-    //client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
-/*
-    Login login;
-    login.setClient(&client);
-    login.show();
+    /* TEST: TEXT EDITOR */
+    Client client;
     client.connectTo("127.0.0.1");
-    //client.logIn("username","password");
-    client.requestForFile("CiaoTy!");
-    client.insert("c", "123", Pos(1,1));
+    client.logIn("prova","prova");
 
     Q_INIT_RESOURCE(textEditor);
 
@@ -70,6 +56,6 @@ int main(int argc, char *argv[]) {
             (availableGeometry.height() - editor.height()) / 2);
 
     editor.show();
-*/
+
     return app.exec();
 }

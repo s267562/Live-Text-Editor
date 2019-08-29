@@ -66,6 +66,7 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();
             reciveOkMessage = true;
+            requestForFile("prova");        /* TEST: TEXT EDITOR */
         }
     }
 }
