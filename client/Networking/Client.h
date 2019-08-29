@@ -28,12 +28,7 @@ public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
     void insert(QString, QString, Pos pos);
-    /*void insert(QString, std::vector<Identifier> pos);                        // Testing
-    void insert(QString str, std::vector<int> pos);                             // Testing
-    void deleteChar(QString, int pos);*/                                        // Testing
-    void deleteChar(QString str, QString siteId,std::vector<int> pos);          // Testing
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
-    bool writeOnSocket(std::string str);                                        // Testing
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -42,9 +37,6 @@ public:
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
-
-
-
     Message getMessage();
 
 public slots:

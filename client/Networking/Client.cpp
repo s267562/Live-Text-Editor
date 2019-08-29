@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "../utils/Identifier.h"
+#include "common/commonFunctions.h"
 
 #include <QFile>
 #include <QPixmap>
@@ -54,9 +55,13 @@ void Client::onReadyRead(){
                 reciveOkMessage = true;
             }
         }else if (datas.toStdString() == INSERT_MESSAGE){
-            readInsert();
+            if (readInsert()){
+                reciveOkMessage = true;
+            }
         }else if (datas.toStdString() == DELETE_MESSAGE){
-            readDelete();
+            if (readDelete()){
+                reciveOkMessage = true;
+            }
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();
             reciveOkMessage = true;
@@ -65,22 +70,18 @@ void Client::onReadyRead(){
 }
 
 bool Client::logIn(QString username, QString password){
+    qDebug() << "-------------LOGIN-------------";
     //TODO: Connessione al server, verifica di credenziali...
-    if( username=="test" && password=="test" ){
+    if( username=="test" && password=="test" ){                 //only for testing...
         return true;
     }
 
-
     if (!clientIsLogged) {
         QByteArray message(LOGIN_MESSAGE);
-        QByteArray data;
-        QDataStream in(&data, QIODevice::WriteOnly);
-        data.append(" ");
-        in << username.size();
+        QByteArray usernameSize = convertionNumber(username.size());
+        QByteArray passwordSize = convertionNumber(password.size());
 
-        //data.append(" " + username.size());
-        data.append(" " + username + " " + password.size() + " " + password);
-        message.append(data);
+        message.append(" " + usernameSize + " " + username.toUtf8()  + " " + passwordSize + " " + password.toUtf8());
         qDebug() << message;
 
         socket->write(message);
@@ -88,29 +89,48 @@ bool Client::logIn(QString username, QString password){
      return false;
 }
 
+void Client::registration(QString username, QString password, QString pathAvatar){
+    qDebug() << "-------------REGISTRATION-------------";
+    QPixmap pix;
+    pix.load(pathAvatar);
+    QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
+
+    QDataStream out(socket);
+    QByteArray message(REGISTRATION_MESSAGE);
+
+    QByteArray usernameSize = convertionNumber(username.size());
+    QByteArray passwordSize = convertionNumber(password.size());
+    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " ");
+    socket->write(message);
+
+    //avatar
+    out << pix.toImage().sizeInBytes();
+    socket->write(" ");
+    socket->write(image);
+
+    qDebug() << username << " " << password << " avatarSize: " << pix.toImage().sizeInBytes();
+}
+
 bool Client::readFileNames(){
     qDebug() << "-------------READ FILE NAMES-------------";
     QStringList fileList;
+
     socket->read(1);
-    QDataStream inNumFiles(socket);
-    int numFiles;
-    inNumFiles >> numFiles;
+    int numFiles = readNumberFromSocket(socket);
+
     qDebug () << "numFiles" << numFiles;
-    socket->read(1);
 
-    QDataStream inFileNameSize(socket);
-    int fileNameSize;
-    inFileNameSize >> fileNameSize;
+    for (int i = 0; i < numFiles; i++){
+        socket->read(1);
+        int fileNameSize = readNumberFromSocket(socket);
+        socket->read(1);
+        QString fileName = socket->read(fileNameSize);
+        fileList.append(fileName);
 
-    qDebug () << "filesSize" << fileNameSize;
-
-    socket->read(1);
-    QString fileName = socket->read(fileNameSize);
-    fileList.append(fileName);
+        qDebug () << fileName;
+    }
 
     emit fileNames(fileList);
-
-    qDebug () << "fileName" << fileName;
 
     return true;
 }
@@ -127,13 +147,14 @@ void Client::logOut(){
 }
 
 bool Client::requestForFile(QString fileName){
+    qDebug() << "-------------REQUEST FOR FILE-------------";
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(REQUEST_FILE_MESSAGE);
-        QByteArray data;
-        data.append(fileName);
-        //
-        message.append(data);
+        QByteArray fileNameSize = convertionNumber(fileName.size());
+
+        message.append(" " + fileNameSize + " " + fileName.toUtf8());
         qDebug() << message;
+
         messages.push(message);
         if (reciveOkMessage){
             reciveOkMessage = false;
@@ -146,18 +167,19 @@ bool Client::requestForFile(QString fileName){
 }
 
 void Client::insert(QString str, QString siteId, Pos pos){
+    qDebug() << "-------------WRITE INSERT-------------";
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
-        QByteArray data;
-        QDataStream in(&data,  QIODevice::WriteOnly);
-        data.append(" ");
-        in << str.size();
+        QByteArray strSize = convertionNumber(str.size());
+        QByteArray siteIdSize = convertionNumber(siteId.size());
+        QByteArray posCh = convertionNumber(pos.getCh());
+        QByteArray posLine = convertionNumber(pos.getLine());
 
-        data.append(" " + str + " " + siteId.size() + " " + siteId + " " + pos.getCh() + " " + pos.getLine());
-        message.append(data);
+        message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine);
         qDebug() << message;
         messages.push(message);
-        if (/*reciveOkMessage*/ true){
+
+        if (reciveOkMessage){
             reciveOkMessage = false;
             this->socket->write(message);
             messages.pop();
@@ -166,36 +188,38 @@ void Client::insert(QString str, QString siteId, Pos pos){
 }
 
 bool Client::readInsert(){
-    qDebug() << "-------------INS-------------";
-    bool ok;
-    QDataStream in(socket);
-    int sizeString;
-    in >> sizeString;
+    qDebug() << "-------------READ INSERT-------------";
     socket->read(1);
-    QByteArray letter = socket->read(sizeString);
-    socket->read(1);
+    int sizeString = readNumberFromSocket(socket);
+    socket->read(1);                                // " "
+
+    QByteArray letter;
+    if (!readChunck(socket, letter, sizeString)){
+        return false;
+    }
+    socket->read(1);                                // " "
 
     //siteID
-    QByteArray sizeSiteId = socket->read(1);
-    socket->read(1);
-    QByteArray siteId = socket->read(sizeSiteId.toHex().toInt(&ok,16));
-    qDebug()<< siteId << " size" << sizeSiteId.toHex().toInt(&ok,16);
-    socket->read(1);
+    int siteIdSize = readNumberFromSocket(socket);
+    socket->read(1);                                // " "
+    QByteArray siteId;
+    if (!readChunck(socket, siteId, siteIdSize)){
+        return false;
+    }
+    socket->read(1);                                // " "
+    int posSize = readNumberFromSocket(socket);
 
-    QByteArray size = socket->read(1);
-
-    qDebug() << " size pos:" << size.toHex().toInt(&ok,16);
-    socket->read(1);
+    socket->read(1);                                // " "
     std::vector<Identifier> position;
-    qDebug() << letter;
+    qDebug() << "ch: "<<letter << " siteId: "<< siteId;
 
-    for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
-        int pos = socket->read(1).toHex().toInt(&ok,16);
+    for (int i = 0; i < posSize; i++){
+        int pos = readNumberFromSocket(socket);
         Identifier identifier(pos, siteId);
         position.push_back(identifier);
-        qDebug() << " pos:" << pos;
-        if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
-            socket->read(1);
+        qDebug() << pos;
+        if (i != posSize - 1 || posSize != 1){
+            socket->read(1);                        // " "
         }
     }
 
@@ -248,86 +272,6 @@ bool Client::readDelete(){
     emit newMessage();
     return true;
 }
-/*void Client::insert(QString str, std::vector<Identifier> pos){
-    if (this->socket->state() == QTcpSocket::ConnectedState){
-        QByteArray message(INSERT_MESSAGE);
-        QByteArray data;
-        data.append(" " + str + " " + pos.size() + " ");
-        QByteArray position;
-
-        for (int i = 0; i < pos.size(); i++){
-            position.append(pos[i].getDigit());
-            if (i != pos.size() - 1 || pos.size() != 1){
-                position.append(" ");
-            }
-        }
-
-        data.append(position);
-        //message.append(data.size());
-        message.append(data);
-        qDebug() << message;
-        messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
-            this->socket->write(message);
-            messages.pop();
-        }
-    }
-}
-
-void Client::insert(QString str, std::vector<int> pos){
-    if (this->socket->state() == QTcpSocket::ConnectedState){
-        QByteArray message(INSERT_MESSAGE);
-        QByteArray data;
-        data.append(" " + str + " " + pos.size() + " ");
-        QByteArray position;
-
-        for (int i = 0; i < pos.size(); i++){
-            position.append(pos[i]);
-            if (i != pos.size() - 1 || pos.size() != 1){
-                position.append(" ");
-            }
-        }
-
-        data.append(position);
-        //message.append(data.size());
-        message.append(data);
-        qDebug() << message;
-        messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
-            this->socket->write(message);
-            messages.pop();
-        }
-    }
-}*/
-
-void Client::deleteChar(QString str, QString siteId, std::vector<int> pos){
-    if (this->socket->state() == QTcpSocket::ConnectedState){
-        QByteArray message(DELETE_MESSAGE);
-        QByteArray data;
-        data.append(" " + str + " "  + siteId.size() + " " + siteId + " " + pos.size() + " ");
-        QByteArray position;
-
-        for (int i = 0; i < pos.size(); i++){
-            position.append(pos[i]);
-            if (i != pos.size() - 1 || pos.size() != 1){
-                position.append(" ");
-            }
-        }
-
-        data.append(position);
-        //message.append(data.size());
-        message.append(data);
-        qDebug() << message;
-        messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
-            this->socket->write(message);
-            messages.pop();
-        }
-    }
-}
 
 void Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos){
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -357,37 +301,9 @@ void Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos
     }
 }
 
-/*void Client::deleteChar(QString str, int pos){
-    if (this->socket->state() == QTcpSocket::ConnectedState){
-        QByteArray message(DELETE_MESSAGE);
-        QByteArray data;
-        data.append(" " + str + " " + "\x01" + " "+ pos);
-        //message.append(data.size());
-        message.append(data);
-        qDebug() << message;
-        messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
-            this->socket->write(message);
-            messages.pop();
-        }
-    }
-}*/
-
 bool Client::writeOnSocket(QString str){
     if (this->socket->state() == QTcpSocket::ConnectedState){
         this->socket->write(str.toUtf8());
-        return this->socket->waitForBytesWritten();
-    }else{
-        return false;
-    }
-}
-
-bool Client::writeOnSocket(std::string str){
-    QByteArray data(str.c_str()/*str.length()*/);
-
-    if (this->socket->state() == QTcpSocket::ConnectedState){
-        this->socket->write(data);
         return this->socket->waitForBytesWritten();
     }else{
         return false;
@@ -404,55 +320,6 @@ void Client::onDisconnect(){
     //emit errorConnection();
 }
 
-void Client::registration(QString username, QString password, QString pathAvatar){
-    QPixmap pix;
-    pix.load(pathAvatar);
-    QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
-
-    QByteArray uSize, pSize, aSize;
-    uSize.setNum(username.size());
-    pSize.setNum(password.size());
-    aSize.setNum(pix.toImage().sizeInBytes());
-
-    //socket->write(REGISTRATION_MESSAGE);
-    QByteArray uname;
-    uname.append(" " + uSize + " " + username);
-    QByteArray pword;
-    pword.append(" " + pSize + " " + password + " ");
-    QByteArray img;
-    img.append(aSize + " " + image);
-    /*QByteArray message;
-    message.append(REGISTRATION_MESSAGE).append(uname).append(pword).append(img);*/
-
-    QDataStream out(socket);
-    socket->write(REGISTRATION_MESSAGE);
-
-    //username
-    socket->write(" ");
-    out << username.size();
-    socket->write(" ");
-    socket->write(username.toLocal8Bit());
-    socket->write(" ");
-
-    //password
-    out << password.size();
-    socket->write(" ");
-    socket->write(password.toLocal8Bit());
-    socket->write(" ");
-
-    //avatar
-    out << pix.toImage().sizeInBytes();
-    socket->write(" ");
-    socket->write(image);
-
-
-    qDebug() << username << " " << password << " " << aSize;
-    qDebug() << sizeof(pix.toImage().sizeInBytes());
-    qDebug() << sizeof(username.size());
-    //socket->write(message);
-    //qDebug() << image;
-}
-
 Message Client::getMessage() {
     // give priority to insert messages.
     if(!incomingInsertMessagesQueue.empty()) {
@@ -465,5 +332,3 @@ Message Client::getMessage() {
         return message;
     }
 }
-
-

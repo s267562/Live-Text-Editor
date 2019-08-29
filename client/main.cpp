@@ -11,13 +11,13 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-
     MainWindow mw("temp");
-
     mw.show();
 
-
-
+    /* TEST: REGISTRATION FEATURE
+    Client client;
+    client.connectTo("127.0.0.1");
+    client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");*/ 
 
 
     //c.logIn("username","password");

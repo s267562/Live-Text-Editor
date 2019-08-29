@@ -24,11 +24,10 @@ private:
 public:
     explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr);
     void run();
-    void addSocket(qintptr socketDescriptor);
+    void addSocket(QTcpSocket *soc);
 private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
-    void insert(QString str, QString siteId, std::vector<int> pos);
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
     void deleteChar(QString str, QString siteId, std::vector<int> pos);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
@@ -40,8 +39,6 @@ signals:
 public slots:
     void readyRead(QTcpSocket *socket);
     void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
-
-    void addSocket2(QTcpSocket *soc);
 };
 
 #endif // THREAD_H

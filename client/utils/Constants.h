@@ -11,4 +11,6 @@
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 
+#define TIMEOUT 15000
+
 #endif // CONSTANTS_H

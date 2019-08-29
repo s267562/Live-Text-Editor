@@ -69,25 +69,24 @@ void Server::connection(){
 
 bool Server::logIn(QTcpSocket *soc){
     /* read user and password on socket*/
-    bool ok;
-    QByteArray data;
-    QDataStream in(soc);
-    data.append(" ");
-    /*in << str.size();
-    soc->read(1);*/
-    int usernameSize; /*= soc->read(1).toHex().toInt(&ok,16);*/
-    in >> usernameSize;
+    qDebug() << "-------------LOGIN-------------";
+
+    /* usernameSize */
+    soc->read(1);
+    int usernameSize = readNumberFromSocket(soc);
 
     qDebug() << "usernameSize: " <<usernameSize;
 
     soc->read(1);
+    /* username */
     QByteArray username;
     if (!readChunck(soc, username, usernameSize)){
         return false;
     }
     soc->read(1);
 
-    int passwordSize = soc->read(1).toHex().toInt(&ok,16);
+    /* passwordSize */
+    int passwordSize = readNumberFromSocket(soc);
     soc->read(1);
 
     qDebug() << "passwordSize: " <<passwordSize;
@@ -99,71 +98,63 @@ bool Server::logIn(QTcpSocket *soc){
 
     qDebug() << "username: " << username << " password: " << password;
 
+    // TODO: richiamo funzione per il login sul db
 
     return true;
 }
 
 bool Server::sendFileNames(QTcpSocket *soc){
-    /* ritrovare file per l'utente */
-    /*QByteArray data;
-    QString fileName("file1");
-    QByteArray numFiles;
-    numFiles.setNum(166777);
-    QByteArray fileNameSize;
-    fileNameSize.setNum(fileName.toUtf8().size());
-    data.append(LIST_OF_FILE);
-    data.append(" " + numFiles);
-    data.append(" " + fileNameSize);
-    data.append(" " + fileName.toUtf8());
-    soc->write(data);
-    qDebug() << data;*/
+    qDebug() << "-------------LIST OF FILE-------------";
+    // TODO gestione file dell'utente
 
     int nFiles = 1;
     QString fileName;
-    fileName = "file1";
+    fileName = "file1";                                     /* file fantoccio: da rimuovere in seguito */
     QByteArray message(LIST_OF_FILE);
 
-    QByteArray numFiles;
-    QDataStream inNumFiles(&numFiles, QIODevice::WriteOnly);
-    inNumFiles << nFiles;
+    QByteArray numFiles = convertionNumber(nFiles);
 
-    QByteArray fileNameSize;
-    QDataStream inFileNameSize(&fileNameSize, QIODevice::WriteOnly);
-    inFileNameSize << fileName.size();
+    QByteArray fileNameSize = convertionNumber(fileName.size());
 
     message.append(" " + numFiles + " " + fileNameSize + " " + fileName.toUtf8());
     qDebug() << message;
     soc->write(message);
     if (soc->waitForBytesWritten(TIMEOUT)){
-        qDebug() << "LF, scritto";
+        qDebug() << "LIST OF FILE, scritto";
         return true;
     }else{
-        qDebug() << "LF, non scritto";
+        qDebug() << "LIST OF FILE, non scritto";
         return false;
     }
-    return true;
 }
 
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
-    //soc->waitForReadyRead(30);
-    QByteArray data = soc->readAll();
+    qDebug() << "-------------REQUEST FOR FILE-------------";
+    soc->read(1);                                                       // " "
+    int fileNameSize = readNumberFromSocket(soc);
+    soc->read(1);                                                       // " "
 
-    std::string key = data.toStdString();                           /* file name */
-    qDebug() << data;
+    QByteArray fileName;
+    if (!readChunck(soc, fileName, fileNameSize)){
+        writeErrMessage(soc);
+        return false;
+    }
+    qDebug() << fileName;
+
+    std::string key = fileName.toStdString();                           /* file name */
     auto result = threads.find(key);
 
     if (result != threads.end()){
         /* file already open */
-        qDebug() << "thread for file name aready exist " << data;
-        threads[key]->addSocket(socketDescriptor);                  /* socket transition to secondary thread */
+        qDebug() << "thread for file name aready exist " << fileName;
+        threads[key]->addSocket(soc);                       /* socket transition to secondary thread */
     }else{
         /* file not yet open */
-        qDebug() << "New thread for file name: " << data;
+        qDebug() << "New thread for file name: " << fileName;
         CRDT *crdt = new CRDT();
-        Thread *thread = new Thread(this, crdt);     /* create new thread */
+        Thread *thread = new Thread(this, crdt);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
-        thread->addSocket(socketDescriptor);                        /* socket transition to secondary thread */
-        thread->addSocket2(soc);
+        thread->addSocket(soc);                            /* socket transition to secondary thread */
         thread->start();
     }
 
@@ -172,35 +163,32 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
 }
 
 bool Server::registration(QTcpSocket *soc){
+    qDebug() << "-------------REGISTRATION-------------";
     if (soc == nullptr){
         return false;
     }
-
-    QDataStream in(soc);
-
-    soc->read(1);               // " "
-    int sizeUsername;
-    in >> sizeUsername;
-    soc->read(1);               // " "
+    soc->read(1);                                       // " "
+    int sizeUsername = readNumberFromSocket(soc);
+    soc->read(1);                                       // " "
 
     //username
     QByteArray username;
     if (!readChunck(soc, username, sizeUsername)){
         writeErrMessage(soc);
     }
-    soc->read(1);               // " "
+    soc->read(1);                                       // " "
 
-    int sizePassword;
-    in >> sizePassword;
-    soc->read(1);// " "
+    int sizePassword = readNumberFromSocket(soc);
+    soc->read(1);                                       // " "
 
     //password
     QByteArray password;
     if (!readChunck(soc, password, sizePassword)){
         writeErrMessage(soc);
     }
-    soc->read(1);               // " "
+    soc->read(1);                                       // " "
 
+    QDataStream in(soc);
     qsizetype sizeAvatar;
     in >> sizeAvatar;
     soc->read(1);
