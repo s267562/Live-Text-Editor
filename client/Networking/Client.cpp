@@ -32,7 +32,7 @@ bool Client::connectTo(QString host){
 
 void Client::onReadyRead(){
     QByteArray datas = socket->read(5);
-    qDebug() << datas;
+    qDebug() << "msg received: " << datas;
 
     if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
         clientIsLogged = true;
@@ -58,10 +58,12 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == INSERT_MESSAGE){
             if (readInsert()){
                 reciveOkMessage = true;
+                onReadyRead(); // TODO da risolvere (messaggio ok)
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
             if (readDelete()){
                 reciveOkMessage = true;
+                onReadyRead(); // TODO da risolvere (messaggio ok)
             }
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();
@@ -228,7 +230,7 @@ bool Client::readInsert(){
     Message message(character, socket->socketDescriptor(), INSERT);
     incomingInsertMessagesQueue.push(message);
 
-    emit newMessage();
+    emit newMessage(message);
     return true;
 }
 
@@ -270,7 +272,7 @@ bool Client::readDelete(){
     Message message(character, socket->socketDescriptor(), DELETE);
     incomingDeleteMessagesQueue.push(message);
 
-    emit newMessage();
+    emit newMessage(message);
     return true;
 }
 
@@ -322,6 +324,9 @@ void Client::onDisconnect(){
 }
 
 Message Client::getMessage() {
+
+    std::cout << "incomingInsertMessagesQueue size: " << incomingInsertMessagesQueue.size() << std::endl;
+
     // give priority to insert messages.
     if(!incomingInsertMessagesQueue.empty()) {
         Message message = incomingInsertMessagesQueue.front();

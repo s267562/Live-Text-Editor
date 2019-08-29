@@ -20,15 +20,12 @@ private:
     QString siteId;
 
 private slots:
-    void newMessage();
+    void newMessage(Message message);
 
 public:
     Controller(CRDT *crdt, Editor *editor, Client *client);
     void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
-    void insertIntoEditor(char character, Pos pos);
-
-    int count;
 };
 
 

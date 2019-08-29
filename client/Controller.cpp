@@ -4,7 +4,7 @@
 
 #include "Controller.h"
 
-Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client), count(0) {
+Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client) {
     editor->setController(this);
 
     // Controller
@@ -27,8 +27,8 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
     }
 }
 
-void Controller::newMessage() {
-    Message message = this->client->getMessage();
+void Controller::newMessage(Message message) {
+    // Message message = this->client->getMessage();
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
