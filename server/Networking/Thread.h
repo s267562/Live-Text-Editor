@@ -22,6 +22,9 @@ private:
     CRDT *crdt;
     QString filename;
     QTimer *saveTimer;
+    int saveInterval = 2 * 60 * 1000; // 2 min (in ms) // TODO decidere intervallo
+    bool needToSaveFile = false;
+    bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
 
 public:
     explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = nullptr);
@@ -41,8 +44,7 @@ signals:
 public slots:
     void readyRead(QTcpSocket *socket);
     void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
-    //TODO funzione di callback che si occupa di salvare il CRDT
-//    void saveCRDTToFile()
+    void saveCRDTToFile();
 };
 
 #endif // THREAD_H

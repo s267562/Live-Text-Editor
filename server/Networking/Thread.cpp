@@ -5,7 +5,13 @@ class Identifier;
 
 class Character;
 
-Thread::Thread(QObject *parent, CRDT *crdt, QString filename) : QThread(parent), crdt(crdt), filename(filename) {}
+Thread::Thread(QObject *parent, CRDT *crdt, QString filename) : QThread(parent), crdt(crdt), filename(filename) {
+	// Create new timer
+	saveTimer = new QTimer(this);
+
+	// Setup signal and slot
+	connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveCRDTToFile()));
+}
 
 void Thread::run() {
 	exec();
@@ -89,6 +95,11 @@ bool Thread::readInsert(QTcpSocket *soc) {
 		// send character (broadcast)
 		this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 	}
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
 	return true;
 }
 
@@ -141,6 +152,11 @@ bool Thread::readDelete(QTcpSocket *soc) {
 	// send character (broadcast)
 	this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
 	return true;
 }
 
@@ -227,4 +243,9 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor) {
 	socket.setSocketDescriptor(socketDescriptor);
 	socket.deleteLater();
 	sockets.erase(soc->socketDescriptor());
+}
+
+void Thread::saveCRDTToFile() {
+	if (needToSaveFile)
+		crdt->saveCRDT(filename);
 }
