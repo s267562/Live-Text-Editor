@@ -53,28 +53,28 @@ void Thread::readyRead(QTcpSocket *soc){
 
 bool Thread::readInsert(QTcpSocket *soc){
     qDebug() << "-------------READ INSERT-------------";
-    soc->read(1);                       // " "
+    readSpace(soc);
     int sizeString = readNumberFromSocket(soc);
-    soc->read(1);                       // " "
+    readSpace(soc);
 
     QByteArray letter;
     if (!readChunck(soc, letter, sizeString)){
         return false;
     }
-    soc->read(1);                       // " "
+    readSpace(soc);
 
     //siteID
     int sizeSiteId = readNumberFromSocket(soc);
-    soc->read(1);                       // " "
+    readSpace(soc);
 
     QByteArray siteId;
     if (!readChunck(soc, siteId, sizeSiteId)){
         return false;
     }
-    soc->read(1);                       // " "
+    readSpace(soc);
 
     int posChInt = readNumberFromSocket(soc);
-    soc->read(1);                       // " "
+    readSpace(soc);
 
     int posLineInt = readNumberFromSocket(soc);
 
@@ -92,52 +92,45 @@ bool Thread::readInsert(QTcpSocket *soc){
 }
 
 bool Thread::readDelete(QTcpSocket *soc){
-    qDebug() << "-------------DEL-------------";
-    bool ok;
-    soc->read(1);
+    qDebug() << "-------------READ DELETE-------------";
+    readSpace(soc);
     QByteArray letter;
     if (!readChunck(soc, letter, 1)){
         return false;
     }
-    soc->read(1);
+    readSpace(soc);
 
     //siteID
-    QByteArray sizeSiteId;
-    if (!readChunck(soc, sizeSiteId, 1)){
-        return false;
-    }
-    soc->read(1);
+    int sizeSiteId = readNumberFromSocket(soc);
+    readSpace(soc);
 
     QByteArray siteId;
-    if (!readChunck(soc, siteId, sizeSiteId.toHex().toInt(&ok,16))){
+    if (!readChunck(soc, siteId, sizeSiteId)){
         return false;
     }
-    soc->read(1);
+    readSpace(soc);
 
-    QByteArray size = soc->read(1);
-    qDebug() << " size:" << size << " size Int:" << size.toHex().toInt(&ok,16);
-    soc->read(1);
+    int size = readNumberFromSocket(soc);
+    qDebug() << " size:" << size << " size Int:" << size;
+    readSpace(soc);
     std::vector<Identifier> position;
     qDebug() << letter;
 
-    for (int i = 0; i < size.toHex().toInt(&ok,16); i++){
-        int pos = soc->read(1).toHex().toInt(&ok,16);
+    for (int i = 0; i < size; i++){
+        int pos = readNumberFromSocket(soc);
         Identifier identifier(pos, siteId);
         position.push_back(identifier);
         qDebug() << " pos:" << pos;
-        if (i != size.toHex().toInt(&ok,16) - 1 || size.toHex().toInt(&ok,16) != 1){
-            soc->read(1);
+        if (i != size - 1 || size != 1){
+            readSpace(soc);
         }
     }
 
     Character character(letter[0], 0, siteId, position);
-    // Message message(character, soc->socketDescriptor(), DELETE);
-    // messagesQueue.push(message);
-    // emit newMessage();
 
     crdt->handleDelete(character);
 
-    // send character (broadcast)
+    // broadcast
     this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 
     return true;
@@ -164,59 +157,32 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
 
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
-        socket.second->write(message);
-    }
-}
-
-void Thread::deleteChar(QString str, QString siteId, std::vector<int> pos){
-    QByteArray message(DELETE_MESSAGE);
-    QByteArray data;
-    QDataStream in(&data,  QIODevice::WriteOnly);
-    data.append(" ");
-    in << str.size();
-
-    data.append(" " + str + " " + siteId.size() + " " + siteId + " "+ pos.size() + " ");
-    QByteArray position;
-
-    for (int i = 0; i < pos.size(); i++){
-        position.append(pos[i]);
-        if (i != pos.size() - 1 || pos.size() != 1){
-            position.append(" ");
-        }
-    }
-    data.append(position);
-    message.append(data);
-    qDebug() << message;
-
-    //broadcast
-    for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
-        socket.second->write(message);
+        writeMessage(socket.second.get(), message);
     }
 }
 
 void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> pos){
+    qDebug() << "-------------WRITE DELETE-------------";
     QByteArray message(DELETE_MESSAGE);
-    QByteArray data;
-    QDataStream in(&data,  QIODevice::WriteOnly);
-    data.append(" ");
-    in << str.size();
+    QByteArray siteIdSize = convertionNumber(siteId.size());
+    QByteArray posSize = convertionNumber(pos.size());
 
-    data.append(" " + str + " " + siteId.size() + " " + siteId + " "+ pos.size() + " ");
+    qDebug() << pos.size();
+    message.append(" " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " "+ posSize + " ");
     QByteArray position;
 
     for (int i = 0; i < pos.size(); i++){
-        position.append(pos[i].getDigit());
+        position.append(convertionNumber(pos[i].getDigit()));
         if (i != pos.size() - 1 || pos.size() != 1){
             position.append(" ");
         }
     }
-    data.append(position);
-    message.append(data);
+    message.append(position);
     qDebug() << message;
 
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
-        socket.second->write(message);
+        writeMessage(socket.second.get(), message);
     }
 }
 

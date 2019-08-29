@@ -27,13 +27,13 @@ private:
 public:
     Client(QObject *parent = nullptr);
     bool writeOnSocket(QString);
-    void insert(QString, QString, Pos pos);
-    void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
+    bool insert(QString, QString, Pos pos);
+    bool deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
     void logOut();
-    void registration(QString username, QString passsword, QString pathAvatar);
+    bool registration(QString username, QString passsword, QString pathAvatar);
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();

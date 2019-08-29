@@ -29,7 +29,6 @@ private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
-    void deleteChar(QString str, QString siteId, std::vector<int> pos);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
 
 signals:
