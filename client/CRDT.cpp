@@ -307,16 +307,12 @@ int CRDT::findIndexInLine(Character character, std::vector<Character> line) {
 }
 
 void CRDT::removeEmptyLines() {
-    // TODO check if correct
+
     for (int line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].size() == 0) {
             this->structure.erase(this->structure.begin() + line);
             line--;
         }
-    }
-
-    if (this->structure.size() == 0) {
-        this->structure.push_back(std::vector<Character>{});
     }
 }
 

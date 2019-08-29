@@ -104,7 +104,8 @@ bool Thread::readInsert(QTcpSocket *soc){
     int posLineInt = posLine.toHex().toInt(&ok,16);
     Pos startPos{posChInt, posLineInt};
 
-    for(char c : letter) {
+    for(int i=letter.size(); i>0; i--) {
+        char c = letter[i-1];
         Character character = crdt->handleInsert(c, startPos, QString{siteId});
         // send character (broadcast)
         this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());

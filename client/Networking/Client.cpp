@@ -3,6 +3,7 @@
 
 #include <QFile>
 #include <QPixmap>
+#include <iostream>
 
 Client::Client(QObject *parent):QObject (parent){
     this->socket = new QTcpSocket(this);
@@ -157,7 +158,7 @@ void Client::insert(QString str, QString siteId, Pos pos){
         message.append(data);
         qDebug() << message;
         messages.push(message);
-        if (/*reciveOkMessage*/ true){
+        if (reciveOkMessage){
             reciveOkMessage = false;
             this->socket->write(message);
             messages.pop();
