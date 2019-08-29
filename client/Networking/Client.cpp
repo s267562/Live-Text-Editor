@@ -203,7 +203,7 @@ bool Client::readInsert(){
     Message message(character, socket->socketDescriptor(), INSERT);
     incomingInsertMessagesQueue.push(message);
 
-    //emit newMessage();
+    emit newMessage();
     return true;
 }
 
@@ -465,5 +465,3 @@ Message Client::getMessage() {
         return message;
     }
 }
-
-

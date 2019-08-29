@@ -26,7 +26,7 @@ Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
 		for (int j = 0; j < structure[i].size(); j++) {
 			char val = structure[i][j].getValue();
 			int counter = structure[i][j].getCounter();
-			std::cout << "val = " << val << "; counter = " << counter << "; position: ";
+			std::cout << "val = " << ((val == '\n') ? '\n' : val) << "; counter = " << counter << "; position: ";
 			std::vector<Identifier> identifier = structure[i][j].getPosition();
 			for (Identifier id : identifier) {
 				std::cout << id.getDigit() << " ";
@@ -309,10 +309,10 @@ Pos CRDT::findPosition(Character character) {
 
 	if (character.compareTo(minLastChar) <= 0) {
 		int charIdx = this->findIndexInLine(character, minCurrentLine);
-		return {minLine, charIdx};
+		return Pos { charIdx, minLine };
 	} else {
 		int charIdx = this->findIndexInLine(character, maxCurrentLine);
-		return {maxLine, charIdx};
+		return Pos { charIdx, maxLine };
 	}
 }
 

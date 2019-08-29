@@ -43,8 +43,6 @@ public:
     bool readInsert();
     bool readDelete();
 
-
-
     Message getMessage();
 
 public slots:
