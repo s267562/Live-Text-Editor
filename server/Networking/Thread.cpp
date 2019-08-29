@@ -2,53 +2,39 @@
 #include <QDataStream>
 
 class Identifier;
+
 class Character;
 
-Thread::Thread(QObject *parent, CRDT *crdt) : QThread(parent), crdt(crdt) {}
+Thread::Thread(QObject *parent, CRDT *crdt, QString filename) : QThread(parent), crdt(crdt), filename(filename) {
+	// Create new timer
+	saveTimer = new QTimer(this);
 
-void Thread::run(){
-    exec();
+	// Setup signal and slot
+	connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveCRDTToFile()));
+}
+
+void Thread::run() {
+	exec();
 }
 
 void Thread::addSocket(QTcpSocket *soc) {
-    qintptr socketDescriptor = soc->socketDescriptor();
-    /* insert new socket into structure */
-    sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
-    qDebug() << "size" << sockets.size();
+	qintptr socketDescriptor = soc->socketDescriptor();
+	/* insert new socket into structure */
+	sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
+	qDebug() << "size" << sockets.size();
 
-    /* connect socket and signal */
-    connect(soc, &QAbstractSocket::readyRead, this, [this,soc](){
-        qDebug() << soc;
-        Thread::readyRead(soc);
-    }, Qt::DirectConnection);
+	/* connect socket and signal */
+	connect(soc, &QAbstractSocket::readyRead, this, [this, soc]() {
+		qDebug() << soc;
+		Thread::readyRead(soc);
+	}, Qt::DirectConnection);
 
-    connect(soc, &QAbstractSocket::disconnected, this, [this,soc, socketDescriptor](){
-        qDebug() << soc;
-        Thread::disconnected(soc,socketDescriptor);
-    }, Qt::DirectConnection);
+	connect(soc, &QAbstractSocket::disconnected, this, [this, soc, socketDescriptor]() {
+		qDebug() << soc;
+		Thread::disconnected(soc, socketDescriptor);
+	}, Qt::DirectConnection);
 
-    qDebug() << socketDescriptor << " Client connected" << soc;
-}
-
-void Thread::readyRead(QTcpSocket *soc){
-    QByteArray data;
-    if (!readChunck(soc, data, 5)){
-        /* eccezione */
-        writeErrMessage(soc);
-        return;
-    }
-
-    if (data.toStdString() == INSERT_MESSAGE){
-        if (!readInsert(soc)){
-            writeErrMessage(soc);
-        }
-    }else if (data.toStdString() == DELETE_MESSAGE){
-        if (!readDelete(soc)){
-            writeErrMessage(soc);
-        }
-    }else{
-        writeErrMessage(soc);
-    }
+	qDebug() << socketDescriptor << " Client connected" << soc;
 }
 
 bool Thread::readInsert(QTcpSocket *soc){
@@ -82,14 +68,58 @@ bool Thread::readInsert(QTcpSocket *soc){
 
     Pos startPos{posChInt, posLineInt};
 
-    for(int i=letter.size(); i>0; i--) {
-        char c = letter[i-1];
-        Character character = crdt->handleInsert(c, startPos, QString{siteId});
-        // send character (broadcast)
-        this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
-    }
-    return true;
+
+bool Thread::readInsert(QTcpSocket *soc) {
+	qDebug() << "-------------READ INSERT-------------";
+	soc->read(1);                       // " "
+	int sizeString = readNumberFromSocket(soc);
+	soc->read(1);                       // " "
+
+	QByteArray letter;
+	if (!readChunck(soc, letter, sizeString)) {
+		return false;
+	}
+	soc->read(1);                       // " "
+
+	//siteID
+	int sizeSiteId = readNumberFromSocket(soc);
+	soc->read(1);                       // " "
+
+	QByteArray siteId;
+	if (!readChunck(soc, siteId, sizeSiteId)) {
+		return false;
+	}
+	soc->read(1);                       // " "
+
+	int posChInt = readNumberFromSocket(soc);
+	soc->read(1);                       // " "
+
+	int posLineInt = readNumberFromSocket(soc);
+
+	qDebug() << "ch: " << letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
+
+	Pos startPos{posChInt, posLineInt};
+
+	for (int i = letter.size(); i > 0; i--) {
+		char c = letter[i - 1];
+		Character character = crdt->handleInsert(c, startPos, QString{siteId});
+		// send character (broadcast)
+		this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+	}
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
+	return true;
 }
+
+
+
+
+void Thread::saveCRDTToFile() {
+	if (needToSaveFile)
+		crdt->saveCRDT(filename);
 
 bool Thread::readDelete(QTcpSocket *soc){
     qDebug() << "-------------READ DELETE-------------";
@@ -133,6 +163,11 @@ bool Thread::readDelete(QTcpSocket *soc){
     // broadcast
     this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 
+  needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
     return true;
 }
 
@@ -192,4 +227,5 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor){
     socket.setSocketDescriptor(socketDescriptor);
     socket.deleteLater();
     sockets.erase(soc->socketDescriptor());
+
 }

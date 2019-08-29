@@ -48,6 +48,8 @@ public:
 	bool addPermission(QString fileID, QString username,Permission permission);
 
 	QList<Permission>  getPermissions(QString fileID, QString username);
+
+	QList<QString> getFiles(QString username);
 };
 
 

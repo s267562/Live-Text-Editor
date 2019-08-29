@@ -146,7 +146,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         /* file not yet open */
         qDebug() << "New thread for file name: " << fileName;
         CRDT *crdt = new CRDT();
-        Thread *thread = new Thread(this, crdt);                        /* create new thread */
+        Thread *thread = new Thread(this, crdt,fileName);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
         thread->addSocket(soc);                            /* socket transition to secondary thread */
         thread->start();
