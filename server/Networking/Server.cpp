@@ -72,22 +72,22 @@ bool Server::logIn(QTcpSocket *soc){
     qDebug() << "-------------LOGIN-------------";
 
     /* usernameSize */
-    soc->read(1);
+    readSpace(soc);
     int usernameSize = readNumberFromSocket(soc);
 
     qDebug() << "usernameSize: " <<usernameSize;
 
-    soc->read(1);
+    readSpace(soc);
     /* username */
     QByteArray username;
     if (!readChunck(soc, username, usernameSize)){
         return false;
     }
-    soc->read(1);
+    readSpace(soc);
 
     /* passwordSize */
     int passwordSize = readNumberFromSocket(soc);
-    soc->read(1);
+    readSpace(soc);
 
     qDebug() << "passwordSize: " <<passwordSize;
 
@@ -118,21 +118,15 @@ bool Server::sendFileNames(QTcpSocket *soc){
 
     message.append(" " + numFiles + " " + fileNameSize + " " + fileName.toUtf8());
     qDebug() << message;
-    soc->write(message);
-    if (soc->waitForBytesWritten(TIMEOUT)){
-        qDebug() << "LIST OF FILE, scritto";
-        return true;
-    }else{
-        qDebug() << "LIST OF FILE, non scritto";
-        return false;
-    }
+
+    writeMessage(soc,message);
 }
 
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
     qDebug() << "-------------REQUEST FOR FILE-------------";
-    soc->read(1);                                                       // " "
+    readSpace(soc);
     int fileNameSize = readNumberFromSocket(soc);
-    soc->read(1);                                                       // " "
+    readSpace(soc);
 
     QByteArray fileName;
     if (!readChunck(soc, fileName, fileNameSize)){
@@ -167,31 +161,31 @@ bool Server::registration(QTcpSocket *soc){
     if (soc == nullptr){
         return false;
     }
-    soc->read(1);                                       // " "
+    readSpace(soc);
     int sizeUsername = readNumberFromSocket(soc);
-    soc->read(1);                                       // " "
+    readSpace(soc);
 
     //username
     QByteArray username;
     if (!readChunck(soc, username, sizeUsername)){
         writeErrMessage(soc);
     }
-    soc->read(1);                                       // " "
+    readSpace(soc);
 
     int sizePassword = readNumberFromSocket(soc);
-    soc->read(1);                                       // " "
+    readSpace(soc);
 
     //password
     QByteArray password;
     if (!readChunck(soc, password, sizePassword)){
         writeErrMessage(soc);
     }
-    soc->read(1);                                       // " "
+    readSpace(soc);
 
     QDataStream in(soc);
     qsizetype sizeAvatar;
     in >> sizeAvatar;
-    soc->read(1);
+    readSpace(soc);
 
     qDebug() << username << " " << sizeUsername;
     qDebug() << password << " " << sizePassword;
