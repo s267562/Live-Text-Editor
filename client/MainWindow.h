@@ -7,7 +7,7 @@
 
 
 #include <QtWidgets/QMainWindow>
-#include "Editor.h"
+#include "editor.h"
 #include "ui/login.h"
 #include "Networking/Client.h"
 #include "ui/connection.h"

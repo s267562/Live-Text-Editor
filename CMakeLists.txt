@@ -29,7 +29,9 @@ add_executable(client
         client/ui/login.ui
         client/ui/login.cpp
         client/main.cpp
-        client/Editor.cpp client/Editor.h
+        client/resource.qrc
+        client/editor.ui
+        client/editor.cpp client/editor.h
         client/CRDT.cpp client/CRDT.h
         client/utils/Character.cpp client/utils/Character.h
         client/utils/Pos.cpp client/utils/Pos.h

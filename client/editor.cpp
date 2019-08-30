@@ -2,10 +2,18 @@
 // Created by simone on 05/08/19.
 //
 
-#include "Editor.h"
+#include "editor.h"
+#include "ui_editor.h"
+#include <QMenuBar>
+#include <QMenu>
+#include <QSlider>
+#include <QSpinBox>
+#include <QHBoxLayout>
+#include <QLabel>
 
 
-Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent) {
+Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent), ui(new Ui::Editor) {
+    ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
 
@@ -126,4 +134,29 @@ void Editor::deleteChar(Pos pos) {
     cursor.deleteChar();
 
     this->cursor = oldCursor;
+}
+
+void Editor::on_actionShare_file_triggered()
+{
+
+}
+
+void Editor::on_actionOpen_triggered()
+{
+
+}
+
+void Editor::on_actionSave_as_PDF_triggered()
+{
+
+}
+
+void Editor::on_actionLogout_triggered()
+{
+
+}
+
+Editor::~Editor()
+{
+    delete ui;
 }

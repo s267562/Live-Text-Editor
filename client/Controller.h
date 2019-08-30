@@ -6,7 +6,7 @@
 #define TEXTEDITOR_CONTROLLER_H
 
 #include "CRDT.h"
-#include "Editor.h"
+#include "editor.h"
 #include "Networking/Client.h"
 #include <iostream>
 
