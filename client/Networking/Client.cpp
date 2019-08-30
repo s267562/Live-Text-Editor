@@ -30,6 +30,10 @@ bool Client::connectTo(QString host){
 }
 
 void Client::onReadyRead(){
+    if (socket->bytesAvailable() == 0){
+        return;
+    }
+
     QByteArray datas;
     if (!readChunck(socket, datas, 5)){
         return;
@@ -52,7 +56,10 @@ void Client::onReadyRead(){
                     return;
                 }
                 messages.pop();
-                socket->write(message);
+                if (!writeMessage(socket, message)){
+                    // push ???
+                    return;
+                }
                 reciveOkMessage = false;
             }else{
                 reciveOkMessage = true;
@@ -60,16 +67,12 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == INSERT_MESSAGE){
             if (readInsert()){
                 reciveOkMessage = true;
-                if (socket->waitForReadyRead(0)){
-                    onReadyRead();
-                }
+                onReadyRead();
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
             if (readDelete()){
                 reciveOkMessage = true;
-                if (socket->waitForReadyRead(0)){
-                    onReadyRead();
-                }
+                onReadyRead();
             }
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();

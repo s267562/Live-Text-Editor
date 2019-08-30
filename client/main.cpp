@@ -11,9 +11,9 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    /* MAINWINDOW */
+    /* MAINWINDOW 
     MainWindow mw("temp");
-    mw.show();
+    mw.show();*/
 
     /* TEST: REGISTRATION FEATURE
     Client client;
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");*/
 
     /* TEST: TEXT EDITOR */
-    /*Client client;
+    Client client;
     client.connectTo("127.0.0.1");
     client.logIn("prova","prova");
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     editor.move((availableGeometry.width() - editor.width()) / 2,
             (availableGeometry.height() - editor.height()) / 2);
 
-    editor.show();*/
+    editor.show();
 
     return app.exec();
 }

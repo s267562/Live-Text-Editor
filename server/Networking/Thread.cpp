@@ -92,6 +92,7 @@ bool Thread::readInsert(QTcpSocket *soc){
 
 void Thread::readyRead(QTcpSocket *soc){
 	QByteArray data;
+	qDebug() << data;
 	if (!readChunck(soc, data, 5)){
 		/* eccezione */
 		writeErrMessage(soc);
