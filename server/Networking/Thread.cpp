@@ -38,108 +38,66 @@ void Thread::addSocket(QTcpSocket *soc) {
 }
 
 bool Thread::readInsert(QTcpSocket *soc){
-    qDebug() << "-------------READ INSERT-------------";
-    readSpace(soc);
-    int sizeString = readNumberFromSocket(soc);
-    readSpace(soc);
-
-    QByteArray letter;
-    if (!readChunck(soc, letter, sizeString)){
-        return false;
-    }
-    readSpace(soc);
-
-    //siteID
-    int sizeSiteId = readNumberFromSocket(soc);
-    readSpace(soc);
-
-    QByteArray siteId;
-    if (!readChunck(soc, siteId, sizeSiteId)){
-        return false;
-    }
-    readSpace(soc);
-
-    int posChInt = readNumberFromSocket(soc);
-    readSpace(soc);
-
-    int posLineInt = readNumberFromSocket(soc);
-
-    qDebug() << "ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
-
-    Pos startPos{posChInt, posLineInt};
-}
-
-
-void Thread::readyRead(QTcpSocket *soc){
-    QByteArray data;
-    if (!readChunck(soc, data, 5)){
-        /* eccezione */
-        return;
-    }
-
-    if (data.toStdString() == INSERT_MESSAGE){
-        readInsert(soc);
-        writeOkMessage(soc);
-    }else if (data.toStdString() == DELETE_MESSAGE){
-        readDelete(soc);
-        writeOkMessage(soc);
-    }else{
-        writeErrMessage(soc);
-    }
-
-    // testing
-    /*soc->waitForBytesWritten(3000);
-    std::vector<int> numbers{1,2,3,4,5};
-    deleteChar("c", "123", numbers);*/
-}
-
-
-bool Thread::readInsert(QTcpSocket *soc) {
 	qDebug() << "-------------READ INSERT-------------";
-	soc->read(1);                       // " "
+	readSpace(soc);
 	int sizeString = readNumberFromSocket(soc);
-	soc->read(1);                       // " "
+	readSpace(soc);
 
 	QByteArray letter;
-	if (!readChunck(soc, letter, sizeString)) {
+	if (!readChunck(soc, letter, sizeString)){
 		return false;
 	}
-	soc->read(1);                       // " "
+	readSpace(soc);
 
 	//siteID
 	int sizeSiteId = readNumberFromSocket(soc);
-	soc->read(1);                       // " "
+	readSpace(soc);
 
 	QByteArray siteId;
-	if (!readChunck(soc, siteId, sizeSiteId)) {
+	if (!readChunck(soc, siteId, sizeSiteId)){
 		return false;
 	}
-	soc->read(1);                       // " "
+	readSpace(soc);
 
 	int posChInt = readNumberFromSocket(soc);
-	soc->read(1);                       // " "
+	readSpace(soc);
 
 	int posLineInt = readNumberFromSocket(soc);
 
-	qDebug() << "ch: " << letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
+	qDebug() << "ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
 
 	Pos startPos{posChInt, posLineInt};
 
-	for (int i = letter.size(); i > 0; i--) {
-		char c = letter[i - 1];
+	for(int i=letter.size(); i>0; i--) {
+		char c = letter[i-1];
 		Character character = crdt->handleInsert(c, startPos, QString{siteId});
 		// send character (broadcast)
 		this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
-	}
-	needToSaveFile = true;
-	if (!timerStarted) {
-		saveTimer->start(saveInterval);
-		timerStarted = true;
 	}
 	return true;
 }
 
 
+void Thread::readyRead(QTcpSocket *soc){
+	QByteArray data;
+	if (!readChunck(soc, data, 5)){
+		/* eccezione */
+		writeErrMessage(soc);
+		return;
+	}
+
+	if (data.toStdString() == INSERT_MESSAGE){
+		if (!readInsert(soc)){
+			writeErrMessage(soc);
+		}
+	}else if (data.toStdString() == DELETE_MESSAGE){
+		if (!readDelete(soc)){
+			writeErrMessage(soc);
+		}
+	}else{
+		writeErrMessage(soc);
+	}
+}
 
 
 void Thread::saveCRDTToFile() {
