@@ -36,6 +36,9 @@
    <addaction name="menuFile"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
@@ -120,6 +123,9 @@
   <action name="actionLogout">
    <property name="checkable">
     <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="resource.qrc">

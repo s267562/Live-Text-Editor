@@ -1,5 +1,6 @@
 #include "showFiles.h"
 #include "ui_showFiles.h"
+#include "../Networking/Client.h"
 
 ShowFiles::ShowFiles(QWidget *parent) :
     QMainWindow(parent),

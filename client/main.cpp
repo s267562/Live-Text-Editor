@@ -11,7 +11,7 @@
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    /* MAINWINDOW 
+    /* MAINWINDOW
     MainWindow mw("temp");
     mw.show();*/
 

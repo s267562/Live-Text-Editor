@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
 
 
 Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent), ui(new Ui::Editor) {
@@ -23,6 +24,11 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
+    connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
+    connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
+    connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
+    connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
+    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);
 }
 
 void Editor::setController(Controller *controller) {
@@ -149,27 +155,26 @@ void Editor::deleteChar(Pos pos) {
     this->cursor = oldCursor;
 }
 
-void Editor::on_actionShare_file_triggered()
-{
-
+void Editor::on_actionNew_file_triggered(){
+    QMessageBox::information(this, "File", "File!");
 }
 
-void Editor::on_actionOpen_triggered()
-{
-
+void Editor::on_actionShare_file_triggered(){
+    QMessageBox::information(this, "Share", "Share!");
 }
 
-void Editor::on_actionSave_as_PDF_triggered()
-{
-
+void Editor::on_actionOpen_triggered(){
+    QMessageBox::information(this, "Open", "Open!");
 }
 
-void Editor::on_actionLogout_triggered()
-{
-
+void Editor::on_actionSave_as_PDF_triggered(){
+    QMessageBox::information(this, "PDF", "PDF!");
 }
 
-Editor::~Editor()
-{
+void Editor::on_actionLogout_triggered(){
+    QMessageBox::information(this, "Logout", "Logout!");
+}
+
+Editor::~Editor(){
     delete ui;
 }

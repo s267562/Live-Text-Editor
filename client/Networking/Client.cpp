@@ -340,8 +340,7 @@ void Client::onDisconnect(){
     QTcpSocket soc;
     soc.setSocketDescriptor(socketDescriptor);
     soc.deleteLater();
-
-    //emit errorConnection();
+    emit errorConnection();
 }
 
 Message Client::getMessage() {

@@ -16,9 +16,8 @@ Login::~Login(){
 
 void Login::setClient(Client *client) {
     this->client = client;
-    connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
+    //connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
     connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
-
 }
 
 void Login::on_pushButton_clicked()

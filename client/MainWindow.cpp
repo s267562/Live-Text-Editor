@@ -2,6 +2,7 @@
 // Created by Eugenio Marinelli on 2019-08-21.
 //
 
+#include <QMessageBox>
 #include "MainWindow.h"
 
 MainWindow::MainWindow(QString siteId)
@@ -19,6 +20,7 @@ MainWindow::MainWindow(QString siteId)
     /* define connection */
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
     connect(this->client, SIGNAL(fileNames(QStringList)),this, SLOT(showFileFinder(QStringList)));
+    connect(this->client, &Client::errorConnection, this, &MainWindow::errorConnection);
 }
 
 void MainWindow::show() {
@@ -62,4 +64,8 @@ void MainWindow::requestForFile(QString filename){
     if ( result ){
         this->editor->show();
     }
+}
+
+void MainWindow::errorConnection(){
+    QMessageBox::information(this, "Connection", "Try again, connection not established!");
 }

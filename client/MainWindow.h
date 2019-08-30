@@ -38,6 +38,7 @@ private slots:
     void showRegistration();
     void showFileFinder(QStringList fileList);
     void requestForFile(QString);
+    void errorConnection();
 
     signals:
         void loginSuccessful();
