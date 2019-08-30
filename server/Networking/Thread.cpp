@@ -74,6 +74,12 @@ bool Thread::readInsert(QTcpSocket *soc){
 		// send character (broadcast)
 		this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 	}
+
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
 	return true;
 }
 
@@ -147,7 +153,7 @@ bool Thread::readDelete(QTcpSocket *soc){
     // broadcast
     this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 
-  needToSaveFile = true;
+	needToSaveFile = true;
 	if (!timerStarted) {
 		saveTimer->start(saveInterval);
 		timerStarted = true;
