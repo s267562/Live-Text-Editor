@@ -66,14 +66,20 @@ bool Thread::readInsert(QTcpSocket *soc){
 
 	qDebug() << "ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
 
-	Pos startPos{posChInt, posLineInt};
+    Pos startPos{posChInt, posLineInt};
 
-	for(int i=letter.size(); i>0; i--) {
-		char c = letter[i-1];
-		Character character = crdt->handleInsert(c, startPos, QString{siteId});
-		// send character (broadcast)
-		this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
-	}
+    for(char c : letter) {
+        Character character = crdt->handleInsert(c, startPos, QString{siteId});
+        this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+
+        // increment startPos
+        if(c == '\n') {
+            startPos.resetCh();
+            startPos.incrementLine();
+        } else {
+            startPos.incrementCh();
+        }
+    }
 
 	needToSaveFile = true;
 	if (!timerStarted) {
