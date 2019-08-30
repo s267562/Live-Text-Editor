@@ -36,7 +36,7 @@ void Editor::setController(Controller *controller) {
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
-    //std::cout << "POSITION: " << position << " CHARS_ADDED: " << charsAdded << " CHARS_REMOVED: " << charsRemoved << std::endl;
+    std::cout << "POSITION: " << position << " CHARS_ADDED: " << charsAdded << " CHARS_REMOVED: " << charsRemoved << std::endl;
 
     // check if signal is valid
     bool validSignal = true;
@@ -69,18 +69,20 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
             // paste operation... (decrement added)
             charsAdded--;
-            //charsRemoved--;
-
-            // get endPos
-            textEdit->undo();
-            cursor.setPosition(textEdit->toPlainText().size());
+            charsRemoved--;
             int line, ch;
-            line = cursor.blockNumber();
-            ch = cursor.positionInBlock();
-            Pos endPos{ch, line}; // Pos(int ch, int line);
-            textEdit->redo();
-            // delete everithing before paste...
-            this->controller->localDelete(Pos{0, 0}, endPos);
+
+            if(charsRemoved) {
+                // get endPos
+                textEdit->undo();
+                cursor.setPosition(textEdit->toPlainText().size());
+                line = cursor.blockNumber();
+                ch = cursor.positionInBlock();
+                Pos endPos{ch, line}; // Pos(int ch, int line);
+                textEdit->redo();
+                // delete everithing before paste...
+                this->controller->localDelete(Pos{0, 0}, endPos);
+            }
 
 
             QString chars = textEdit->toPlainText().mid(position, charsAdded);
