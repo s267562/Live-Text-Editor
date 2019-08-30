@@ -21,6 +21,7 @@ namespace Ui {
 class Editor : public QMainWindow {
 public:
     Editor(QString siteId, QWidget *parent = nullptr);
+
     void setController(Controller *controller);
     void insertChar(char character, Pos pos);
     void deleteChar(Pos pos);
@@ -44,6 +45,7 @@ private:
     QString siteId;
     QTextCursor cursor;
     Controller *controller;
+
 };
 
 #endif //TEXTEDITOR_EDITOR_H
