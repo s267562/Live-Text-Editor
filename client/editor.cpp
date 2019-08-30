@@ -20,6 +20,14 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
 
     QTextDocument *doc = textEdit->document();
 
+
+    QPixmap pix;
+    pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
+    // TODO: from QByteArray to QPixMap
+
+    ui->actionAvatar->setIcon(QIcon(pix));
+    ui->actionAvatar->setIconVisibleInMenu(true);
+
     // Controller
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);

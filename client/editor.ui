@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>427</width>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>427</width>
      <height>22</height>
     </rect>
    </property>
@@ -66,6 +66,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionAvatar"/>
    <addaction name="actionNew_File"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave_as_PDF"/>
@@ -133,6 +134,15 @@
    </property>
    <property name="text">
     <string>Logout</string>
+   </property>
+  </action>
+  <action name="actionAvatar">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/rec/img/share.png</normaloff>:/rec/img/share.png</iconset>
+   </property>
+   <property name="text">
+    <string>Avatar</string>
    </property>
   </action>
  </widget>
