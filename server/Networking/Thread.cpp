@@ -67,6 +67,31 @@ bool Thread::readInsert(QTcpSocket *soc){
     qDebug() << "ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
 
     Pos startPos{posChInt, posLineInt};
+}
+
+
+void Thread::readyRead(QTcpSocket *soc){
+    QByteArray data;
+    if (!readChunck(soc, data, 5)){
+        /* eccezione */
+        return;
+    }
+
+    if (data.toStdString() == INSERT_MESSAGE){
+        readInsert(soc);
+        writeOkMessage(soc);
+    }else if (data.toStdString() == DELETE_MESSAGE){
+        readDelete(soc);
+        writeOkMessage(soc);
+    }else{
+        writeErrMessage(soc);
+    }
+
+    // testing
+    /*soc->waitForBytesWritten(3000);
+    std::vector<int> numbers{1,2,3,4,5};
+    deleteChar("c", "123", numbers);*/
+}
 
 
 bool Thread::readInsert(QTcpSocket *soc) {
@@ -120,6 +145,7 @@ bool Thread::readInsert(QTcpSocket *soc) {
 void Thread::saveCRDTToFile() {
 	if (needToSaveFile)
 		crdt->saveCRDT(filename);
+}
 
 bool Thread::readDelete(QTcpSocket *soc){
     qDebug() << "-------------READ DELETE-------------";
