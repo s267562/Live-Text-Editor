@@ -52,11 +52,7 @@ void Client::onReadyRead(){
                     return;
                 }
                 messages.pop();
-
-                if (!writeMessage(socket, message)){
-                    // push ???
-                    return;
-                }
+                socket->write(message);
                 reciveOkMessage = false;
             }else{
                 reciveOkMessage = true;
