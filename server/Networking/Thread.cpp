@@ -92,12 +92,12 @@ bool Thread::readInsert(QTcpSocket *soc){
 
 void Thread::readyRead(QTcpSocket *soc){
 	QByteArray data;
-	qDebug() << data;
 	if (!readChunck(soc, data, 5)){
 		/* eccezione */
 		writeErrMessage(soc);
 		return;
 	}
+    qDebug() << "msg received: " << data;
 
 	if (data.toStdString() == INSERT_MESSAGE){
 		if (!readInsert(soc)){

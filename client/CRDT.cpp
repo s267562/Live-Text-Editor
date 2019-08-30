@@ -228,6 +228,10 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     return pos;
 }
 
+void CRDT::reset() {
+    structure.clear();
+}
+
 Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char
     if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {

@@ -78,6 +78,11 @@ void Client::onReadyRead(){
             readFileNames();
             reciveOkMessage = true;
             requestForFile("prova");        /* TEST: TEXT EDITOR */
+        }else if (datas.toStdString() == RESET_MESSAGE) {
+            if (readReset()){
+                reciveOkMessage = true;
+                onReadyRead();
+            }
         }
     }
 }
@@ -246,6 +251,12 @@ bool Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos
     return true;
 }
 
+void Client::resetModel(QString siteId) {
+    qDebug() << "-------------WRITE RESET-------------";
+
+    //TODO to implement
+}
+
 bool Client::readInsert(){
     qDebug() << "-------------READ INSERT-------------";
     readSpace(socket);
@@ -333,6 +344,25 @@ bool Client::readDelete(){
     emit newMessage(message);
     return true;
 }
+
+bool Client::readReset() {
+    qDebug() << "-------------READ RESET-------------";
+    readSpace(socket);
+
+    //siteID
+    int siteIdSize = readNumberFromSocket(socket);
+    readSpace(socket);
+    QByteArray siteId;
+    if (!readChunck(socket, siteId, siteIdSize)){
+        return false;
+    }
+
+    // TODO c'è altro da fare?
+
+    emit reset(siteId);
+    return true;
+}
+
 
 void Client::onDisconnect(){
     qDebug() << socketDescriptor <<" Disconnected";

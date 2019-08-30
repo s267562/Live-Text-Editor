@@ -26,6 +26,7 @@ public:
     Controller(CRDT *crdt, Editor *editor, Client *client);
     void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
+    void resetModel();
 };
 
 

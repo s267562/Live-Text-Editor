@@ -21,6 +21,7 @@ public:
     std::vector<Character> handleDelete(Pos startPos, Pos endPos);
     Pos insert(Character character);
     Pos handleRemoteDelete(const Character &character);
+    void reset();
 
 private:
     QString siteId;

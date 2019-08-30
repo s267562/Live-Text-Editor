@@ -73,6 +73,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             int line, ch;
 
             if(charsRemoved) {
+                // TODO reset model (client-server)
+                //this->controller->resetModel();
                 // get endPos
                 textEdit->undo();
                 cursor.setPosition(textEdit->toPlainText().size());

@@ -52,3 +52,8 @@ void Controller::newMessage(Message message) {
         }
     }
 }
+
+void Controller::resetModel() {
+    this->crdt->reset();
+    this->client->resetModel(this->siteId);
+}

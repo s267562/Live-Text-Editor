@@ -29,6 +29,7 @@ public:
     bool writeOnSocket(QString);
     bool insert(QString, QString, Pos pos);
     bool deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
+    void resetModel(QString siteId);
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -37,6 +38,7 @@ public:
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
+    bool readReset();
     Message getMessage();
 
 public slots:
@@ -49,6 +51,7 @@ signals:
     void newMessage(Message message);
     void userVerified();
     void fileNames(QStringList fileList);
+    void reset(QString siteId);
 };
 
 #endif // CLIENT_H

@@ -10,6 +10,7 @@
 #define LIST_OF_FILE "LSF\r\n"
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
+#define RESET_MESSAGE "RES\r\n"
 
 #define TIMEOUT 15000
 
