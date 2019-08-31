@@ -1,61 +1,64 @@
 #include "Controller.h"
 #include "Networking/Client.h"
-
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCommandLineParser>
 #include "ui/login.h"
 #include "ui/ui_login.h"
 #include "MainWindow.h"
+#include "utils/Constants.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+#if MAINWINDOW
     /* MAINWINDOW */
     MainWindow mw("temp");
     mw.show();
+#else
+    #if REGISTRATION_TEST
+        /* TEST: REGISTRATION FEATURE */
+        Client client;
+        client.connectTo("127.0.0.1");
+        client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
+    #else
+        /* TEST: TEXT EDITOR */
+        Client client;
+        client.connectTo("127.0.0.1");
+        client.logIn("prova","prova");
 
-    /* TEST: REGISTRATION FEATURE
-    Client client;
-    client.connectTo("127.0.0.1");
-    client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");*/
+        Q_INIT_RESOURCE(textEditor);
 
-    /* TEST: TEXT EDITOR */
-    /*Client client;
-    client.connectTo("127.0.0.1");
-    client.logIn("prova","prova");
+        // The QApplication class manages the GUI application's control flow and main settings.
+        QCoreApplication::setOrganizationName("QtProject");
+        QCoreApplication::setApplicationName("text editor");
+        QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
-    Q_INIT_RESOURCE(textEditor);
+        QCommandLineParser parser;
+        parser.setApplicationDescription(QCoreApplication::applicationName());
+        parser.addHelpOption();
+        parser.addVersionOption();
+        parser.addPositionalArgument("file", "The file to open.");
+        parser.process(app);
 
-    // The QApplication class manages the GUI application's control flow and main settings.
-    QCoreApplication::setOrganizationName("QtProject");
-    QCoreApplication::setApplicationName("text editor");
-    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+        QString siteId = "temp"; // TODO il server (?) genera un siteId univoco
 
-    QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::applicationName());
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addPositionalArgument("file", "The file to open.");
-    parser.process(app);
+        // model
+        CRDT crdt{siteId};
 
-    QString siteId = "temp"; // TODO il server (?) genera un siteId univoco
+        // view
+        Editor editor{siteId};
 
-    // model
-    CRDT crdt{siteId};
+        // controller
+        Controller controller{&crdt, &editor, &client};
 
-    // view
-    Editor editor{siteId};
+        const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
+        editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+        editor.move((availableGeometry.width() - editor.width()) / 2,
+                (availableGeometry.height() - editor.height()) / 2);
 
-    // controller
-    Controller controller{&crdt, &editor, &client};
-
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
-    editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    editor.move((availableGeometry.width() - editor.width()) / 2,
-            (availableGeometry.height() - editor.height()) / 2);
-
-    editor.show();*/
-
+        editor.show();
+    #endif
+#endif
     return app.exec();
 }

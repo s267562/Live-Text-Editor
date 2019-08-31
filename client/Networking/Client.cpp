@@ -88,7 +88,9 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();
             reciveOkMessage = true;
+#if !MAINWINDOW
             requestForFile("prova");        /* TEST: TEXT EDITOR */
+#endif
         }else if (datas.toStdString() == RESET_MESSAGE) {
             if (readReset()){
                 reciveOkMessage = true;

@@ -1,6 +1,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#define MAINWINDOW 0
+#define REGISTRATION_TEST 0
+
 #define OK_MESSAGE "OKY\r\n"
 #define ERR_MESSAGE "ERR\r\n"
 #define LOGIN_MESSAGE "LIN\r\n"
