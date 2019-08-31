@@ -21,24 +21,26 @@ void Thread::addSocket(QTcpSocket *soc) {
 	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
-	qDebug() << "size" << sockets.size();
+    qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
 	/* connect socket and signal */
 	connect(soc, &QAbstractSocket::readyRead, this, [this, soc]() {
-		qDebug() << soc;
+        qDebug() << "                             " << soc;
 		Thread::readyRead(soc);
 	}, Qt::DirectConnection);
 
 	connect(soc, &QAbstractSocket::disconnected, this, [this, soc, socketDescriptor]() {
-		qDebug() << soc;
+        qDebug() << "                             " << soc;
 		Thread::disconnected(soc, socketDescriptor);
 	}, Qt::DirectConnection);
 
-	qDebug() << socketDescriptor << " Client connected" << soc;
+    qDebug() << "                             " << socketDescriptor << " Client connected" << soc;
+    qDebug() << ""; // newLine
 }
 
 bool Thread::readInsert(QTcpSocket *soc){
-	qDebug() << "-------------READ INSERT-------------";
+    qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
+
 	readSpace(soc);
 	int sizeString = readNumberFromSocket(soc);
 	readSpace(soc);
@@ -64,7 +66,8 @@ bool Thread::readInsert(QTcpSocket *soc){
 
 	int posLineInt = readNumberFromSocket(soc);
 
-	qDebug() << "ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
+    qDebug() << "                              ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
+    qDebug() << ""; // newLine
 
     Pos startPos{posChInt, posLineInt};
 
@@ -100,7 +103,8 @@ void Thread::readyRead(QTcpSocket *soc){
 		writeErrMessage(soc);
 		return;
 	}
-    qDebug() << "msg received: " << data;
+    qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
+    qDebug() << ""; // newLine
 
 	if (data.toStdString() == INSERT_MESSAGE){
 		if (!readInsert(soc)){
@@ -124,7 +128,8 @@ void Thread::saveCRDTToFile() {
 }
 
 bool Thread::readDelete(QTcpSocket *soc){
-    qDebug() << "-------------READ DELETE-------------";
+    qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
+
     readSpace(soc);
     QByteArray letter;
     if (!readChunck(soc, letter, 1)){
@@ -143,20 +148,21 @@ bool Thread::readDelete(QTcpSocket *soc){
     readSpace(soc);
 
     int size = readNumberFromSocket(soc);
-    qDebug() << " size:" << size << " size Int:" << size;
+    qDebug() << "                              size:" << size << " size Int:" << size;
     readSpace(soc);
     std::vector<Identifier> position;
-    qDebug() << letter;
+    qDebug() << "                             " << letter;
 
     for (int i = 0; i < size; i++){
         int pos = readNumberFromSocket(soc);
         Identifier identifier(pos, siteId);
         position.push_back(identifier);
-        qDebug() << " pos:" << pos;
+        qDebug() << "                              pos:" << pos;
         if (i != size - 1 || size != 1){
             readSpace(soc);
         }
     }
+    qDebug() << ""; // newLine
 
     Character character(letter[0], 0, siteId, position);
 
@@ -174,7 +180,8 @@ bool Thread::readDelete(QTcpSocket *soc){
 }
 
 void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
-    qDebug() << "-------------WRITE INSERT-------------";
+    qDebug() << "Thread.cpp - insert()     ---------- WRITE INSERT ----------";
+
     QByteArray message(INSERT_MESSAGE);
     QByteArray strSize = convertionNumber(str.size());
     QByteArray siteIdSize = convertionNumber(siteId.size());
@@ -190,7 +197,8 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
         }
     }
     message.append(position);
-    qDebug() << message;
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
 
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
@@ -199,12 +207,13 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
 }
 
 void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> pos){
-    qDebug() << "-------------WRITE DELETE-------------";
+    qDebug() << "Thread.cpp - deleteChar()     ---------- WRITE DELETE ----------";
+
     QByteArray message(DELETE_MESSAGE);
     QByteArray siteIdSize = convertionNumber(siteId.size());
     QByteArray posSize = convertionNumber(pos.size());
 
-    qDebug() << pos.size();
+    qDebug() << "                              pos.size: " << pos.size();
     message.append(" " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " "+ posSize + " ");
     QByteArray position;
 
@@ -215,7 +224,8 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
         }
     }
     message.append(position);
-    qDebug() << message;
+    qDebug() << "                             " << message;
+    qDebug() << ""; // newLine
 
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
@@ -224,7 +234,8 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
 }
 
 void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor){
-    qDebug() << socketDescriptor << " Disconnected";
+    qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
+    qDebug() << ""; // newLine
     QTcpSocket socket;
     socket.setSocketDescriptor(socketDescriptor);
     socket.deleteLater();

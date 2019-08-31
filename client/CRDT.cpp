@@ -134,7 +134,7 @@ void CRDT::insertChar(Character character, Pos pos) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             if(i == pos.getLine() && j == pos.getCh()) {
-                qD << "               -->                 val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+                qD << "                              ---> val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
             } else {
                 qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
             }
@@ -144,6 +144,7 @@ void CRDT::insertChar(Character character, Pos pos) {
             }
         }
     }
+    qDebug() << ""; // newLine
 }
 
 
@@ -189,6 +190,7 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
             }
         }
     }
+    qDebug() << ""; // newLine
 
     return removedChars;
 }
@@ -222,6 +224,7 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
     if(structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
         // TODO lanciare un'eccezione per evitare crash?
         qDebug() << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
+        qDebug() << ""; // newLine
     }
     std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
     this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
@@ -259,6 +262,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
             }
         }
     }
+    qDebug() << ""; // newLine
 
     return pos;
 }

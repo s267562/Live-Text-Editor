@@ -8,10 +8,12 @@ bool Server::startServer(quint16 port){
     connect(this,SIGNAL(newConnection()),this,SLOT(connection()));
 
     if(!this->listen(QHostAddress::Any, port)){
-        qDebug() << "Could not start server";
+        qDebug() << "Server.cpp - startServer()     Could not start server";
+        qDebug() << ""; // newLine
         return false;
     }else{
-        qDebug() << "Listening to port " << port << "...";
+        qDebug() << "Server.cpp - startServer()     Listening to port " << port << "...";
+        qDebug() << ""; // newLine
         return true;
     }
 }
@@ -32,16 +34,16 @@ void Server::connection(){
             return;
         }
 
-        qDebug() << data;
+        qDebug() << "Server.cpp - connection()     msg received:" << data;
 
         if (data.toStdString() == LOGIN_MESSAGE){
             if (logIn(soc)){
                 sendFileNames(soc);
                 socketsState[socketDescriptor] = LOGGED;
-                qDebug() << "socketsSize: " << socketsState.size();
+                qDebug() << "                              socketsSize: " << socketsState.size();
             }else{
                 //error in login phase
-                qDebug() << "error login";
+                qDebug() << "                              error login";
                 writeErrMessage(soc);
                 return;
             }
@@ -59,33 +61,34 @@ void Server::connection(){
             delete c;
             delete d;
             socketsState.erase(socketDescriptor);
-            qDebug() << "socketsSize: " << socketsState.size();
+            qDebug() << "                              socketsSize: " << socketsState.size();
             
             if (!readFileName(soc->socketDescriptor(), soc)){
                 writeErrMessage(soc);
             }
         }else{
-            qDebug() << "error message";
+            qDebug() << "                              error message";
             writeErrMessage(soc);
         }
     }, Qt::DirectConnection);
 
     *d = connect(soc, &QTcpSocket::disconnected, this, [this, c, d, soc, socketDescriptor]{
-        qDebug() << socketDescriptor << " Disconnected (form main thread)";
+        qDebug() << "                              " << socketDescriptor << " Disconnected (form main thread)";
         soc->deleteLater();
         socketsState.erase(socketDescriptor);
     });
+
+    qDebug() << ""; // newLine
 }
 
 bool Server::logIn(QTcpSocket *soc){
     /* read user and password on socket*/
-    qDebug() << "-------------LOGIN-------------";
+    qDebug() << "Server.cpp - logIn()     ---------- LOGIN ----------";
 
     /* usernameSize */
     readSpace(soc);
     int usernameSize = readNumberFromSocket(soc);
-
-    qDebug() << "usernameSize: " <<usernameSize;
+    qDebug() << "                         usernameSize: " << usernameSize;
 
     readSpace(soc);
     /* username */
@@ -98,15 +101,15 @@ bool Server::logIn(QTcpSocket *soc){
     /* passwordSize */
     int passwordSize = readNumberFromSocket(soc);
     readSpace(soc);
-
-    qDebug() << "passwordSize: " <<passwordSize;
+    qDebug() << "                         passwordSize: " <<passwordSize;
 
     QByteArray password;
     if (!readChunck(soc, password, passwordSize)){
         return false;
     }
 
-    qDebug() << "username: " << username << " password: " << password;
+    qDebug() << "                         username: " << username << " password: " << password;
+    qDebug() << ""; // newLine
 
     // TODO: richiamo funzione per il login sul db
 
@@ -114,7 +117,7 @@ bool Server::logIn(QTcpSocket *soc){
 }
 
 bool Server::sendFileNames(QTcpSocket *soc){
-    qDebug() << "-------------LIST OF FILE-------------";
+    qDebug() << "Server.cpp - sendFileNames()     ---------- LIST OF FILE ----------";
     // TODO gestione file dell'utente
 
     int nFiles = 1;
@@ -127,13 +130,14 @@ bool Server::sendFileNames(QTcpSocket *soc){
     QByteArray fileNameSize = convertionNumber(fileName.size());
 
     message.append(" " + numFiles + " " + fileNameSize + " " + fileName.toUtf8());
-    qDebug() << message;
+    qDebug() << "                                " << message;
+    qDebug() << ""; // newLine
 
     writeMessage(soc,message);
 }
 
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
-    qDebug() << "-------------REQUEST FOR FILE-------------";
+    qDebug() << "Server.cpp - readFileName()     ---------- REQUEST FOR FILE ----------";
     readSpace(soc);
     int fileNameSize = readNumberFromSocket(soc);
     readSpace(soc);
@@ -143,18 +147,19 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         writeErrMessage(soc);
         return false;
     }
-    qDebug() << fileName;
+
+    qDebug() << "                               " << fileName;
 
     std::string key = fileName.toStdString();                           /* file name */
     auto result = threads.find(key);
 
     if (result != threads.end()){
         /* file already open */
-        qDebug() << "thread for file name aready exist " << fileName;
+        qDebug() << "                               thread for file name aready exist " << fileName;
         threads[key]->addSocket(soc);                       /* socket transition to secondary thread */
     }else{
         /* file not yet open */
-        qDebug() << "New thread for file name: " << fileName;
+        qDebug() << "                               New thread for file name: " << fileName;
         CRDT *crdt = new CRDT();
         Thread *thread = new Thread(this, crdt,fileName);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
@@ -162,12 +167,14 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         thread->start();
     }
 
+    qDebug() << ""; // newLine
+
     writeOkMessage(soc);
     return true;
 }
 
 bool Server::registration(QTcpSocket *soc){
-    qDebug() << "-------------REGISTRATION-------------";
+    qDebug() << "Server.cpp - registration()     ---------- REGISTRATION ----------";
     if (soc == nullptr){
         return false;
     }
@@ -197,9 +204,9 @@ bool Server::registration(QTcpSocket *soc){
     in >> sizeAvatar;
     readSpace(soc);
 
-    qDebug() << username << " " << sizeUsername;
-    qDebug() << password << " " << sizePassword;
-    qDebug() << "avatar size" << sizeAvatar;
+    qDebug() << "                                username: " << username << " size: " << sizeUsername;
+    qDebug() << "                                password: " << password << " size: " << sizePassword;
+    qDebug() << "                                avatar size: " << sizeAvatar;
 
     //avatar
     QByteArray avatarDef;
@@ -210,7 +217,9 @@ bool Server::registration(QTcpSocket *soc){
         writeErrMessage(soc);
     }
 
-    qDebug() << "avatar size" << sizeAvatar << " size read" << avatarDef.size();
+    qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
+
+    qDebug() << ""; // newLine
 
     return true;
 }
