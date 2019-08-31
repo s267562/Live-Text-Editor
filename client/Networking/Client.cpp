@@ -398,8 +398,6 @@ void Client::onDisconnect(){
 
 Message Client::getMessage() {
 
-    std::cout << "incomingInsertMessagesQueue size: " << incomingInsertMessagesQueue.size() << std::endl;
-
     // give priority to insert messages.
     if(!incomingInsertMessagesQueue.empty()) {
         Message message = incomingInsertMessagesQueue.front();

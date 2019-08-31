@@ -8,9 +8,10 @@
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include "CRDT.h"
+#include <QDebug>
 
 CRDT::CRDT() {
-	this->structure = {{}}; // TODO inizializzare il vettore structure?
+	this->structure = { };
 }
 
 
@@ -18,22 +19,27 @@ Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
 	this->vector.increment();
 	const Character character = generateChar(val, pos);
 	insertChar(character, pos);
-	std::cout << val << " inserted." << std::endl;
+    //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
-	// print the structure for debugging
-	std::cout << "-----------------------" << std::endl << "STRUCTURE:" << std::endl;
-	for (int i = 0; i < structure.size(); i++) {
-		for (int j = 0; j < structure[i].size(); j++) {
-			char val = structure[i][j].getValue();
-			int counter = structure[i][j].getCounter();
-			std::cout << "val = " << ((val == '\n') ? '\n' : val) << "; counter = " << counter << "; position: ";
-			std::vector<Identifier> identifier = structure[i][j].getPosition();
-			for (Identifier id : identifier) {
-				std::cout << id.getDigit() << " ";
-			}
-			std::cout << std::endl;
-		}
-	}
+    // print the structure for debugging
+    qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            if(i == pos.getLine() && j == pos.getCh()) {
+                qD << "               -->                 val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            } else {
+                qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            }
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
+
 	return character;
 }
 
@@ -170,6 +176,20 @@ void CRDT::handleDelete(const Character &character) {
 		this->removeEmptyLines();
 	}
 
+    // print the structure for debugging
+    qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            qD << "                                           val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
 }
 
 /**

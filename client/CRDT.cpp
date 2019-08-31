@@ -5,12 +5,12 @@
 #include <ctime>
 #include <cmath>
 #include "CRDT.h"
+#include <QDebug>
+
 
 CRDT::CRDT(QString siteId) : siteId(siteId), vector(siteId) {
-    this->structure = { }; // TODO giusto inizializzare il vettore structure cosi?
+    this->structure = { };
 }
-
-
 
 
 Pos CRDT::insert(Character character) {
@@ -127,17 +127,21 @@ void CRDT::insertChar(Character character, Pos pos) {
 
 
     // print the structure for debugging
-    std::cout << "-----------------------" << std::endl << "STRUCTURE:" << std::endl;
+    qDebug() << "client/CRDT.cpp - insertChar()     ---------- STRUCTURE ----------";
     for (int i = 0; i < structure.size(); i++) {
         for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
-            std::cout << "val = " << ((val == '\n') ? '\n' : val) << "; counter = " << counter << "; position: ";
+            if(i == pos.getLine() && j == pos.getCh()) {
+                qD << "               -->                 val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            } else {
+                qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            }
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
-                std::cout << id.getDigit() << " ";
+                qD << id.getDigit();
             }
-            std::cout << std::endl;
         }
     }
 }
@@ -171,6 +175,21 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
         this->mergeLines(startPos.getLine());
     }
 
+    // print the structure for debugging
+    qDebug() << "client/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            qD << "                                           val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
+
     return removedChars;
 }
 
@@ -196,12 +215,13 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
     // TODO check if correct
     int charNum = endPos.getCh() - startPos.getCh();
-    //std::cout << "charNum: " << charNum << std::endl;
-    //std::cout << "startPos.getCh(): " << startPos.getCh() << std::endl;
-    //std::cout << "startPos.getCh() + charNum: " << startPos.getCh() + charNum << std::endl;
-    //std::cout << "structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size() << std::endl;
+    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     charNum: " << charNum;
+    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh(): " << startPos.getCh();
+    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh() + charNum: " << startPos.getCh() + charNum;
+    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size();
     if(structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
-        std::cout << "ATTENZIONE: impossibile cancellare. Char/s non presente/i\n";
+        // TODO lanciare un'eccezione per evitare crash?
+        qDebug() << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
     }
     std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
     this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
@@ -224,6 +244,21 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     }
 
     this->removeEmptyLines();
+
+    // print the structure for debugging
+    qDebug() << "client/CRDT.cpp - handleRemoteDelete()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            qD << "                                                 val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
 
     return pos;
 }
