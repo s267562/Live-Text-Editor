@@ -66,12 +66,22 @@ void Client::onReadyRead(){
             }
         }else if (datas.toStdString() == INSERT_MESSAGE){
             if (readInsert()){
+                if (!messages.empty()){
+                    QByteArray message = messages.front();
+                    messages.pop();
+                    if (!writeMessage(socket, message)){
+                        // push ???
+                        return;
+                    }
+                    reciveOkMessage = false;
+                }else{
+                    reciveOkMessage = true;
+                }
                 reciveOkMessage = true;
                 onReadyRead();
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
             if (readDelete()){
-                reciveOkMessage = true;
                 if (!messages.empty()){
                     QByteArray message = messages.front();
                     messages.pop();
