@@ -151,6 +151,19 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         } else {
             //std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
 
+            if(charsAdded) {
+                QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+                // get start position
+                cursor.setPosition(position);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+
+                this->controller->localInsert(chars, startPos);
+            }
+            
             if(charsRemoved) {
                 // get startPos
                 int line, ch;
@@ -172,19 +185,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 //std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
 
                 this->controller->localDelete(startPos, endPos);
-            }
-
-            if(charsAdded) {
-                QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-                // get start position
-                cursor.setPosition(position);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-
-                this->controller->localInsert(chars, startPos);
             }
         }
     }
