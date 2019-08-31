@@ -41,6 +41,7 @@ private:
     QTextEdit *textEdit;
     QString siteId;
     QTextCursor cursor;
+    int cursorPos;
     Controller *controller;
 
 };
