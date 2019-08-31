@@ -13,7 +13,7 @@
 #include <QMessageBox>
 
 
-Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), siteId(siteId), QMainWindow(parent), ui(new Ui::Editor) {
+Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), cursor(textEdit->textCursor()), cursorPos(0), siteId(siteId), QMainWindow(parent), ui(new Ui::Editor) {
     ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
@@ -46,29 +46,74 @@ void Editor::setController(Controller *controller) {
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     std::cout << "POSITION: " << position << " CHARS_ADDED: " << charsAdded << " CHARS_REMOVED: " << charsRemoved << std::endl;
 
+    // check if text selected
+    bool textSelected = false;
+    int beginPos = textEdit->textCursor().selectionStart();
+    int endPos = textEdit->textCursor().selectionEnd();
+    if(beginPos != endPos) {
+        textSelected = true;
+    }
+
+    // keep track of textCursor position
+    cursorPos = textEdit->textCursor().position();
+    std::cout << "cursorPos: " << cursorPos << std::endl;
+
     // check if signal is valid
     bool validSignal = true;
 
     textEdit->undo();
     QString prevString = textEdit->toPlainText();
     textEdit->redo();
+
     if(charsAdded == charsRemoved && prevString.size() < charsAdded-1) {
         validSignal = false;
-        std::cout << "invalid signal\n";
+        std::cout << "invalid signal 1\n";
+
+        // reset cursor status
+        if(textSelected) {
+            cursor.setPosition(beginPos);
+            cursor.setPosition(endPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(cursorPos);
+        }
+        textEdit->setTextCursor(cursor);
     }
 
     QString test = textEdit->toPlainText().mid(position, charsAdded);
-    textEdit->textCursor().position();
     if(validSignal && charsAdded == charsRemoved && test.isEmpty()) {
         validSignal = false;
-        std::cout << "invalid signal\n";
+        std::cout << "invalid signal 2\n";
+
+        // reset cursor status
+        if(textSelected) {
+            cursor.setPosition(beginPos);
+            cursor.setPosition(endPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(cursorPos);
+        }
+        textEdit->setTextCursor(cursor);
     }
+    int currentSize = textEdit->toPlainText().size();
+    std::cout << "currentSize: " << currentSize << std::endl;
+    if(charsAdded == charsRemoved && currentSize != 0 && position == 0) {
+        validSignal = false;
+        std::cout << "invalid signal 3\n";
+
+        // reset cursor status
+        if(textSelected) {
+            cursor.setPosition(beginPos);
+            cursor.setPosition(endPos, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(cursorPos);
+        }
+        textEdit->setTextCursor(cursor);
+    }
+
     // signal validity checked.
 
     if(validSignal) {
-        int currentSize = textEdit->toPlainText().size();
         if(position == 0 && currentSize != charsAdded && charsAdded > 0 && charsRemoved > 0) {
-            std::cout << "Paste" << std::endl;
+            std::cout << "Paste in first position" << std::endl;
             // esempi:
             // ciaoiao(ciao) --> aggiunti 7, rimossi 4 (ultimi 4)
             // ciaociao(ciao) --> aggiunti 8, rimossi 4 (ultimi 4)
@@ -106,19 +151,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         } else {
             //std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
 
-            if(charsAdded) {
-                QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-                // get start position
-                cursor.setPosition(position);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-
-                this->controller->localInsert(chars, startPos);
-            }
-
             if(charsRemoved) {
                 // get startPos
                 int line, ch;
@@ -140,6 +172,19 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 //std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
 
                 this->controller->localDelete(startPos, endPos);
+            }
+
+            if(charsAdded) {
+                QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+                // get start position
+                cursor.setPosition(position);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+
+                this->controller->localInsert(chars, startPos);
             }
         }
     }
