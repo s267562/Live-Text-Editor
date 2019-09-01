@@ -7,7 +7,7 @@ Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login) {
     ui->setupUi(this);
     ui->label_3->setVisible(false);
     connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
-    //connect(this,SIGNAL(loginSuccessful()),this->parent(), SLOT(showFileFinder()));
+    connect(this,SIGNAL(loginSuccessful()),this->parent(), SLOT(showFileFinder()));
 }
 
 Login::~Login(){
