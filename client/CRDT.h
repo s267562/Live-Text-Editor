@@ -10,23 +10,25 @@
 #include "utils/Pos.h"
 #include "utils/Character.h"
 #include "utils/Identifier.h"
-#include "utils/VersionVector.h"
 #include <math.h>
 #include <iostream>
+#include <map>
 
 class CRDT {
 public:
-    CRDT(QString siteId);
+    CRDT();
 
+    void setSiteId(const QString &siteId);
+    const QString &getSiteId() const;
     std::vector<Character> handleDelete(Pos startPos, Pos endPos);
     Pos insert(Character character);
     Pos handleRemoteDelete(const Character &character);
-    void reset();
+    void resetModel();
 
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;
-    VersionVector vector;
+    std::map<qintptr, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
 
     // insert

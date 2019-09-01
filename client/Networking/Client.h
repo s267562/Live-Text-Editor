@@ -10,12 +10,15 @@
 #include "../utils/Character.h"
 #include "../utils/Pos.h"
 #include "message/Message.h"
+#include "../CRDT.h"
 
 class Client: public QObject{
     Q_OBJECT
 private:
+    QString siteId;
     QTcpSocket *socket;
     qintptr socketDescriptor;
+    CRDT *crdt;
     bool reciveOkMessage;
     bool clientIsLogged;
     QMetaObject::Connection c;
@@ -28,9 +31,10 @@ private:
 
 public:
     Client(QObject *parent = nullptr);
+    void setCRDT(CRDT *crdt);
     bool writeOnSocket(QString);
-    bool insert(QString, QString, Pos pos);
-    bool deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
+    bool insert(QString, Pos pos);
+    bool deleteChar(QString str, std::vector<Identifier> pos);
     void resetModel(QString siteId);
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);

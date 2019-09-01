@@ -20,7 +20,6 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
 
     QTextDocument *doc = textEdit->document();
 
-
     QPixmap pix;
     pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
     // TODO: from QByteArray to QPixMap
@@ -44,7 +43,7 @@ void Editor::setController(Controller *controller) {
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
-    std::cout << "POSITION: " << position << " CHARS_ADDED: " << charsAdded << " CHARS_REMOVED: " << charsRemoved << std::endl;
+    //qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded << " chars removed: " << charsRemoved;
 
     // check if text selected
     bool textSelected = false;
@@ -56,7 +55,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
     // keep track of textCursor position
     cursorPos = textEdit->textCursor().position();
-    std::cout << "cursorPos: " << cursorPos << std::endl;
+    //qDebug() << "editor.cpp - onTextChanged()     cursorPos: " << cursorPos;
 
     // check if signal is valid
     bool validSignal = true;
@@ -67,7 +66,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
     if(charsAdded == charsRemoved && prevString.size() < charsAdded-1) {
         validSignal = false;
-        std::cout << "invalid signal 1\n";
+        //qDebug() << "editor.cpp - onTextChanged()     invalid signal 1";
 
         // reset cursor status
         if(textSelected) {
@@ -82,7 +81,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     QString test = textEdit->toPlainText().mid(position, charsAdded);
     if(validSignal && charsAdded == charsRemoved && test.isEmpty()) {
         validSignal = false;
-        std::cout << "invalid signal 2\n";
+        //qDebug() << "editor.cpp - onTextChanged()     invalid signal 2\n";
 
         // reset cursor status
         if(textSelected) {
@@ -94,10 +93,10 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         textEdit->setTextCursor(cursor);
     }
     int currentSize = textEdit->toPlainText().size();
-    std::cout << "currentSize: " << currentSize << std::endl;
+    //qDebug() << "editor.cpp - onTextChanged()     currentSize: " << currentSize;
     if(charsAdded == charsRemoved && currentSize != 0 && position == 0) {
         validSignal = false;
-        std::cout << "invalid signal 3\n";
+        //qDebug() << "editor.cpp - onTextChanged()     invalid signal 3\n";
 
         // reset cursor status
         if(textSelected) {
@@ -113,7 +112,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
     if(validSignal) {
         if(position == 0 && currentSize != charsAdded && charsAdded > 0 && charsRemoved > 0) {
-            std::cout << "Paste in first position" << std::endl;
+            //qDebug() << "editor.cpp - onTextChanged()     Paste in first position";
             // esempi:
             // ciaoiao(ciao) --> aggiunti 7, rimossi 4 (ultimi 4)
             // ciaociao(ciao) --> aggiunti 8, rimossi 4 (ultimi 4)
@@ -127,7 +126,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
             if(charsRemoved) {
                 // TODO reset model (client-server)
-                //this->controller->resetModel();
+                this->controller->resetModel();
+
+                // TODO to remove all these lines...
                 // get endPos
                 textEdit->undo();
                 cursor.setPosition(textEdit->toPlainText().size());
@@ -149,7 +150,18 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             this->controller->localInsert(chars, startPos);
 
         } else {
-            //std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
+
+            if(charsAdded) {
+                QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+                // get start position
+                cursor.setPosition(position);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+
+                this->controller->localInsert(chars, startPos);
+            }
 
 
 
@@ -182,10 +194,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 Pos endPos{ch, line}; // Pos(int ch, int line);
                 textEdit->redo();
 
-                //std::cout << "chars removed." << std::endl;
-                //std::cout << "startPos (ch, line): (" << startPos.getCh() << ", " << startPos.getLine() << ")" << std::endl;
-                //std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
-
                 this->controller->localDelete(startPos, endPos);
             }
         }
@@ -198,7 +206,15 @@ void Editor::insertChar(char character, Pos pos) {
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
     cursor.insertText(QString{character});
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 
     this->cursor = oldCursor;
 }
@@ -209,7 +225,15 @@ void Editor::deleteChar(Pos pos) {
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
     cursor.deleteChar();
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 
     this->cursor = oldCursor;
 }

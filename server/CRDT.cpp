@@ -8,41 +8,51 @@
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include "CRDT.h"
+#include <QDebug>
 
 CRDT::CRDT() {
-	this->structure = {{}}; // TODO inizializzare il vettore structure?
+	this->structure = { };
 }
 
 
 Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
-	this->vector.increment();
-	const Character character = generateChar(val, pos);
-	insertChar(character, pos);
-	std::cout << val << " inserted." << std::endl;
+    //increment version vector
+    this->versionsVector[siteId]++;
 
-	// print the structure for debugging
-	std::cout << "-----------------------" << std::endl << "STRUCTURE:" << std::endl;
-	for (int i = 0; i < structure.size(); i++) {
-		for (int j = 0; j < structure[i].size(); j++) {
-			char val = structure[i][j].getValue();
-			int counter = structure[i][j].getCounter();
-			std::cout << "val = " << ((val == '\n') ? '\n' : val) << "; counter = " << counter << "; position: ";
-			std::vector<Identifier> identifier = structure[i][j].getPosition();
-			for (Identifier id : identifier) {
-				std::cout << id.getDigit() << " ";
-			}
-			std::cout << std::endl;
-		}
-	}
+	const Character character = generateChar(val, pos, siteId);
+	insertChar(character, pos);
+    //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
+
+    // print the structure for debugging
+    qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            QString siteId = structure[i][j].getSiteId();
+            if(i == pos.getLine() && j == pos.getCh()) {
+                qD << "                                ---> val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            } else {
+                qD << "                                     val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            }
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
+    qDebug() << ""; // newLine
+
 	return character;
 }
 
-const Character CRDT::generateChar(char val, Pos pos) {
+const Character CRDT::generateChar(char val, Pos pos, QString siteId) {
 	const std::vector<Identifier> posBefore = findPosBefore(pos);
 	const std::vector<Identifier> posAfter = findPosAfter(pos);
-	const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter);
+	const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter, siteId);
 
-	Character character(val, this->vector.getLocalVersion().getCounter(), siteId, newPos);
+	Character character(val, this->versionsVector[siteId], siteId, newPos);
 
 	return character;
 }
@@ -82,20 +92,19 @@ const std::vector<Identifier> CRDT::findPosAfter(Pos pos) {
 }
 
 std::vector<Identifier>
-CRDT::generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, std::vector<Identifier> newPos,
-						 int level) {
+CRDT::generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos, int level) {
 
 	// change 2 to any other number to change base multiplication
 	int base = pow(2, level) * CRDT::base;
 	// TODO? char boundaryStrategy = this.retrieveStrategy(level);
 
-	Identifier id1{0, this->siteId}, id2{base, this->siteId};
+	Identifier id1{0, siteId}, id2{base, siteId};
 	if (pos1.size() > 0) id1 = pos1[0];
 	if (pos2.size() > 0) id2 = pos2[0];
 
 	if (id2.getDigit() - id1.getDigit() > 1) {
 		int newDigit = this->generateIdBetween(id1.getDigit(), id2.getDigit());
-		Identifier newId{newDigit, this->siteId};
+		Identifier newId{newDigit, siteId};
 		newPos.push_back(newId);
 		return newPos;
 	} else if (id2.getDigit() - id1.getDigit() == 1) {
@@ -103,22 +112,22 @@ CRDT::generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> p
 
 		std::vector<Identifier> pos1_2;
 		if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
-		return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, newPos, level + 1);
+		return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, siteId, newPos, level + 1);
 
 	} else /* if (id1.getDigit() == id2.getDigit()) */ {
 		if (id1.getSiteId() < id2.getSiteId()) {
+		    // TODO check if correct...
 			newPos.push_back(id1);
 			std::vector<Identifier> pos1_2;
-			if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
-			return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, newPos, level + 1);
-			return this->generatePosBetween(std::vector<Identifier>(pos1.begin() + 1, pos1.end()),
-											std::vector<Identifier>{}, newPos, level + 1);
+			pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
+            return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, siteId, newPos, level + 1);
 		} else /* if (id1.getSiteId() == id2.getSiteId()) */ {
+            // TODO check if correct...
 			newPos.push_back(id1);
 			std::vector<Identifier> pos1_2, pos2_2;
 			if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
 			if (pos2.size() > 0) pos2_2 = std::vector<Identifier>(pos2.begin() + 1, pos2.end());
-			return this->generatePosBetween(pos1_2, pos2_2, newPos, level + 1);
+			return this->generatePosBetween(pos1_2, pos2_2, siteId, newPos, level + 1);
 		} /* else {
             // throw new Error("Fix Position Sorting"); // TODO capire quando può capitare questo caso e come gestirlo.
         } */
@@ -170,6 +179,22 @@ void CRDT::handleDelete(const Character &character) {
 		this->removeEmptyLines();
 	}
 
+    // print the structure for debugging
+    qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
+    for (int i = 0; i < structure.size(); i++) {
+        for (int j = 0; j < structure[i].size(); j++) {
+            QDebug qD(QtDebugMsg);
+            char val = structure[i][j].getValue();
+            int counter = structure[i][j].getCounter();
+            QString siteId = structure[i][j].getSiteId();
+            qD << "                                     val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                qD << id.getDigit();
+            }
+        }
+    }
+    qDebug() << ""; // newLine
 }
 
 /**
@@ -177,11 +202,6 @@ void CRDT::handleDelete(const Character &character) {
  * @param json
  */
 void CRDT::write(QJsonObject &json) const {
-	json["siteId"] = siteId;
-
-	QJsonObject versionVectorObj;
-	vector.write(versionVectorObj);
-	json["vector"] = versionVectorObj;
 
 	//TODO WRITE VECTOR OF CHARACTERS
 	QJsonArray vectorVectors;
@@ -202,12 +222,6 @@ void CRDT::write(QJsonObject &json) const {
  * @param json
  */
 void CRDT::read(const QJsonObject &json) {
-	if (json.contains("siteId") && json["siteId"].isString())
-		siteId = json["siteId"].toString();
-
-	if (json.contains("vector") && json["vector"].isObject()) {
-		vector.read(json["vector"].toObject());
-	}
 
 	//TODO READ VECTOR OF CHARACTERS
 	if (json.contains("structure") && json["structure"].isArray()) {
