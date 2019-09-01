@@ -21,6 +21,7 @@ MainWindow::MainWindow(QString siteId)
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
     connect(this->client, SIGNAL(fileNames(QStringList)),this, SLOT(showFileFinder(QStringList)));
     connect(this->client, &Client::errorConnection, this, &MainWindow::errorConnection);
+    connect(this->editor, &Editor::logout, this, &MainWindow::showLogin);
 }
 
 void MainWindow::show() {

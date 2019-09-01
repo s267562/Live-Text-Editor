@@ -18,6 +18,8 @@ private:
     qintptr socketDescriptor;
     bool reciveOkMessage;
     bool clientIsLogged;
+    QMetaObject::Connection c;
+    QMetaObject::Connection d;
 
 private:
     std::queue<QByteArray> messages;
@@ -33,7 +35,7 @@ public:
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
-    void logOut();
+    //void logOut();
     bool registration(QString username, QString passsword, QString pathAvatar);
     bool requestForFile(QString fileName);
     bool readInsert();
@@ -44,6 +46,7 @@ public:
 public slots:
     void onReadyRead();
     void onDisconnect();
+    void logOut();
 
 signals:
     void errorConnection();

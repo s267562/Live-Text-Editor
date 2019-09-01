@@ -11,6 +11,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt),
     connect(client, &Client::newMessage,
               this, &Controller::newMessage);
 
+    connect(editor, &Editor::logout, client, &Client::logOut);
     // TO-DO: connect(client, &Client::newMessage, this, &Controller::/* metodo che vuoi richimare della classe */);
 }
 

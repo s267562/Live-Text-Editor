@@ -13,6 +13,7 @@
 class Editor;
 
 class Controller : public QObject {
+    Q_OBJECT
 private:
     CRDT *crdt;
     Editor *editor;

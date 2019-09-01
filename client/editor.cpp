@@ -32,11 +32,11 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
-    connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
-    connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
+    //connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
+    /*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
     connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
     connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
-    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);
+    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
 }
 
 void Editor::setController(Controller *controller) {
@@ -151,6 +151,21 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         } else {
             //std::cout << std::endl << "onTextChanged: " << "position = " << position << std::endl;
 
+
+
+            if(charsAdded) {
+                QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+                // get start position
+                cursor.setPosition(position);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+
+                this->controller->localInsert(chars, startPos);
+            }
+
             if(charsRemoved) {
                 // get startPos
                 int line, ch;
@@ -172,19 +187,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 //std::cout << "endPos (ch, line): (" << endPos.getCh() << ", " << endPos.getLine() << ")" << std::endl << std::endl;
 
                 this->controller->localDelete(startPos, endPos);
-            }
-
-            if(charsAdded) {
-                QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-                // get start position
-                cursor.setPosition(position);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-
-                this->controller->localInsert(chars, startPos);
             }
         }
     }
@@ -212,7 +214,7 @@ void Editor::deleteChar(Pos pos) {
     this->cursor = oldCursor;
 }
 
-void Editor::on_actionNew_file_triggered(){
+void Editor::on_actionNew_File_triggered(){
     QMessageBox::information(this, "File", "File!");
 }
 
@@ -230,6 +232,7 @@ void Editor::on_actionSave_as_PDF_triggered(){
 
 void Editor::on_actionLogout_triggered(){
     QMessageBox::information(this, "Logout", "Logout!");
+    emit logout();
 }
 
 Editor::~Editor(){

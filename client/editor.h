@@ -19,6 +19,7 @@ namespace Ui {
 }
 
 class Editor : public QMainWindow {
+    Q_OBJECT
 public:
     Editor(QString siteId, QWidget *parent = nullptr);
 
@@ -29,15 +30,17 @@ public:
 
 public slots:
     void onTextChanged(int position, int charsRemoved, int charsAdded);
-    void on_actionNew_file_triggered();
+    void on_actionNew_File_triggered();
     void on_actionShare_file_triggered();
     void on_actionOpen_triggered();
     void on_actionSave_as_PDF_triggered();
     void on_actionLogout_triggered();
 
+signals:
+    void logout();
+
 private:
     Ui::Editor *ui;
-private:
     QTextEdit *textEdit;
     QString siteId;
     QTextCursor cursor;

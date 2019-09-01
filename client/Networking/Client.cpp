@@ -8,11 +8,10 @@
 Client::Client(QObject *parent):QObject (parent){
     this->socket = new QTcpSocket(this);
     reciveOkMessage = false;
-    clientIsLogged = false;
 
     /* define connection */
-    connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+    c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
 }
 
 bool Client::connectTo(QString host){
@@ -29,6 +28,8 @@ bool Client::connectTo(QString host){
     return true;
 }
 
+int i = 0;
+
 void Client::onReadyRead(){
     if (socket->bytesAvailable() == 0){
         return;
@@ -42,6 +43,7 @@ void Client::onReadyRead(){
 
     if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
         clientIsLogged = true;
+        reciveOkMessage = true;
     }else if (!clientIsLogged && datas.toStdString() == ERR_MESSAGE){
         emit loginFailed();
         return;
@@ -51,15 +53,15 @@ void Client::onReadyRead(){
         if (datas.toStdString() == OK_MESSAGE){
             if (!messages.empty()){
                 QByteArray message = messages.front();
-                if (message == LOGOUT_MESSAGE){
-                    socket->deleteLater();
-                    return;
-                }
                 messages.pop();
                 if (!writeMessage(socket, message)){
                     // push ???
                     return;
                 }
+                /*if (message == LOGOUT_MESSAGE){
+                    clientIsLogged = false;
+                    logIn("Ciao","Ciao");
+                }*/
                 reciveOkMessage = false;
             }else{
                 reciveOkMessage = true;
@@ -77,7 +79,7 @@ void Client::onReadyRead(){
                 }else{
                     reciveOkMessage = true;
                 }
-                reciveOkMessage = true;
+                //reciveOkMessage = true;
                 onReadyRead();
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
@@ -189,12 +191,26 @@ bool Client::readFileNames(){
 
 void Client::logOut(){
     if (clientIsLogged){
+        /*qDebug() << "Logout";
         QByteArray message(LOGOUT_MESSAGE);
         messages.push(message);
+        //socket->write(message);
         if (reciveOkMessage){
+            //socket->write(message);
             messages.pop();
-            socket->deleteLater();
+        }*/
+        disconnect(c);
+        disconnect(d);
+        socket->deleteLater();
+        delete socket;
+        socket = new QTcpSocket();
+        if (!connectTo("127.0.0.1")){
+            qDebug() << "Connesione fallita";
+            return;
         }
+        clientIsLogged = false;
+        c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+        d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
     }
 }
 
