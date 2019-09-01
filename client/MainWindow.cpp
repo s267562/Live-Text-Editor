@@ -8,14 +8,15 @@
 MainWindow::MainWindow(QString siteId)
         : editor(new Editor(siteId,this)),
           login(new Login(this)),
+          crdt(new CRDT()),
           client(new Client(this)),
-          crdt(new CRDT(siteId)),
           controller(new Controller(this->crdt,this->editor,this->client)),
           connection(new Connection(this)),
           registration(new Registration(this)),
           finder(new ShowFiles(this))
 {
     this->login->setClient(this->client);
+    this->client->setCRDT(this->crdt);
 
     /* define connection */
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));

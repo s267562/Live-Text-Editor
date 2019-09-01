@@ -9,7 +9,6 @@
 #include <vector>
 #include "../client/utils/Character.h"
 #include "../client/utils/Identifier.h"
-#include "../client/utils/VersionVector.h"
 #include "../client/utils/Pos.h"
 #include <math.h>
 #include <iostream>
@@ -25,16 +24,15 @@ public:
 
 
 private:
-    QString siteId;
     std::vector<std::vector<Character>> structure;
-    VersionVector vector;
+    std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
 
     // insert
-    const Character generateChar(char val, Pos pos);
+    const Character generateChar(char val, Pos pos, QString siteId);
     const std::vector<Identifier> findPosBefore(Pos pos);
     const std::vector<Identifier> findPosAfter(Pos pos);
-    std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, std::vector<Identifier> newPos = {}, int level = 0);
+    std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos = {}, int level = 0);
     int generateIdBetween(int min, int max);
     void insertChar(Character character, Pos pos);
 

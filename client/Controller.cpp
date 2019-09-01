@@ -16,15 +16,20 @@ Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt),
 
 void Controller::localInsert(QString chars, Pos startPos) {
     // send insert at the server. To insert it in the model we need the position computed by the server.
-    this->client->insert(chars, this->siteId, startPos);
+    this->client->insert(chars, startPos);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        this->client->deleteChar(QString{c.getValue()}, this->siteId, c.getPosition());
+        this->client->deleteChar(QString{c.getValue()}, c.getPosition());
     }
+}
+
+void Controller::resetModel() {
+    this->crdt->resetModel();
+    this->client->resetModel(this->crdt->getSiteId());
 }
 
 void Controller::newMessage(Message message) {
@@ -32,17 +37,17 @@ void Controller::newMessage(Message message) {
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
+
         Pos pos = this->crdt->insert(character);
 
-        if(character.getSiteId().compare(this->siteId) == 0) { // if QStrings are equal it returns 0
+        if(character.getSiteId() == this->crdt->getSiteId()) {
             // local insert - only in the model; the char is already in the view.
         } else {
-            // remote insert - the char is to insert in the model and in the view.
-            // insert into the editor.
+            // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             this->editor->insertChar(character.getValue(), pos);
         }
     } else if(message.getType() == DELETE) {
-        if(!(message.getCharacter().getSiteId() == this->siteId)) {
+        if(!(message.getCharacter().getSiteId() == this->crdt->getSiteId())) {
             Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
 
             if(pos) {
@@ -51,9 +56,4 @@ void Controller::newMessage(Message message) {
             }
         }
     }
-}
-
-void Controller::resetModel() {
-    this->crdt->reset();
-    this->client->resetModel(this->siteId);
 }

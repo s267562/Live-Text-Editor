@@ -5,7 +5,7 @@
 #include <QPixmap>
 #include <iostream>
 
-Client::Client(QObject *parent):QObject (parent){
+Client::Client(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
     reciveOkMessage = false;
     clientIsLogged = false;
@@ -13,6 +13,10 @@ Client::Client(QObject *parent):QObject (parent){
     /* define connection */
     connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+}
+
+void Client::setCRDT(CRDT *crdt) {
+    this->crdt = crdt;
 }
 
 bool Client::connectTo(QString host){
@@ -25,7 +29,6 @@ bool Client::connectTo(QString host){
     }
 
     socketDescriptor = socket->socketDescriptor();
-
 
     qDebug() << "Client.cpp - connectTo()     " << socket->socketDescriptor() << " connected";
     qDebug() << ""; // newLine
@@ -115,7 +118,7 @@ void Client::onReadyRead(){
     }
 }
 
-bool Client::logIn(QString username, QString password){
+bool Client::logIn(QString username, QString password) {
     qDebug() << "Client.cpp - logIn()     ---------- LOGIN ----------";
     //TODO: Connessione al server, verifica di credenziali...
     if( username=="test" && password=="test" ){                 //only for testing...
@@ -135,6 +138,10 @@ bool Client::logIn(QString username, QString password){
             return false;
         }
     }
+
+    this->crdt->setSiteId(username);
+    this->siteId = username;
+
     return true;
 }
 
@@ -164,6 +171,10 @@ bool Client::registration(QString username, QString password, QString pathAvatar
 
     qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << pix.toImage().sizeInBytes();
     qDebug() << ""; // newLine
+
+    this->crdt->setSiteId(username);
+    this->siteId = username;
+
     return true;
 }
 
@@ -231,7 +242,7 @@ bool Client::requestForFile(QString fileName){
     return false;
 }
 
-bool Client::insert(QString str, QString siteId, Pos pos){
+bool Client::insert(QString str, Pos pos){
     qDebug() << "Client.cpp - insert()     ---------- WRITE INSERT ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -256,7 +267,7 @@ bool Client::insert(QString str, QString siteId, Pos pos){
     return true;
 }
 
-bool Client::deleteChar(QString str, QString siteId, std::vector<Identifier> pos){
+bool Client::deleteChar(QString str, std::vector<Identifier> pos){
     qDebug() << "Client.cpp - insert()     ---------- WRITE DELETE ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){

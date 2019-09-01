@@ -17,7 +17,6 @@ private:
     CRDT *crdt;
     Editor *editor;
     Client *client;
-    QString siteId;
 
 private slots:
     void newMessage(Message message);

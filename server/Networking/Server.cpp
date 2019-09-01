@@ -41,9 +41,11 @@ void Server::connection(){
                 sendFileNames(soc);
                 socketsState[socketDescriptor] = LOGGED;
                 qDebug() << "                              socketsSize: " << socketsState.size();
+                qDebug() << ""; // newLine
             }else{
                 //error in login phase
                 qDebug() << "                              error login";
+                qDebug() << ""; // newLine
                 writeErrMessage(soc);
                 return;
             }
@@ -62,23 +64,24 @@ void Server::connection(){
             delete d;
             socketsState.erase(socketDescriptor);
             qDebug() << "                              socketsSize: " << socketsState.size();
+            qDebug() << ""; // newLine
             
             if (!readFileName(soc->socketDescriptor(), soc)){
                 writeErrMessage(soc);
             }
         }else{
             qDebug() << "                              error message";
+            qDebug() << ""; // newLine
             writeErrMessage(soc);
         }
     }, Qt::DirectConnection);
 
     *d = connect(soc, &QTcpSocket::disconnected, this, [this, c, d, soc, socketDescriptor]{
         qDebug() << "                              " << socketDescriptor << " Disconnected (form main thread)";
+        qDebug() << ""; // newLine
         soc->deleteLater();
         socketsState.erase(socketDescriptor);
     });
-
-    qDebug() << ""; // newLine
 }
 
 bool Server::logIn(QTcpSocket *soc){
@@ -156,18 +159,18 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
     if (result != threads.end()){
         /* file already open */
         qDebug() << "                               thread for file name aready exist " << fileName;
+        qDebug() << ""; // newLine
         threads[key]->addSocket(soc);                       /* socket transition to secondary thread */
     }else{
         /* file not yet open */
         qDebug() << "                               New thread for file name: " << fileName;
+        qDebug() << ""; // newLine
         CRDT *crdt = new CRDT();
         Thread *thread = new Thread(this, crdt,fileName);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
         thread->addSocket(soc);                            /* socket transition to secondary thread */
         thread->start();
     }
-
-    qDebug() << ""; // newLine
 
     writeOkMessage(soc);
     return true;

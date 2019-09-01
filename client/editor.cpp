@@ -20,7 +20,6 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
 
     QTextDocument *doc = textEdit->document();
 
-
     QPixmap pix;
     pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
     // TODO: from QByteArray to QPixMap
@@ -127,7 +126,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
             if(charsRemoved) {
                 // TODO reset model (client-server)
-                //this->controller->resetModel();
+                this->controller->resetModel();
+
+                // TODO to remove all these lines...
                 // get endPos
                 textEdit->undo();
                 cursor.setPosition(textEdit->toPlainText().size());
@@ -190,7 +191,15 @@ void Editor::insertChar(char character, Pos pos) {
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
     cursor.insertText(QString{character});
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 
     this->cursor = oldCursor;
 }
@@ -201,7 +210,15 @@ void Editor::deleteChar(Pos pos) {
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
     cursor.deleteChar();
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 
     this->cursor = oldCursor;
 }

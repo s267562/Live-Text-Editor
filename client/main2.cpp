@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         client.setCRDT( &crdt);
 
         client.connectTo("127.0.0.1");
-        QString username = "u1";
+        QString username = "u2";
         client.logIn(username, "prova");
 
         QString siteId = username; // TODO il server (?) genera un siteId univoco
@@ -55,10 +55,6 @@ int main(int argc, char *argv[]) {
         // controller
         Controller controller{&crdt, &editor, &client};
 
-        const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
-        editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-        editor.move((availableGeometry.width() - editor.width()) / 2,
-                (availableGeometry.height() - editor.height()) / 2);
 
         editor.show();
     #endif

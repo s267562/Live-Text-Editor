@@ -8,10 +8,17 @@
 #include <QDebug>
 
 
-CRDT::CRDT(QString siteId) : siteId(siteId), vector(siteId) {
+CRDT::CRDT() {
     this->structure = { };
 }
 
+const QString &CRDT::getSiteId() const {
+    return siteId;
+}
+
+void CRDT::setSiteId(const QString &siteId) {
+    CRDT::siteId = siteId;
+}
 
 Pos CRDT::insert(Character character) {
 
@@ -22,10 +29,13 @@ Pos CRDT::insert(Character character) {
 }
 
 Pos CRDT::findInsertPosition(Character character) {
+    qDebug() << "HERE 1";
     // check if struct is empty or char is less than first char
     if (this->structure.empty() || character.compareTo(this->structure[0][0]) <= 0) {
         return Pos{ 0, 0 };
     }
+
+    qDebug() << "HERE 2";
 
     int minLine = 0;
     int totalLines = this->structure.size();
@@ -38,6 +48,8 @@ Pos CRDT::findInsertPosition(Character character) {
     if (character.compareTo(lastChar) > 0) {
         return this->findEndPosition(lastChar, lastLine, totalLines);
     }
+
+    qDebug() << "HERE 3";
 
     // binary search
     while (minLine + 1 < maxLine) {
@@ -54,6 +66,8 @@ Pos CRDT::findInsertPosition(Character character) {
         }
     }
 
+    qDebug() << "HERE 4";
+
     // Check between min and max line.
     std::vector<Character> minCurrentLine = this->structure[minLine];
     Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
@@ -61,9 +75,11 @@ Pos CRDT::findInsertPosition(Character character) {
     Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
 
     if (character.compareTo(minLastChar) <= 0) {
+        qDebug() << "HERE 5";
         int charIdx = this->findInsertIndexInLine(character, minCurrentLine);
         return Pos { charIdx, minLine };
     } else {
+        qDebug() << "HERE 6";
         int charIdx = this->findInsertIndexInLine(character, maxCurrentLine);
         return Pos { charIdx, maxLine };
     }
@@ -92,7 +108,6 @@ int CRDT::findInsertIndexInLine(Character character, std::vector<Character> line
     while (left + 1 < right) {
         int mid = std::floor(left + (right - left) / 2);
         int compareNum = character.compareTo(line[mid]);
-
         if (compareNum == 0) {
             return mid;
         } else if (compareNum > 0) {
@@ -133,10 +148,11 @@ void CRDT::insertChar(Character character, Pos pos) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
+            QString siteId = structure[i][j].getSiteId();
             if(i == pos.getLine() && j == pos.getCh()) {
-                qD << "                              ---> val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+                qD << "                              ---> val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             } else {
-                qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+                qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             }
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
@@ -183,7 +199,8 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
-            qD << "                                           val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            QString siteId = structure[i][j].getSiteId();
+            qD << "                                           val:" << ((val == '\n') ? '\n' : val) <<  "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
@@ -255,7 +272,8 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
-            qD << "                                                 val:" << ((val == '\n') ? '\n' : val) << "  counter:" << counter << "  position:";
+            QString siteId = structure[i][j].getSiteId();
+            qD << "                                                 val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
@@ -267,7 +285,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     return pos;
 }
 
-void CRDT::reset() {
+void CRDT::resetModel() {
     structure.clear();
 }
 

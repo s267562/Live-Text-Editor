@@ -36,8 +36,32 @@ add_executable(client
         client/utils/Character.cpp client/utils/Character.h
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
-        client/utils/Version.cpp client/utils/Version.h
-        client/utils/VersionVector.cpp client/utils/VersionVector.h client/Controller.cpp client/Controller.h
+        client/Controller.cpp client/Controller.h
+        client/Networking/Client.h
+        client/Networking/Client.cpp
+        client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
+        client/MainWindow.cpp client/MainWindow.h
+        client/ui/connection.cpp client/ui/connection.ui
+        client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
+        client/ui/clickablelabel.cpp client/ui/clickablelabel.h
+        client/ui/showFiles.cpp client/ui/showFiles.ui
+        client/Networking/common/commonFunctions.h
+        client/Networking/common/commonFunctions.cpp
+        )
+
+add_executable(client2
+        client/textEditor.qrc
+        client/ui/login.ui
+        client/ui/login.cpp
+        client/main2.cpp
+        client/resource.qrc
+        client/editor.ui
+        client/editor.cpp client/editor.h
+        client/CRDT.cpp client/CRDT.h
+        client/utils/Character.cpp client/utils/Character.h
+        client/utils/Pos.cpp client/utils/Pos.h
+        client/utils/Identifier.cpp client/utils/Identifier.h
+        client/Controller.cpp client/Controller.h
         client/Networking/Client.h
         client/Networking/Client.cpp
         client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
@@ -66,10 +90,6 @@ add_executable(server
         client/utils/Character.cpp
         client/utils/Pos.h
         client/utils/Pos.cpp
-        client/utils/Version.h
-        client/utils/Version.cpp
-        client/utils/VersionVector.h
-        client/utils/VersionVector.cpp
         server/Utils/Constants.h
         server/Networking/common/commonFunctions.h
         server/Networking/common/commonFunctions.cpp
@@ -77,4 +97,5 @@ add_executable(server
 
 
 target_link_libraries(client ${LIBRARIES})
+target_link_libraries(client2 ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})
