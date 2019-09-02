@@ -28,7 +28,7 @@ public:
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;
-    std::map<qintptr, int> versionsVector; // map<socketDescriptor, counter>
+    std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
 
     // insert
