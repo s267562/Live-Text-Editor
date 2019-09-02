@@ -94,6 +94,7 @@ void MainWindow::showRegistration(){
 
 void MainWindow::requestForFile(QString filename){
     bool result = this->client->requestForFile(filename);
+
     if (result){
         this->finder->close();
         this->editor->show();

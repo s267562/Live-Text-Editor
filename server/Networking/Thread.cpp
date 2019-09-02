@@ -5,7 +5,7 @@ class Identifier;
 
 class Character;
 
-Thread::Thread(QObject *parent, CRDT *crdt, QString filename) : QThread(parent), crdt(crdt), filename(filename) {
+Thread::Thread(QObject *parent, CRDT *crdt, QString filename, Server* server) : QThread(parent), crdt(crdt), filename(filename), server(server) {
 	// Create new timer
 	saveTimer = new QTimer(this);
 
@@ -18,21 +18,27 @@ void Thread::run() {
 }
 
 void Thread::addSocket(QTcpSocket *soc) {
+    std::lock_guard<std::mutex> lg(mutexSockets);
 	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
     qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
+    QMetaObject::Connection *c = new QMetaObject::Connection();
+    QMetaObject::Connection *d = new QMetaObject::Connection();
+
 	/* connect socket and signal */
-	connect(soc, &QAbstractSocket::readyRead, this, [this, soc]() {
+	*c = connect(soc, &QAbstractSocket::readyRead, this, [this, c, d,soc]() {
         qDebug() << "                             " << soc;
-		Thread::readyRead(soc);
+		Thread::readyRead(soc, c, d);
 	}, Qt::DirectConnection);
 
-	connect(soc, &QAbstractSocket::disconnected, this, [this, soc, socketDescriptor]() {
+	*d = connect(soc, &QAbstractSocket::disconnected, this, [this, c, d, soc, socketDescriptor]() {
         qDebug() << "                             " << soc;
-		Thread::disconnected(soc, socketDescriptor);
+		Thread::disconnected(soc, socketDescriptor, c, d);
 	}, Qt::DirectConnection);
+
+    writeOkMessage(soc);
 
     qDebug() << "                             " << socketDescriptor << " Client connected" << soc;
     qDebug() << ""; // newLine
@@ -92,35 +98,57 @@ bool Thread::readInsert(QTcpSocket *soc){
 	return true;
 }
 
-
-void Thread::readyRead(QTcpSocket *soc){
-    if (soc->bytesAvailable() == 0){
+void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d) {
+    if (soc->bytesAvailable() == 0) {
         return;
     }
-	QByteArray data;
-	if (!readChunck(soc, data, 5)){
-		/* eccezione */
-		writeErrMessage(soc);
-		return;
-	}
+    QByteArray data;
+    if (!readChunck(soc, data, 5)) {
+        /* eccezione */
+        writeErrMessage(soc);
+        return;
+    }
     qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
     qDebug() << ""; // newLine
 
-	if (data.toStdString() == INSERT_MESSAGE){
-		if (!readInsert(soc)){
-			writeErrMessage(soc);
-		}
-        readyRead(soc);
-	}else if (data.toStdString() == DELETE_MESSAGE){
-		if (!readDelete(soc)){
-			writeErrMessage(soc);
-		}
-		readyRead(soc);
-	}else{
+    if (data.toStdString() == INSERT_MESSAGE) {
+        if (!readInsert(soc)) {
+            writeErrMessage(soc);
+        }
+        readyRead(soc, c, d);
+    } else if (data.toStdString() == DELETE_MESSAGE) {
+        if (!readDelete(soc)) {
+            writeErrMessage(soc);
+        }
+        readyRead(soc, c, d);
+    } else if (data.toStdString() == REQUEST_FILE_MESSAGE){
+        disconnect(*c);
+        disconnect(*d);
+        delete c;
+        delete d;
+
+        readSpace(soc);
+        int fileNameSize = readNumberFromSocket(soc);
+        readSpace(soc);
+
+        QByteArray fileName;
+        if (!readChunck(soc, fileName, fileNameSize)){
+            writeErrMessage(soc);
+            return;
+        }
+        std::shared_ptr<Thread> thread = server->getThread(fileName);
+        if (thread.get() == nullptr){
+            /* thread doesn't exist */
+            thread = server->addThread(fileName);
+        }
+        qDebug() << soc->socketDescriptor();
+        thread->addSocket(soc);
+
+        //writeOkMessage(soc);
+    }else{
 		writeErrMessage(soc);
 	}
 }
-
 
 void Thread::saveCRDTToFile() {
 	if (needToSaveFile)
@@ -233,12 +261,16 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
     }
 }
 
-void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor){
+void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d){
+    std::lock_guard<std::mutex> lg(mutexSockets);
     qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
     qDebug() << ""; // newLine
+    disconnect(*c);
+    disconnect(*d);
+    delete c;
+    delete d;
     QTcpSocket socket;
     socket.setSocketDescriptor(socketDescriptor);
     socket.deleteLater();
     sockets.erase(soc->socketDescriptor());
-
 }

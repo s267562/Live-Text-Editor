@@ -1,5 +1,6 @@
 #ifndef THREAD_H
 #define THREAD_H
+
 #include <QThread>
 #include <QTcpSocket>
 #include <queue>
@@ -11,24 +12,28 @@
 #include "message/Message.h"
 #include "../../client/utils/Pos.h"
 #include "../CRDT.h"
+#include "Server.h"
 
 class Identifier;
 class Character;
+class Server;
 
 class Thread : public QThread {
 Q_OBJECT
 private:
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
+    std::mutex mutexSockets;
     std::queue<Message> messagesQueue;
     CRDT *crdt;
     QString filename;
     QTimer *saveTimer;
+    Server *server;
     int saveInterval = 2 * 60 * 1000; // 2 min (in ms) // TODO decidere intervallo
     bool needToSaveFile = false;
     bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
 
 public:
-    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = nullptr);
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);
     void run();
     void addSocket(QTcpSocket *soc);
 private:
@@ -42,8 +47,8 @@ signals:
     void newMessage();
 
 public slots:
-    void readyRead(QTcpSocket *socket);
-    void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
+    void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);
+    void disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);
     void saveCRDTToFile();
 };
 
