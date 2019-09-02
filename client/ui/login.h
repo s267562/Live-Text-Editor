@@ -18,6 +18,7 @@ class Login : public QMainWindow
 public:
     explicit Login(QWidget *parent = nullptr);
     void setClient(Client *client);
+    QString getUsername();
     ~Login();
 
 private slots:

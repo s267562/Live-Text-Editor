@@ -64,6 +64,10 @@ void Login::on_pushButton_2_clicked() {
     emit showRegistration();
 }
 
+QString Login::getUsername(){
+    return ui->username->text();
+}
+
 /**
 void Login::onOkButtonClicked()
 {

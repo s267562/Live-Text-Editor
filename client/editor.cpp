@@ -235,6 +235,7 @@ void Editor::on_actionShare_file_triggered(){
 
 void Editor::on_actionOpen_triggered(){
     QMessageBox::information(this, "Open", "Open!");
+    emit showFinder();
 }
 
 void Editor::on_actionSave_as_PDF_triggered(){

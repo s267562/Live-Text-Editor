@@ -38,6 +38,7 @@ public slots:
 
 signals:
     void logout();
+    void showFinder();
 
 private:
     Ui::Editor *ui;

@@ -47,7 +47,7 @@ add_executable(client
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        )
+        client/User.cpp client/User.h)
 
 add_executable(client2
         client/textEditor.qrc
