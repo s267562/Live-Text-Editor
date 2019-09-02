@@ -21,12 +21,16 @@ private slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
     void on_pushButton_newFile_clicked();
+    void on_actionNew_File_triggered();
+    void on_actionLogout_triggered();
 
-    signals:
+signals:
     void newFile(QString filename);
+    void logout();
 
 private:
     Ui::ShowFiles *ui;
+    bool newFileShown = false;
 };
 
 #endif // SHOWFILES_H

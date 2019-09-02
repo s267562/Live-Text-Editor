@@ -39,7 +39,6 @@ public:
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
-    //void logOut();
     bool registration(QString username, QString passsword, QString pathAvatar);
     bool requestForFile(QString fileName);
     bool readInsert();
@@ -58,6 +57,7 @@ signals:
     void newMessage(Message message);
     void userVerified();
     void fileNames(QStringList fileList);
+    void logout();
     void reset(QString siteId);
 };
 

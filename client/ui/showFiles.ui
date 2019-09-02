@@ -18,9 +18,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
+      <y>10</y>
       <width>381</width>
-      <height>161</height>
+      <height>211</height>
      </rect>
     </property>
    </widget>
@@ -72,6 +72,19 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNew_File"/>
+   </widget>
+   <widget class="QMenu" name="menuAccount">
+    <property name="title">
+     <string>Account</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuAccount"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -80,8 +93,36 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNew_File"/>
+   <addaction name="actionLogout"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionNew_File">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/rec/img/new-file.png</normaloff>:/rec/img/new-file.png</iconset>
+   </property>
+   <property name="text">
+    <string>New File</string>
+   </property>
+  </action>
+  <action name="actionLogout">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/rec/img/logout.png</normaloff>:/rec/img/logout.png</iconset>
+   </property>
+   <property name="text">
+    <string>Logout</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

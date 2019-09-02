@@ -231,6 +231,7 @@ void Client::logOut(){
         clientIsLogged = false;
         c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
         d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+        emit logout();
     }
 }
 

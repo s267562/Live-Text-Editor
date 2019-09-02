@@ -22,7 +22,8 @@ MainWindow::MainWindow(QString siteId)
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
     connect(this->client, SIGNAL(fileNames(QStringList)),this, SLOT(showFileFinder(QStringList)));
     connect(this->client, &Client::errorConnection, this, &MainWindow::errorConnection);
-    connect(this->editor, &Editor::logout, this, &MainWindow::showLogin);
+    connect(this->client, &Client::logout, this, &MainWindow::showLogin);
+    connect(this->finder, &ShowFiles::logout, this->client, &Client::logOut);
 }
 
 void MainWindow::show() {
@@ -42,6 +43,8 @@ void MainWindow::showEditor(){
 }
 
 void MainWindow::showLogin(){
+    this->finder->close();
+    this->editor->close();
     this->registration->close();
     this->login->show();
 }
@@ -60,10 +63,8 @@ void MainWindow::showRegistration(){
 }
 
 void MainWindow::requestForFile(QString filename){
-
     bool result = this->client->requestForFile(filename);
-
-    if ( result ){
+    if (result){
         this->editor->show();
     }
 }
