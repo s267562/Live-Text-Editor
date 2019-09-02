@@ -140,10 +140,11 @@ void CRDT::insertChar(Character character, Pos pos) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
+            QString value = ""; if(val == '\n') value += "\n"; else value += val;
             if(i == pos.getLine() && j == pos.getCh()) {
-                qD << "                              ---> val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+                qD << "                              ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             } else {
-                qD << "                                   val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+                qD << "                                   val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             }
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
@@ -191,7 +192,8 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
-            qD << "                                           val:" << ((val == '\n') ? '\n' : val) <<  "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            QString value = ""; if(val == '\n') value += "\n"; else value += val;
+            qD << "                                           val:" << value <<  "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
@@ -220,6 +222,23 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
 
     return chars;
 
+
+    /*  TODO DIFFERENT SOLUTION
+
+     std::vector<Character> chars {};
+
+    for (int line = startPos.getLine(); line < endPos.getLine(); line++) {
+        chars.insert(chars.end(), structure[line].begin(), structure[line].end());
+        structure.erase(structure.begin() + startPos.getLine());
+    }
+
+    // to do for loop inside crdt
+    if (this->structure[endPos.getLine()].size() > 0) {
+        std::vector<Character> vec { this->structure[endPos.getLine()].begin(), this->structure[endPos.getLine()].begin() + endPos.getCh() };
+        chars.insert(chars.end(), vec.begin(), vec.end());
+    }
+
+     */
 }
 
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
@@ -264,7 +283,8 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
-            qD << "                                                 val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            QString value = ""; if(val == '\n') value += "\n"; else value += val;
+            qD << "                                                 val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();

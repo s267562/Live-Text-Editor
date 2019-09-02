@@ -31,10 +31,11 @@ Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
+            QString value = ""; if(val == '\n') value += "\n"; else value += val;
             if(i == pos.getLine() && j == pos.getCh()) {
-                qD << "                                ---> val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+                qD << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             } else {
-                qD << "                                     val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+                qD << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             }
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
@@ -173,7 +174,10 @@ void CRDT::handleDelete(const Character &character) {
 		this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
 		if (character.getValue() == '\n' && this->structure.size() > pos.getLine()) {
-			this->mergeLines(pos.getLine());
+            qDebug() << "Deleting: " << character.getValue();
+
+            //TODO check this
+		    this->mergeLines(pos.getLine());
 		}
 
 		this->removeEmptyLines();
@@ -187,7 +191,8 @@ void CRDT::handleDelete(const Character &character) {
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
-            qD << "                                     val:" << ((val == '\n') ? '\n' : val) << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+            QString value = ""; if(val == '\n') value += "\n"; else value += val;
+            qD << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
@@ -382,4 +387,3 @@ void CRDT::mergeLines(int line) {
 		structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
 	}
 }
-

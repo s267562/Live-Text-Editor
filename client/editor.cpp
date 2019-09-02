@@ -163,21 +163,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 this->controller->localInsert(chars, startPos);
             }
 
-
-
-            if(charsAdded) {
-                QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-                // get start position
-                cursor.setPosition(position);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                //std::cout << std::endl << "startPos (ch, line): (" << ch << ", " << line << ")" << std::endl << std::endl;
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-
-                this->controller->localInsert(chars, startPos);
-            }
-
             if(charsRemoved) {
                 // get startPos
                 int line, ch;
@@ -194,6 +179,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 Pos endPos{ch, line}; // Pos(int ch, int line);
                 textEdit->redo();
 
+                qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+
                 this->controller->localDelete(startPos, endPos);
             }
         }
@@ -209,7 +196,7 @@ void Editor::insertChar(char character, Pos pos) {
 
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
-            this, &Editor::onTextChanged);
+               this, &Editor::onTextChanged);
 
     cursor.insertText(QString{character});
 
