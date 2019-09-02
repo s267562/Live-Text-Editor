@@ -9,16 +9,21 @@
 #include "../Utils/Constants.h"
 #include "common/commonFunctions.h"
 
+class Thread;
+
 class Server: public QTcpServer{
     Q_OBJECT
 private:
-    std::map<std::string,std::shared_ptr<Thread>> threads;
+    std::map<QString,std::shared_ptr<Thread>> threads;
+    std::mutex mutexThread;
     std::map<qintptr, SocketState> socketsState;
     QTcpSocket *socket;
 
 public:
     explicit Server(QObject *parent = nullptr);
     bool startServer(quint16 port);
+    std::shared_ptr<Thread> getThread(QString fileName);
+    std::shared_ptr<Thread> addThread(QString fileName);
 
 private:
     bool logIn(QTcpSocket *soc);

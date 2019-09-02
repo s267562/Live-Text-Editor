@@ -1,5 +1,6 @@
 #include <QDataStream>
 #include <QPixmap>
+#include <shared_mutex>
 #include "Server.h"
 
 Server::Server(QObject *parent):QTcpServer(parent){}
@@ -123,16 +124,20 @@ bool Server::sendFileNames(QTcpSocket *soc){
     qDebug() << "Server.cpp - sendFileNames()     ---------- LIST OF FILE ----------";
     // TODO gestione file dell'utente
 
-    int nFiles = 1;
-    QString fileName;
-    fileName = "file1";                                     /* file fantoccio: da rimuovere in seguito */
+    int nFiles = 2;
+    QString fileName[2];
+    fileName[0] = "file1";                                     /* file fantoccio: da rimuovere in seguito */
+    fileName[1] = "file2";
     QByteArray message(LIST_OF_FILE);
 
     QByteArray numFiles = convertionNumber(nFiles);
+    message.append(" " + numFiles);
 
-    QByteArray fileNameSize = convertionNumber(fileName.size());
+    for (int i = 0; i < nFiles; i++ ){
+        QByteArray fileNameSize = convertionNumber(fileName[i].size());
+        message.append(" " + fileNameSize + " " + fileName[i].toUtf8());
+    }
 
-    message.append(" " + numFiles + " " + fileNameSize + " " + fileName.toUtf8());
     qDebug() << "                                " << message;
     qDebug() << ""; // newLine
 
@@ -140,6 +145,7 @@ bool Server::sendFileNames(QTcpSocket *soc){
 }
 
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
+    std::lock_guard<std::mutex> lg(mutexThread);
     qDebug() << "Server.cpp - readFileName()     ---------- REQUEST FOR FILE ----------";
     readSpace(soc);
     int fileNameSize = readNumberFromSocket(soc);
@@ -153,7 +159,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
 
     qDebug() << "                               " << fileName;
 
-    std::string key = fileName.toStdString();                           /* file name */
+    QString key = fileName;                           /* file name */
     auto result = threads.find(key);
 
     if (result != threads.end()){
@@ -166,13 +172,13 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         qDebug() << "                               New thread for file name: " << fileName;
         qDebug() << ""; // newLine
         CRDT *crdt = new CRDT();
-        Thread *thread = new Thread(this, crdt,fileName);                        /* create new thread */
+        Thread *thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
         thread->addSocket(soc);                            /* socket transition to secondary thread */
         thread->start();
     }
 
-    writeOkMessage(soc);
+    //writeOkMessage(soc);
     return true;
 }
 
@@ -225,4 +231,23 @@ bool Server::registration(QTcpSocket *soc){
     qDebug() << ""; // newLine
 
     return true;
+}
+
+std::shared_ptr<Thread> Server::getThread(QString fileName){
+    std::lock_guard<std::mutex> sl(mutexThread);
+    auto result = threads.find(fileName);
+
+    if (result != threads.end()){
+        return result.operator->()->second;
+    }else{
+        return std::shared_ptr<Thread>();
+    }
+}
+
+std::shared_ptr<Thread> Server::addThread(QString fileName){
+    std::lock_guard<std::mutex> lg(mutexThread);
+    CRDT *crdt = new CRDT();
+    std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
+    threads[fileName] = thread;
+    return thread;
 }
