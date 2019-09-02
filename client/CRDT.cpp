@@ -117,6 +117,7 @@ int CRDT::findInsertIndexInLine(Character character, std::vector<Character> line
 }
 
 void CRDT::insertChar(Character character, Pos pos) {
+    //qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
@@ -124,11 +125,29 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     // if inserting a newline, split line into two lines.
     if (character.getValue() == '\n') {
+        //qDebug() << "Splitting line into two lines";
         std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
         if (lineAfter.size() != 0) {
-            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter); // insert line after.
+            //qDebug().noquote() << "There is something after the newLine inserted";
+            structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
+            /*
+            if(structure.size() <= pos.getLine()+1) {
+                // the line + 1 does not exist.
+                qDebug() << "line + 1 does not exist. Pushing back.";
+                structure.push_back(lineAfter); // pushing back the line after.
+            } else {
+                // the line + 1 exists.
+                qDebug() << "line + 1 exists, Inserting.";
+                structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
+            }
+             */
+
+            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+        } else {
+            //qDebug().noquote() << "There is nothing after the char \n inserted";
         }
     }
+
     structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
 
 
@@ -181,6 +200,7 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
     this->removeEmptyLines();
 
     if (newlineRemoved && this->structure[startPos.getLine() + 1].size() > 0) {
+        //qDebug() << "need to merge line" << startPos.getLine();
         this->mergeLines(startPos.getLine());
     }
 
@@ -206,39 +226,22 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
 }
 
 std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
-    // TODO check if correct
-    std::vector<Character> chars {structure[startPos.getLine()].begin(), structure[startPos.getLine()].begin() + startPos.getCh()};
-    structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh());
+    std::vector<Character> chars = {};
 
-    for (int line = startPos.getLine() + 1; line < endPos.getLine(); line++) {
-        chars.insert(chars.end(), structure[line + 1].begin(), structure[line + 1].end());
-    }
-
-    // to do for loop inside crdt
     if (this->structure[endPos.getLine()].size() > 0) {
-        std::vector<Character> vec { this->structure[endPos.getLine()].begin(), this->structure[endPos.getLine()].begin() + endPos.getCh() };
-        chars.insert(chars.end(), vec.begin(), vec.end());
+        chars.insert(chars.end(), structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
+        structure[endPos.getLine()].erase(structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
     }
+
+    for (int line = endPos.getLine() - 1; line > startPos.getLine(); line--) {
+        chars.insert(chars.end(), structure[line].begin(), structure[line].end());
+        structure.erase(structure.begin() + line );
+    }
+
+    chars.insert(chars.end(), structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
+    structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
 
     return chars;
-
-
-    /*  TODO DIFFERENT SOLUTION
-
-     std::vector<Character> chars {};
-
-    for (int line = startPos.getLine(); line < endPos.getLine(); line++) {
-        chars.insert(chars.end(), structure[line].begin(), structure[line].end());
-        structure.erase(structure.begin() + startPos.getLine());
-    }
-
-    // to do for loop inside crdt
-    if (this->structure[endPos.getLine()].size() > 0) {
-        std::vector<Character> vec { this->structure[endPos.getLine()].begin(), this->structure[endPos.getLine()].begin() + endPos.getCh() };
-        chars.insert(chars.end(), vec.begin(), vec.end());
-    }
-
-     */
 }
 
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
@@ -382,7 +385,6 @@ int CRDT::findIndexInLine(Character character, std::vector<Character> line) {
 }
 
 void CRDT::removeEmptyLines() {
-
     for (int line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].size() == 0) {
             this->structure.erase(this->structure.begin() + line);
@@ -392,8 +394,9 @@ void CRDT::removeEmptyLines() {
 }
 
 void CRDT::mergeLines(int line) {
-    // TODO check if correct
     if(structure.size() > line + 1 && structure[line + 1].size() > 0) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
+        //qDebug() << "EREASING line" << line + 1 << " line size:" << structure[line+1].size();
+        structure.erase(structure.begin() + line + 1);
     }
 }

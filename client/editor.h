@@ -43,11 +43,14 @@ signals:
 private:
     Ui::Editor *ui;
     QTextEdit *textEdit;
+    QTextCursor textCursor;
+    QTextDocument *textDocument;
     QString siteId;
-    QTextCursor cursor;
-    int cursorPos;
     Controller *controller;
 
+    void undo();
+    void redo();
+    bool validSignal(int i, int i1, int i2);
 };
 
 #endif //TEXTEDITOR_EDITOR_H

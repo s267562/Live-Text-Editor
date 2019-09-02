@@ -150,20 +150,38 @@ int CRDT::generateIdBetween(int min, int max) {
 
 void CRDT::insertChar(Character character, Pos pos) {
 
-	if (pos.getLine() == structure.size()) {
-		structure.push_back(std::vector<Character>{}); // pushing a new line.
-	}
+    qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
 
-	// if inserting a newline, split line into two lines.
-	if (character.getValue() == '\n') {
-		std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(),
-										 structure[pos.getLine()].end()); // get line after.
-		if (lineAfter.size() != 0) {
-			structure.insert(structure.begin() + pos.getLine() + 1, lineAfter); // insert line after.
-		}
-	}
-	structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(),
-									character); // insert the character in the pos.
+    if (pos.getLine() == structure.size()) {
+        structure.push_back(std::vector<Character> {}); // pushing a new line.
+    }
+
+    // if inserting a newline, split line into two lines.
+    if (character.getValue() == '\n') {
+        qDebug() << "Splitting line into two lines";
+        std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
+        if (lineAfter.size() != 0) {
+            qDebug().noquote() << "There is something after the newLine inserted";
+            structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
+            /*
+            if(structure.size() <= pos.getLine()+1) {
+                // the line + 1 does not exist.
+                qDebug() << "line + 1 does not exist. Pushing back.";
+                structure.push_back(lineAfter); // pushing back the line after.
+            } else {
+                // the line + 1 exists.
+                qDebug() << "line + 1 exists, Inserting.";
+                structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
+            }
+             */
+
+            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+        } else {
+            qDebug().noquote() << "There is nothing after the char \n inserted";
+        }
+    }
+
+    structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
 }
 
 
@@ -174,9 +192,8 @@ void CRDT::handleDelete(const Character &character) {
 		this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
 		if (character.getValue() == '\n' && this->structure.size() > pos.getLine()) {
-            qDebug() << "Deleting: " << character.getValue();
+            qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
 
-            //TODO check this
 		    this->mergeLines(pos.getLine());
 		}
 
@@ -287,52 +304,52 @@ bool CRDT::loadCRDT(QString filename) {
 }
 
 Pos CRDT::findPosition(Character character) {
-	// check if struct is empty or char is less than first char
-	if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
-		return Pos{-1, -1}; // false obj
-	}
+    // check if struct is empty or char is less than first char
+    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
+        return Pos {-1, -1}; // false obj
+    }
 
-	int minLine = 0;
-	int totalLines = this->structure.size();
-	int maxLine = totalLines - 1;
-	std::vector<Character> lastLine = this->structure[maxLine];
+    int minLine = 0;
+    int totalLines = this->structure.size();
+    int maxLine = totalLines - 1;
+    std::vector<Character> lastLine = this->structure[maxLine];
 
-	Character lastChar = lastLine[lastLine.size() - 1];
+    Character lastChar = lastLine[lastLine.size() - 1];
 
-	// char is greater than all existing chars (insert at end)
-	if (character.compareTo(lastChar) > 0) {
-		return Pos{-1, -1}; // false obj
-	}
+    // char is greater than all existing chars (insert at end)
+    if (character.compareTo(lastChar) > 0) {
+        return Pos {-1, -1}; // false obj
+    }
 
-	// binary search
-	while (minLine + 1 < maxLine) {
-		int midLine = std::floor(minLine + (maxLine - minLine) / 2);
-		std::vector<Character> currentLine = this->structure[midLine];
-		lastChar = currentLine[currentLine.size() - 1];
+    // binary search
+    while (minLine + 1 < maxLine) {
+        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+        std::vector<Character> currentLine = this->structure[midLine];
+        lastChar = currentLine[currentLine.size() - 1];
 
-		if (character.compareTo(lastChar) == 0) {
-			return Pos{midLine, (int) currentLine.size() - 1};
-		} else if (character.compareTo(lastChar) < 0) {
-			maxLine = midLine;
-		} else {
-			minLine = midLine;
-		}
-	}
+        if (character.compareTo(lastChar) == 0) {
+            return Pos { (int) currentLine.size() - 1, midLine };
+        } else if (character.compareTo(lastChar) < 0) {
+            maxLine = midLine;
+        } else {
+            minLine = midLine;
+        }
+    }
 
-	// Check between min and max line.
-	std::vector<Character> minCurrentLine = this->structure[minLine];
-	Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
-	std::vector<Character> maxCurrentLine = this->structure[maxLine];
-	Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
+    // Check between min and max line.
+    std::vector<Character> minCurrentLine = this->structure[minLine];
+    Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
+    std::vector<Character> maxCurrentLine = this->structure[maxLine];
+    Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
 
 
-	if (character.compareTo(minLastChar) <= 0) {
-		int charIdx = this->findIndexInLine(character, minCurrentLine);
-		return Pos { charIdx, minLine };
-	} else {
-		int charIdx = this->findIndexInLine(character, maxCurrentLine);
-		return Pos { charIdx, maxLine };
-	}
+    if (character.compareTo(minLastChar) <= 0) {
+        int charIdx = this->findIndexInLine(character, minCurrentLine);
+        return Pos { charIdx, minLine };
+    } else {
+        int charIdx = this->findIndexInLine(character, maxCurrentLine);
+        return Pos { charIdx, maxLine };
+    }
 }
 
 int CRDT::findIndexInLine(Character character, std::vector<Character> line) {
@@ -382,8 +399,8 @@ void CRDT::removeEmptyLines() {
 }
 
 void CRDT::mergeLines(int line) {
-	// TODO check if correct
-	if (structure.size() > line + 1 && structure[line + 1].size() > 0) {
-		structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
-	}
+    if(structure.size() > line + 1 && structure[line + 1].size() > 0) {
+        structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
+        structure.erase(structure.begin() + line + 1);
+    }
 }
