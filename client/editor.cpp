@@ -21,6 +21,8 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
+    ui->userListWidget->addItem("Io");
+    
     QPixmap pix;
     pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
     // TODO: from QByteArray to QPixMap

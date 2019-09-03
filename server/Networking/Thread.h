@@ -22,6 +22,7 @@ class Thread : public QThread {
 Q_OBJECT
 private:
     std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
+    std::map<qintptr, QString> usernames;
     std::mutex mutexSockets;
     std::queue<Message> messagesQueue;
     CRDT *crdt;
@@ -35,12 +36,14 @@ private:
 public:
     explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);
     void run();
-    void addSocket(QTcpSocket *soc);
+    void addSocket(QTcpSocket *soc, QString username);
+    void sendListOfUsers(QTcpSocket *soc);
 private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
+    void sendNewUser(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

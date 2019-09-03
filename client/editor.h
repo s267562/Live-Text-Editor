@@ -26,8 +26,6 @@ public:
     void setController(Controller *controller);
     void insertChar(char character, Pos pos);
     void deleteChar(Pos pos);
-    void addUser(QString user);
-    void setUsers(QStringList user);
     ~Editor();
 
 public slots:
@@ -37,6 +35,8 @@ public slots:
     void on_actionOpen_triggered();
     void on_actionSave_as_PDF_triggered();
     void on_actionLogout_triggered();
+    void addUser(QString user);
+    void setUsers(QStringList user);
 
 signals:
     void logout();

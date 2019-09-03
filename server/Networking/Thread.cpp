@@ -17,11 +17,12 @@ void Thread::run() {
 	exec();
 }
 
-void Thread::addSocket(QTcpSocket *soc) {
+void Thread::addSocket(QTcpSocket *soc, QString username) {
     std::lock_guard<std::mutex> lg(mutexSockets);
 	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
+	usernames[socketDescriptor] = username;
     qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
     QMetaObject::Connection *c = new QMetaObject::Connection();
@@ -38,7 +39,9 @@ void Thread::addSocket(QTcpSocket *soc) {
 		Thread::disconnected(soc, socketDescriptor, c, d);
 	}, Qt::DirectConnection);
 
-    writeOkMessage(soc);
+    //writeOkMessage(soc);
+    sendListOfUsers(soc);
+    sendNewUser(soc);
 
     qDebug() << "                             " << socketDescriptor << " Client connected" << soc;
     qDebug() << ""; // newLine
@@ -141,10 +144,11 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
             /* thread doesn't exist */
             thread = server->addThread(fileName);
         }
-        qDebug() << soc->socketDescriptor();
-        thread->addSocket(soc);
+        //qDebug() << soc->socketDescriptor();
+        thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 
         //writeOkMessage(soc);
+
     }else{
 		writeErrMessage(soc);
 	}
@@ -258,6 +262,42 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
     //broadcast
     for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
         writeMessage(socket.second.get(), message);
+    }
+}
+
+void Thread::sendListOfUsers(QTcpSocket *soc){
+    QByteArray message(LIST_OF_USERS);
+    if (usernames.size() - 1 == 0){
+        QByteArray usernamesSize = convertionNumber(0);
+        message.append(usernamesSize);
+    }else{
+        QByteArray usernamesSize = convertionNumber(usernames.size() - 1);
+        message.append(" " + usernamesSize);
+        for (auto u : usernames){
+            if (u.first != soc->socketDescriptor()){
+                QByteArray usernameSize = convertionNumber(u.second.size());
+                message.append(" " + usernameSize + " " + u.second.toUtf8());
+            }
+        }
+    }
+
+    if (!writeMessage(soc,message)){
+        return;
+    }
+}
+
+void Thread::sendNewUser(QTcpSocket *soc){
+    QByteArray message(LIST_OF_USERS);
+    QByteArray usernamesSize = convertionNumber(1);
+    QByteArray usernameSize = convertionNumber(usernames[soc->socketDescriptor()].size());
+    message.append(" " + usernamesSize + " " + usernameSize + " " + usernames[soc->socketDescriptor()].toUtf8());
+
+    for (auto s : sockets){
+        if (soc->socketDescriptor() != s.second->socketDescriptor()){
+            if (!writeMessage(s.second.get(), message)){
+                return;
+            }
+        }
     }
 }
 

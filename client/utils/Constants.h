@@ -11,6 +11,7 @@
 #define REGISTRATION_MESSAGE "REG\r\n"
 #define REQUEST_FILE_MESSAGE "FIL\r\n"
 #define LIST_OF_FILE "LSF\r\n"
+#define LIST_OF_USERS "USR\r\n"
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 #define RESET_MESSAGE "RES\r\n"

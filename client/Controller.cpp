@@ -12,6 +12,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt),
               this, &Controller::newMessage);
 
     connect(editor, &Editor::logout, client, &Client::logOut);
+    connect(client, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     // TO-DO: connect(client, &Client::newMessage, this, &Controller::/* metodo che vuoi richimare della classe */);
 }
 

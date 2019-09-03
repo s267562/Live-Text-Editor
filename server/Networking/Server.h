@@ -17,6 +17,7 @@ private:
     std::map<QString,std::shared_ptr<Thread>> threads;
     std::mutex mutexThread;
     std::map<qintptr, SocketState> socketsState;
+    std::map<qintptr, QString> usernames;
     QTcpSocket *socket;
 
 public:

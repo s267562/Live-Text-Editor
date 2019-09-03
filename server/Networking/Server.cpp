@@ -116,6 +116,7 @@ bool Server::logIn(QTcpSocket *soc){
     qDebug() << ""; // newLine
 
     // TODO: richiamo funzione per il login sul db
+    usernames[soc->socketDescriptor()] = username;
 
     return true;
 }
@@ -166,7 +167,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         /* file already open */
         qDebug() << "                               thread for file name aready exist " << fileName;
         qDebug() << ""; // newLine
-        threads[key]->addSocket(soc);                       /* socket transition to secondary thread */
+        threads[key]->addSocket(soc, usernames[socketDescriptor]);                       /* socket transition to secondary thread */
     }else{
         /* file not yet open */
         qDebug() << "                               New thread for file name: " << fileName;
@@ -174,7 +175,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){
         CRDT *crdt = new CRDT();
         Thread *thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
         threads[key] = std::shared_ptr<Thread>(thread);
-        thread->addSocket(soc);                            /* socket transition to secondary thread */
+        thread->addSocket(soc, usernames[socketDescriptor]);                            /* socket transition to secondary thread */
         thread->start();
     }
 
@@ -229,6 +230,8 @@ bool Server::registration(QTcpSocket *soc){
     qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
 
     qDebug() << ""; // newLine
+
+    usernames[soc->socketDescriptor()] = username;
 
     return true;
 }

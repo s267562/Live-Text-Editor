@@ -34,8 +34,6 @@ bool Client::connectTo(QString host){
     return true;
 }
 
-int i = 0;
-
 void Client::onReadyRead(){
     if (socket->bytesAvailable() == 0){
         return;
@@ -115,6 +113,20 @@ void Client::onReadyRead(){
             if (readReset()){
                 reciveOkMessage = true;
                 onReadyRead();
+            }
+        } else if (datas.toStdString() == LIST_OF_USERS){
+            if (readUsernames()){
+                if (!messages.empty()){
+                    QByteArray message = messages.front();
+                    messages.pop();
+                    if (!writeMessage(socket, message)){
+                        // push ???
+                        return;
+                    }
+                    reciveOkMessage = false;
+                }else{
+                    reciveOkMessage = true;
+                }
             }
         }
     }
@@ -325,7 +337,6 @@ void Client::resetModel(QString siteId) {
     //TODO to implement
 }
 
-
 bool Client::readReset() {
     qDebug() << "Client.cpp - readReset()     ---------- READ RESET_MODEL ----------";
     qDebug() << ""; // newLine
@@ -344,7 +355,6 @@ bool Client::readReset() {
     emit reset(siteId);
     return true;
 }
-
 
 bool Client::readInsert(){
     qDebug() << "Client.cpp - readInsert()     ---------- READ INSERT ----------";
@@ -438,8 +448,6 @@ bool Client::readDelete(){
     return true;
 }
 
-
-
 void Client::onDisconnect(){
     qDebug() << "Client.cpp - onDisconnect()     " << socketDescriptor <<" Disconnected";
     qDebug() << ""; // newLine
@@ -462,4 +470,30 @@ Message Client::getMessage() {
         incomingDeleteMessagesQueue.pop();
         return message;
     }
+}
+
+bool Client::readUsernames(){
+    qDebug() << "Client.cpp - readUsernames()     ---------- READ USERNAMES ----------";
+    QStringList usernames;
+    readSpace(socket);
+    int usernamesSize = readNumberFromSocket(socket);
+
+    qDebug() << usernamesSize;
+
+    if (usernamesSize != 0){
+        for (int i = 0; i < usernamesSize; i++){
+            readSpace(socket);
+            int usernameSize = readNumberFromSocket(socket);
+            qDebug() << usernameSize;
+            readSpace(socket);
+            QByteArray username;
+            if (!readChunck(socket, username, usernameSize)){
+                return false;
+            }
+            qDebug() << "                              usename: "<<username;
+            usernames.append(username);
+        }
+    }
+
+    emit setUsers(usernames);
 }
