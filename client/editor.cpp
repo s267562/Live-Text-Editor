@@ -17,6 +17,10 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
 
+    ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
+
+    ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
+
     QPixmap pix;
     pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
     // TODO: from QByteArray to QPixMap
@@ -265,4 +269,16 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     }
 
     return validSignal;
+}
+
+void Editor::resizeEvent(QResizeEvent *event){
+    ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18);
+}
+
+void Editor::addUser(QString user){
+    ui->userListWidget->addItem(user);
+}
+
+void Editor::setUsers(QStringList users){
+    ui->userListWidget->addItems(users);
 }

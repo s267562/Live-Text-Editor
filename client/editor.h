@@ -26,6 +26,8 @@ public:
     void setController(Controller *controller);
     void insertChar(char character, Pos pos);
     void deleteChar(Pos pos);
+    void addUser(QString user);
+    void setUsers(QStringList user);
     ~Editor();
 
 public slots:
@@ -51,6 +53,7 @@ private:
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
+    void resizeEvent (QResizeEvent *event);
 };
 
 #endif //TEXTEDITOR_EDITOR_H
