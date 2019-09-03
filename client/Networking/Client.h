@@ -46,6 +46,7 @@ public:
     bool readReset();
     Message getMessage();
     bool readUsernames();
+    bool readRemoveUser();
 
 public slots:
     void onReadyRead();
@@ -61,7 +62,7 @@ signals:
     void logout();
     void reset(QString siteId);
     void setUsers(QStringList);
-    void addUser(QString);
+    void removeUser(QString);
 };
 
 #endif // CLIENT_H

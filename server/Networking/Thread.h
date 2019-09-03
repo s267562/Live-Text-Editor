@@ -21,7 +21,7 @@ class Server;
 class Thread : public QThread {
 Q_OBJECT
 private:
-    std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
+    std::map<qintptr, QTcpSocket*> sockets;  /* TO-DO: sincronizzazione con il thread principale */
     std::map<qintptr, QString> usernames;
     std::mutex mutexSockets;
     std::queue<Message> messagesQueue;
@@ -44,6 +44,7 @@ private:
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
     void sendNewUser(QTcpSocket *soc);
+    void sendRemoveUser(qintptr socketDescriptor, QString username);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

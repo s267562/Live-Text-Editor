@@ -21,8 +21,6 @@ Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)),
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-    ui->userListWidget->addItem("Io");
-    
     QPixmap pix;
     pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
     // TODO: from QByteArray to QPixMap
@@ -277,10 +275,16 @@ void Editor::resizeEvent(QResizeEvent *event){
     ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18);
 }
 
-void Editor::addUser(QString user){
-    ui->userListWidget->addItem(user);
+void Editor::removeUser(QString user){
+    users.erase(std::remove_if(users.begin(),users.end(),[user](const QString &s){
+        return s == user;
+    }));
+
+    ui->userListWidget->clear();
+    ui->userListWidget->addItems(users);
 }
 
 void Editor::setUsers(QStringList users){
+    this->users = users;
     ui->userListWidget->addItems(users);
 }

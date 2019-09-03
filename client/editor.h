@@ -35,7 +35,7 @@ public slots:
     void on_actionOpen_triggered();
     void on_actionSave_as_PDF_triggered();
     void on_actionLogout_triggered();
-    void addUser(QString user);
+    void removeUser(QString user);
     void setUsers(QStringList user);
 
 signals:
@@ -49,6 +49,7 @@ private:
     QTextDocument *textDocument;
     QString siteId;
     Controller *controller;
+    QStringList users;
 
     void undo();
     void redo();

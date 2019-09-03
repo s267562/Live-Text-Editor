@@ -128,6 +128,20 @@ void Client::onReadyRead(){
                     reciveOkMessage = true;
                 }
             }
+        } else if (datas.toStdString() == REMOVE_USER){
+            if (readRemoveUser()){
+                if (!messages.empty()){
+                    QByteArray message = messages.front();
+                    messages.pop();
+                    if (!writeMessage(socket, message)){
+                        // push ???
+                        return;
+                    }
+                    reciveOkMessage = false;
+                }else{
+                    reciveOkMessage = true;
+                }
+            }
         }
     }
 }
@@ -259,13 +273,13 @@ bool Client::requestForFile(QString fileName){
         qDebug() << ""; // newLine
 
         messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
+        //if (reciveOkMessage){
+            reciveOkMessage = true;
             if (!writeMessage(socket, message)){
                 return false;
             }
             messages.pop();
-        }
+        //}
         return true;
     }
     return false;
@@ -496,4 +510,17 @@ bool Client::readUsernames(){
     }
 
     emit setUsers(usernames);
+}
+
+bool Client::readRemoveUser(){
+    qDebug() << "Client.cpp - readRemoveUser()     ---------- READ REMOVE USER ----------";
+    readSpace(socket);
+    int usernameSize = readNumberFromSocket(socket);
+    QByteArray username;
+    readSpace(socket);
+    if (!readChunck(socket, username, usernameSize)){
+        return false;
+    }
+
+    emit removeUser(username);
 }

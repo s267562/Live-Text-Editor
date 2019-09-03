@@ -21,7 +21,7 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
     std::lock_guard<std::mutex> lg(mutexSockets);
 	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
-	sockets[socketDescriptor] = std::shared_ptr<QTcpSocket>(soc);
+	sockets[socketDescriptor] = soc;
 	usernames[socketDescriptor] = username;
     qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
@@ -125,27 +125,38 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         }
         readyRead(soc, c, d);
     } else if (data.toStdString() == REQUEST_FILE_MESSAGE){
-        disconnect(*c);
-        disconnect(*d);
-        delete c;
-        delete d;
-
         readSpace(soc);
         int fileNameSize = readNumberFromSocket(soc);
         readSpace(soc);
 
         QByteArray fileName;
+
         if (!readChunck(soc, fileName, fileNameSize)){
             writeErrMessage(soc);
             return;
         }
+
+        if (fileName == this->filename){
+            sendListOfUsers(soc);
+            return;
+        }
+
+        disconnect(*c);
+        disconnect(*d);
+        delete c;
+        delete d;
         std::shared_ptr<Thread> thread = server->getThread(fileName);
         if (thread.get() == nullptr){
             /* thread doesn't exist */
             thread = server->addThread(fileName);
         }
-        //qDebug() << soc->socketDescriptor();
+
+        qDebug() << soc->socketDescriptor() << " " <<usernames[soc->socketDescriptor()];
+        sendRemoveUser(soc->socketDescriptor(),usernames[soc->socketDescriptor()]);
         thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+        usernames.erase(soc->socketDescriptor());
+        sockets.erase(soc->socketDescriptor());
+
 
         //writeOkMessage(soc);
 
@@ -233,8 +244,8 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
     qDebug() << ""; // newLine
 
     //broadcast
-    for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
-        writeMessage(socket.second.get(), message);
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        writeMessage(socket.second, message);
     }
 }
 
@@ -260,8 +271,8 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
     qDebug() << ""; // newLine
 
     //broadcast
-    for(std::pair<qintptr, std::shared_ptr<QTcpSocket>> socket : sockets){
-        writeMessage(socket.second.get(), message);
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        writeMessage(socket.second, message);
     }
 }
 
@@ -294,7 +305,21 @@ void Thread::sendNewUser(QTcpSocket *soc){
 
     for (auto s : sockets){
         if (soc->socketDescriptor() != s.second->socketDescriptor()){
-            if (!writeMessage(s.second.get(), message)){
+            if (!writeMessage(s.second, message)){
+                return;
+            }
+        }
+    }
+}
+
+void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
+    QByteArray message(REMOVE_USER);
+    QByteArray usernameSize = convertionNumber(username.size());
+    message.append(" " + usernameSize + " " + username.toUtf8());
+
+    for (auto s : sockets){
+        if (socketDescriptor != s.first) {
+            if (!writeMessage(s.second, message)) {
                 return;
             }
         }
@@ -312,5 +337,8 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
     QTcpSocket socket;
     socket.setSocketDescriptor(socketDescriptor);
     socket.deleteLater();
-    sockets.erase(soc->socketDescriptor());
+    sockets.erase(socketDescriptor);
+    sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
+    usernames.erase(socketDescriptor);
+    qDebug() << usernames;
 }
