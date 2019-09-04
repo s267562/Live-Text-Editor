@@ -143,6 +143,7 @@ bool Server::sendFileNames(QTcpSocket *soc){
     qDebug() << ""; // newLine
 
     writeMessage(soc,message);
+    return true;
 }
 
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc){

@@ -510,6 +510,7 @@ bool Client::readUsernames(){
     }
 
     emit setUsers(usernames);
+	return true;
 }
 
 bool Client::readRemoveUser(){
@@ -523,4 +524,5 @@ bool Client::readRemoveUser(){
     }
 
     emit removeUser(username);
+    return true;
 }

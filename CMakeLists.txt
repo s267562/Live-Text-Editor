@@ -12,6 +12,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Charts REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Network REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
 
 list(APPEND LIBRARIES
         Qt5::Core
@@ -19,7 +20,8 @@ list(APPEND LIBRARIES
         Qt5::Widgets
         Qt5::Charts
         Qt5::Sql
-        Qt5::Network)
+        Qt5::Network
+        Qt5::PrintSupport)
 list(REMOVE_DUPLICATES LIBRARIES)
 
 include_directories (client/ui)
