@@ -404,3 +404,7 @@ void CRDT::mergeLines(int line) {
         structure.erase(structure.begin() + line + 1);
     }
 }
+
+const std::vector<std::vector<Character>> &CRDT::getStructure() const {
+	return structure;
+}

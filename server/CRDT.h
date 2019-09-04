@@ -21,11 +21,11 @@ public:
     void handleDelete(const Character &character);
 	bool loadCRDT(QString filename);
 	bool saveCRDT(QString filename);
-
+	const std::vector<std::vector<Character>> &getStructure() const;
 
 private:
     std::vector<std::vector<Character>> structure;
-    std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
+	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
 
     // insert

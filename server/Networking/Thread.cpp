@@ -40,6 +40,7 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 	}, Qt::DirectConnection);
 
     //writeOkMessage(soc);
+    sendFile(soc);
     sendListOfUsers(soc);
     sendNewUser(soc);
 
@@ -341,4 +342,47 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
     sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
     usernames.erase(socketDescriptor);
     qDebug() << usernames;
+}
+
+void Thread::sendFile(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
+    QByteArray message(SENDING_FILE);
+    const std::vector<std::vector<Character>> file = crdt->getStructure();
+    QByteArray numLines = convertionNumber(file.size());
+
+    message.append(" " + numLines);
+
+    for (int i = 0; i < file.size(); i++){
+        std::vector<Character> line = file[i];
+        QByteArray numChar = convertionNumber(file[i].size());
+
+        message.append(" " + numChar);
+        for (int j = 0; j < line.size(); j++){
+            QString str(line[j].getValue());
+            QString siteId = line[j].getSiteId();
+            std::vector<Identifier> pos = line[j].getPosition();
+
+            QByteArray strSize = convertionNumber(str.size());
+            QByteArray siteIdSize = convertionNumber(siteId.size());
+            QByteArray posSize = convertionNumber(pos.size());
+
+            message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posSize + " ");
+            QByteArray position;
+
+            for (int k = 0; k < pos.size(); k++){
+                position.append(convertionNumber(pos[i].getDigit()));
+                if (k != pos.size() - 1 || pos.size() != 1){
+                    position.append(" ");
+                }
+            }
+            message.append(position);
+
+        }
+    }
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    if (!writeMessage(soc,message)){
+        return;
+    }
 }

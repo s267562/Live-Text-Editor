@@ -45,6 +45,7 @@ private:
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
     void sendNewUser(QTcpSocket *soc);
     void sendRemoveUser(qintptr socketDescriptor, QString username);
+    void sendFile(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

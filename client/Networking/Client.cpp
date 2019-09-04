@@ -137,6 +137,21 @@ void Client::onReadyRead(){
                     reciveOkMessage = true;
                 }
             }
+        }else if (datas.toStdString() == SENDING_FILE){
+            if (readFile()){
+                if (!messages.empty()){
+                    QByteArray message = messages.front();
+                    messages.pop();
+                    if (!writeMessage(socket, message)){
+                        // push ???
+                        return;
+                    }
+                    reciveOkMessage = false;
+                }else{
+                    reciveOkMessage = true;
+                }
+            }
+            onReadyRead();
         }
     }
 }
@@ -492,5 +507,64 @@ bool Client::readRemoveUser(){
     }
 
     emit removeUser(username);
+    return true;
+}
+
+bool Client::readFile(){
+    qDebug() << "Client.cpp - readFile()     ---------- READ FILE ----------";
+    std::vector<std::vector<Character>> file;
+    readSpace(socket);
+    int numLines = readNumberFromSocket(socket);
+
+    for (int i = 0; i < numLines; i++){
+        std::vector<Character> line;
+        readSpace(socket);
+        int numCharacters = readNumberFromSocket(socket);
+
+        for (int j = 0; j < numCharacters; j++){
+            readSpace(socket);
+            int sizeString = readNumberFromSocket(socket);
+            readSpace(socket);
+
+            QByteArray letter;
+            if (!readChunck(socket, letter, sizeString)){
+                qDebug() << "letter";
+                return false;
+            }
+            readSpace(socket);
+
+            //siteID
+            int siteIdSize = readNumberFromSocket(socket);
+            readSpace(socket);
+            QByteArray siteId;
+            if (!readChunck(socket, siteId, siteIdSize)){
+                qDebug() << "site";
+                return false;
+            }
+            readSpace(socket);
+            int posSize = readNumberFromSocket(socket);
+
+            readSpace(socket);
+            std::vector<Identifier> position;
+            qDebug() << "                              ch: "<<letter << " siteId: "<< siteId;
+
+            for (int i = 0; i < posSize; i++){
+                int pos = readNumberFromSocket(socket);
+                Identifier identifier(pos, siteId);
+                position.push_back(identifier);
+                qDebug() << "                             " << pos;
+                if (i != posSize - 1 || posSize != 1){
+                    readSpace(socket);
+                }
+            }
+            qDebug() << ""; // newLine
+
+            Character character(letter[0], 0, siteId, position);
+            line.push_back(character);
+        }
+        file.push_back(line);
+    }
+
+    emit fileRecive(file);
     return true;
 }

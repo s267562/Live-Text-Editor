@@ -38,13 +38,14 @@ public:
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
-    bool registration(QString username, QString passsword, QString pathAvatar);
+    bool registration(QString username, QString password, QString pathAvatar);
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
     Message getMessage();
     bool readUsernames();
     bool readRemoveUser();
+    bool readFile();
 
 public slots:
     void onReadyRead();
@@ -60,6 +61,7 @@ signals:
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
+    void fileRecive(std::vector<std::vector<Character>> file);
 };
 
 #endif // CLIENT_H
