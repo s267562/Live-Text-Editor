@@ -45,8 +45,11 @@ signals:
 private:
     Ui::Editor *ui;
     QTextEdit *textEdit;
-    QTextCursor textCursor;
     QTextDocument *textDocument;
+    QTextCursor textCursor;
+    int cursorPos;
+    int startSelection;
+    int endSelection;
     QString siteId;
     Controller *controller;
     QStringList users;
@@ -55,6 +58,8 @@ private:
     void redo();
     bool validSignal(int i, int i1, int i2);
     void resizeEvent (QResizeEvent *event);
+    void restoreCursor();
+    void saveCursor();
 };
 
 #endif //TEXTEDITOR_EDITOR_H
