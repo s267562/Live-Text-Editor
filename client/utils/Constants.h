@@ -15,6 +15,7 @@
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 #define RESET_MESSAGE "RES\r\n"
+#define REMOVE_USER "RUS\n\r"
 
 #define TIMEOUT 15000
 
