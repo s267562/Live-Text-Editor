@@ -281,3 +281,7 @@ void Editor::restoreCursor() {
     }
     textEdit->setTextCursor(cursor);
 }
+
+void Editor::reset() {
+    this->textEdit->clear();
+}

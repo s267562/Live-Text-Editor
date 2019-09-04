@@ -109,11 +109,6 @@ void Client::onReadyRead(){
 #if !MAINWINDOW
             requestForFile("prova");        /* TEST: TEXT EDITOR */
 #endif
-        }else if (datas.toStdString() == RESET_MESSAGE) {
-            if (readReset()){
-                reciveOkMessage = true;
-                onReadyRead();
-            }
         } else if (datas.toStdString() == LIST_OF_USERS){
             if (readUsernames()){
                 if (!messages.empty()){
@@ -340,33 +335,6 @@ bool Client::deleteChar(QString str, std::vector<Identifier> pos){
             messages.pop();
         }
     }
-    return true;
-}
-
-void Client::resetModel(QString siteId) {
-    qDebug() << "Client.cpp - resetModel()     ---------- WRITE RESET_MODEL ----------";
-    qDebug() << ""; // newLine
-
-    // write Reset_Model
-    //TODO to implement
-}
-
-bool Client::readReset() {
-    qDebug() << "Client.cpp - readReset()     ---------- READ RESET_MODEL ----------";
-    qDebug() << ""; // newLine
-    readSpace(socket);
-
-    //siteID
-    int siteIdSize = readNumberFromSocket(socket);
-    readSpace(socket);
-    QByteArray siteId;
-    if (!readChunck(socket, siteId, siteIdSize)){
-        return false;
-    }
-
-    // TODO c'è altro da fare?
-
-    emit reset(siteId);
     return true;
 }
 

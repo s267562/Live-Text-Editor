@@ -27,6 +27,7 @@ public:
     void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
+    void openFile(std::vector<std::vector<Character>> structure);
 };
 
 

@@ -26,6 +26,7 @@ public:
     void setController(Controller *controller);
     void insertChar(char character, Pos pos);
     void deleteChar(Pos pos);
+    void reset();
     ~Editor();
 
 public slots:
@@ -60,6 +61,7 @@ private:
     void resizeEvent (QResizeEvent *event);
     void restoreCursor();
     void saveCursor();
+
 };
 
 #endif //TEXTEDITOR_EDITOR_H

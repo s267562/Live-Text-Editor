@@ -30,11 +30,6 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
     }
 }
 
-void Controller::resetModel() {
-    this->crdt->resetModel();
-    this->client->resetModel(this->crdt->getSiteId());
-}
-
 void Controller::newMessage(Message message) {
     // Message message = this->client->getMessage();
 
@@ -59,4 +54,8 @@ void Controller::newMessage(Message message) {
             }
         }
     }
+}
+
+void Controller::openFile(std::vector<std::vector<Character>> structure) {
+
 }
