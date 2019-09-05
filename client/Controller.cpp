@@ -14,6 +14,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt),
     connect(editor, &Editor::logout, client, &Client::logOut);
     connect(client, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(client, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+    connect(client, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
     // TO-DO: connect(client, &Client::newMessage, this, &Controller::/* metodo che vuoi richimare della classe */);
 }
 
