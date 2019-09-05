@@ -282,8 +282,22 @@ void Editor::restoreCursor() {
     textEdit->setTextCursor(cursor);
 }
 
+void Editor::replaceText(const QString initialText) {
+    QTextDocument *doc = textEdit->document();
+
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
+    textEdit->setText(initialText);
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+    QTextCursor newCursor = textEdit->textCursor();
+    newCursor.movePosition(QTextCursor::End);
+    textEdit->setTextCursor(newCursor);
+}
+
 void Editor::reset() {
-    // TODO: risolvere il crach...
-    //this->textEdit->clear();
     ui->userListWidget->clear();
 }

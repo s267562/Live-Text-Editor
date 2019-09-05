@@ -56,7 +56,7 @@ public slots:
     /* EDITOR */
     void showEditor();
     void newMessage(Message message);
-    void openFile(std::vector<std::vector<Character>> structure);
+    void openFile(std::vector<std::vector<Character>> initialStructure);
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);

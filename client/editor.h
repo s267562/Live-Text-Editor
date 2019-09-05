@@ -27,6 +27,7 @@ public:
     void insertChar(char character, Pos pos);
     void deleteChar(Pos pos);
     void reset();
+    void replaceText(const QString initialText);
     ~Editor();
 
 public slots:

@@ -187,6 +187,7 @@ void Controller::newMessage(Message message) {
     }
 }
 
-void Controller::openFile(std::vector<std::vector<Character>> structure) {
-
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure) {
+    crdt->setStructure(initialStructure);
+    this->editor->replaceText(this->crdt->toText());
 }

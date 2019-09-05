@@ -9,7 +9,15 @@
 
 
 CRDT::CRDT() {
-    this->structure = { };
+    this->structure = {};
+}
+
+void CRDT::setStructure(const std::vector<std::vector<Character>> &initialStructure) {
+    if(initialStructure.empty()) {
+        CRDT::structure = {};
+    } else {
+        CRDT::structure = initialStructure;
+    }
 }
 
 const QString &CRDT::getSiteId() const {
@@ -299,10 +307,6 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     return pos;
 }
 
-void CRDT::resetModel() {
-    structure.clear();
-}
-
 Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char
     if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
@@ -399,4 +403,14 @@ void CRDT::mergeLines(int line) {
         //qDebug() << "EREASING line" << line + 1 << " line size:" << structure[line+1].size();
         structure.erase(structure.begin() + line + 1);
     }
+}
+
+const QString CRDT::toText() {
+    QString text = "";
+    for(int i=0; i<structure.size(); i++) {
+        for(int j=0; j<structure[i].size(); j++) {
+            text += structure[i][j].getValue();
+        }
+    }
+    return text;
 }

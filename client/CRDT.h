@@ -18,12 +18,13 @@ class CRDT {
 public:
     CRDT();
 
+    void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
     const QString &getSiteId() const;
     std::vector<Character> handleDelete(Pos startPos, Pos endPos);
     Pos insert(Character character);
     Pos handleRemoteDelete(const Character &character);
-    void resetModel();
+    const QString toText();
 
 private:
     QString siteId;
