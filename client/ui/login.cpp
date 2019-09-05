@@ -6,17 +6,17 @@
 Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login) {
     ui->setupUi(this);
     ui->label_3->setVisible(false);
-    connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
-    connect(this,SIGNAL(loginSuccessful()),this->parent(), SLOT(showFileFinder()));
+    //connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
+    //connect(this,SIGNAL(loginSuccessful()),this->parent(), SLOT(showFileFinder()));
 }
 
 Login::~Login(){
     delete ui;
 }
 
-void Login::setClient(Client *client) {
+void Login::setClient(Client *client) {  //TODO: da rimuovere...
     this->client = client;
-    //connect(this->client, &Client::errorConnection, this, &Login::errorConnection);
+
     connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
 }
 
@@ -39,10 +39,10 @@ void Login::on_pushButton_clicked()
         ui->label_3->setVisible(true);
     }else{
 
-        bool result=client->logIn(username,password);
+        bool result = client->logIn(username,password);
 
         ui->label_3->setVisible(false);
-        if( result ) {
+        if (result) {
             emit loginSuccessful();
         }
     }
@@ -66,6 +66,11 @@ void Login::on_pushButton_2_clicked() {
 
 QString Login::getUsername(){
     return ui->username->text();
+}
+
+void Login::reset(){
+    ui->username->clear();
+    ui->password->clear();
 }
 
 /**

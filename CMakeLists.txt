@@ -41,8 +41,7 @@ add_executable(client
         client/Controller.cpp client/Controller.h
         client/Networking/Client.h
         client/Networking/Client.cpp
-        client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
-        client/MainWindow.cpp client/MainWindow.h
+        client/utils/Constants.h
         client/ui/connection.cpp client/ui/connection.ui
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
@@ -66,8 +65,7 @@ add_executable(client2
         client/Controller.cpp client/Controller.h
         client/Networking/Client.h
         client/Networking/Client.cpp
-        client/utils/Constants.h client/MainWindow.cpp client/MainWindow.h
-        client/MainWindow.cpp client/MainWindow.h
+        client/utils/Constants.h
         client/ui/connection.cpp client/ui/connection.ui
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h

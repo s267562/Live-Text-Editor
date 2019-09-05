@@ -5,16 +5,13 @@
 #include <QCommandLineParser>
 #include "ui/login.h"
 #include "ui/ui_login.h"
-#include "MainWindow.h"
 #include "utils/Constants.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-#if MAINWINDOW
-    /* MAINWINDOW */
-    MainWindow mw("temp");
-    mw.show();
+#if UI
+    Controller controller;
 #else
     #if REGISTRATION_TEST
         /* TEST: REGISTRATION FEATURE */

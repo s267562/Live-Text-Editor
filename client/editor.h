@@ -21,7 +21,7 @@ namespace Ui {
 class Editor : public QMainWindow {
     Q_OBJECT
 public:
-    Editor(QString siteId, QWidget *parent = nullptr);
+    Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
     void insertChar(char character, Pos pos);

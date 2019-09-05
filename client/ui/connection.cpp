@@ -6,6 +6,7 @@ Connection::Connection(QWidget *parent) :
     ui(new Ui::Connection)
 {
     ui->setupUi(this);
+    this->ui->lineEdit->setText("127.0.0.1");
     connect(this->ui->pushButton, SIGNAL(clicked()), this,SLOT(connectButtonClicked()));
 
 }

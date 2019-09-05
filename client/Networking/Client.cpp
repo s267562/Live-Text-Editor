@@ -22,7 +22,7 @@ bool Client::connectTo(QString host){
     socket->connectToHost(host, 1234);
 
     //return socket->waitForConnected();      /* possibile gestione con un eccezione per il retry */
-    if (!socket->waitForConnected(30)){
+    if (!socket->waitForConnected(TIMEOUT)){
         emit errorConnection();
         return false;
     }
@@ -31,6 +31,7 @@ bool Client::connectTo(QString host){
 
     qDebug() << "Client.cpp - connectTo()     " << socket->socketDescriptor() << " connected";
     qDebug() << ""; // newLine
+    clientIsLogged = false;
     return true;
 }
 
@@ -106,7 +107,7 @@ void Client::onReadyRead(){
         }else if (datas.toStdString() == LIST_OF_FILE){
             readFileNames();
             reciveOkMessage = true;
-#if !MAINWINDOW
+#if !UI
             requestForFile("prova");        /* TEST: TEXT EDITOR */
 #endif
         } else if (datas.toStdString() == LIST_OF_USERS){
@@ -177,8 +178,8 @@ bool Client::logIn(QString username, QString password) {
         }
     }
 
-    this->crdt->setSiteId(username);
-    this->siteId = username;
+    this->crdt->setSiteId(username);    //TODO: da rimuovere...
+    this->siteId = username;            //TODO: da rimuovere...
 
     return true;
 }

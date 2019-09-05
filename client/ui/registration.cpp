@@ -9,7 +9,7 @@ Registration::Registration(QWidget *parent) :
     ui(new Ui::Registration)
 {
     this->ui->setupUi(this);
-    connect(this, SIGNAL(showLogin()), this->parent(), SLOT(showLogin()));
+
 }
 
 Registration::~Registration()
@@ -55,4 +55,9 @@ void Registration::on_pushButton_registration_clicked(){
 void Registration::on_pushButton_login_clicked(){
     this->hide();
     emit this->showLogin();
+}
+
+void Registration::reset() {
+    ui->username->clear();
+    ui->password->clear();
 }

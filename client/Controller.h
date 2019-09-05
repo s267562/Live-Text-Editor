@@ -7,27 +7,63 @@
 
 #include "CRDT.h"
 #include "editor.h"
+#include "User.h"
+#include "ui/login.h"
+#include "ui/connection.h"
+#include "ui/showFiles.h"
 #include "Networking/Client.h"
 #include <iostream>
 
 class Editor;
 
-class Controller : public QObject {
+class Controller : public QMainWindow {
     Q_OBJECT
 private:
+    /* model */
     CRDT *crdt;
+    User *user;
+    QString siteId;
+
+    /* view */
     Editor *editor;
+    Login *login;
+    Connection *connection;
+    Registration *registration;
+    ShowFiles *finder;
+    QWidget *now;
+
+    /* networking */
     Client *client;
 
-private slots:
+public slots:
+    /* NETWORKING */
+    void errorConnection();
+
+    /* CONNECTION */
+    void connectClient(QString address);
+
+    /* LOGIN */
+    void showLogin();
+
+    /* REGISTRATION */
+    void showRegistration();
+
+    /* SHOW FILES */
+    void showFileFinder(QStringList);
+    void showFileFinderOtherView();
+    void requestForFile(QString filename);
+
+    /* EDITOR */
+    void showEditor();
     void newMessage(Message message);
+    void openFile(std::vector<std::vector<Character>> structure);
 
 public:
     Controller(CRDT *crdt, Editor *editor, Client *client);
+    Controller();
     void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
-    void openFile(std::vector<std::vector<Character>> structure);
 };
 
 

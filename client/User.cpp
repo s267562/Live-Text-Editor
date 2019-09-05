@@ -21,3 +21,11 @@ void User::setIsLogged(bool isLogged) {
 bool User::isIsLogged() const {
     return isLogged;
 }
+
+const QString &User::getUsername() const {
+    return username;
+}
+
+void User::setUsername(const QString &username) {
+    User::username = username;
+}

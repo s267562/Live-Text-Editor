@@ -19,9 +19,10 @@ public:
     explicit Login(QWidget *parent = nullptr);
     void setClient(Client *client);
     QString getUsername();
+    void reset();
     ~Login();
 
-private slots:
+public slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
     void errorConnection();

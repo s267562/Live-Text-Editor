@@ -13,8 +13,9 @@ class Registration : public QMainWindow
 
 public:
     explicit Registration(QWidget *parent = nullptr);
-    ~Registration();
     void setDefaultProfileIcon();
+    void reset();
+    ~Registration();
 
 private slots:
 

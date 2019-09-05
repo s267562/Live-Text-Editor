@@ -10,6 +10,10 @@
 
 class User {
     QString username;
+public:
+    void setUsername(const QString &username);
+
+private:
     QStringList fileList;
     bool isLogged;
 
@@ -19,6 +23,7 @@ public:
     QStringList getFileList() const;
     void setIsLogged(bool isLogged);
     bool isIsLogged() const;
+    const QString &getUsername() const;
 
 };
 

@@ -16,8 +16,8 @@
 #include <QPrintDialog>
 #include <QPrinter>
 
-Editor::Editor(QString siteId, QWidget *parent) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-												  siteId(siteId), QMainWindow(parent), ui(new Ui::Editor) {
+Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
+												  siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
 	ui->setupUi(this);
 	setWindowTitle(QCoreApplication::applicationName());
 	setCentralWidget(textEdit);
@@ -283,5 +283,7 @@ void Editor::restoreCursor() {
 }
 
 void Editor::reset() {
-    this->textEdit->clear();
+    // TODO: risolvere il crach...
+    //this->textEdit->clear();
+    ui->userListWidget->clear();
 }
