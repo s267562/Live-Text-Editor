@@ -14,10 +14,10 @@ Login::~Login(){
     delete ui;
 }
 
-void Login::setClient(Client *client) {  //TODO: da rimuovere...
-    this->client = client;
+void Login::setClient(Messanger *messanger) {  //TODO: da rimuovere...
+    this->messanger = messanger;
 
-    connect(this->client, &Client::loginFailed, this, &Login::loginFailed);
+    connect(this->messanger, &Messanger::loginFailed, this, &Login::loginFailed);
 }
 
 void Login::on_pushButton_clicked()
@@ -39,7 +39,7 @@ void Login::on_pushButton_clicked()
         ui->label_3->setVisible(true);
     }else{
 
-        bool result = client->logIn(username,password);
+        bool result = messanger->logIn(username,password);
 
         ui->label_3->setVisible(false);
         if (result) {
@@ -91,7 +91,7 @@ void Login::onOkButtonClicked()
 
 
 void Login::loginDone(){
-    //this->client->requestForFile("CiaoTy!");
+    //this->messanger->requestForFile("CiaoTy!");
     emit loginSuccessful();
 }
  */

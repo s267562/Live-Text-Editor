@@ -5,7 +5,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include "../Networking/Client.h"
+#include "../Networking/Messanger.h"
 #include "registration.h"
 
 namespace Ui {
@@ -17,7 +17,7 @@ class Login : public QMainWindow
     Q_OBJECT
 public:
     explicit Login(QWidget *parent = nullptr);
-    void setClient(Client *client);
+    void setClient(Messanger *client);
     QString getUsername();
     void reset();
     ~Login();
@@ -40,7 +40,7 @@ signals:
 
 private:
     Ui::Login *ui;
-    Client* client;
+    Messanger* messanger;
 };
 
 #endif // MAINWINDOW_H

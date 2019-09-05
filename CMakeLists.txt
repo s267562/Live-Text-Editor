@@ -39,8 +39,8 @@ add_executable(client
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
         client/Controller.cpp client/Controller.h
-        client/Networking/Client.h
-        client/Networking/Client.cpp
+        client/Networking/Messanger.h
+        client/Networking/Messanger.cpp
         client/utils/Constants.h
         client/ui/connection.cpp client/ui/connection.ui
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
@@ -63,8 +63,8 @@ add_executable(client2
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
         client/Controller.cpp client/Controller.h
-        client/Networking/Client.h
-        client/Networking/Client.cpp
+        client/Networking/Messanger.h
+        client/Networking/Messanger.cpp
         client/utils/Constants.h
         client/ui/connection.cpp client/ui/connection.ui
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc

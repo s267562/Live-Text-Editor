@@ -5,33 +5,33 @@
 #include "Controller.h"
 #include <QMessageBox>
 
-Controller::Controller(): client(new Client(this)), connection(new Connection(this)){
+Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
     crdt = new CRDT();
-    client->setCRDT(crdt);
+    messanger->setCRDT(crdt);
 
-    /* creation connection and client object */
-    connect(this->client, &Client::errorConnection, this, &Controller::errorConnection);
-    connect(client, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    /* creation connection and messanger object */
+    connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
     connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
-    connect(client, &Client::newMessage,
+    connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
     now = connection;
     connection->show();
 }
 
-Controller::Controller(CRDT *crdt, Editor *editor, Client *client) : crdt(crdt), editor(editor), client(client) {
+Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(crdt), editor(editor), messanger(messanger) {
     editor->setController(this);
 
     // Controller
-    connect(client, &Client::newMessage,
+    connect(messanger, &Messanger::newMessage,
               this, &Controller::newMessage);
 
-    connect(editor, &Editor::logout, client, &Client::logOut);
-    connect(client, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-    connect(client, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-    connect(client, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(editor, &Editor::logout, messanger, &Messanger::logOut);
+    connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+    connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
 }
 
 /* NETWORKING */
@@ -44,7 +44,7 @@ void Controller::errorConnection(){
 /* CONNECTION */
 
 void Controller::connectClient(QString address) {
-    bool res = this->client->connectTo(address);    // TODO: non va...
+    bool res = this->messanger->connectTo(address);    // TODO: non va...
 
     if (res) {
         this->connection->close();
@@ -52,9 +52,9 @@ void Controller::connectClient(QString address) {
         /* creation login object */
         login = new Login(this);
         now = login;
-        login->setClient(client);
-        connect(this->client, &Client::loginFailed, this->login, &Login::loginFailed);
-        connect(this->client, &Client::logout, this, &Controller::showLogin);
+        login->setClient(messanger);
+        connect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
+        connect(this->messanger, &Messanger::logout, this, &Controller::showLogin);
         connect(this->login, SIGNAL(showRegistration()), this, SLOT(showRegistration()));
         //connect(this->login, SIGNAL(loginSuccessful()), this, SLOT(showFileFinder()));
 
@@ -64,8 +64,8 @@ void Controller::connectClient(QString address) {
 
         /* creation showfiles object */
         finder = new ShowFiles(this);
-        connect(this->finder, &ShowFiles::logout, this->client, &Client::logOut);
-        connect(this->client, SIGNAL(fileNames(QStringList)), this, SLOT(showFileFinder(QStringList)));
+        connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+        connect(this->messanger, SIGNAL(fileNames(QStringList)), this, SLOT(showFileFinder(QStringList)));
         connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 
         this->login->show();
@@ -109,10 +109,10 @@ void Controller::showFileFinderOtherView(){
     finder = new ShowFiles(this);
     this->finder->addFiles(user->getFileList());
     this->editor->close();*/
-    /*connect(this->finder, &ShowFiles::logout, this->client, &Client::logOut);
+    /*connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
     connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);*/
-    /*connect(client, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-    connect(client, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));*/
+    /*connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+    connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));*/
     now = finder;
     this->finder->show();
 }
@@ -120,7 +120,7 @@ void Controller::showFileFinderOtherView(){
 /* EDITOR */
 
 void Controller::requestForFile(QString filename){
-    bool result = this->client->requestForFile(filename);
+    bool result = this->messanger->requestForFile(filename);
 
     if (result){
         if (editor == nullptr){
@@ -129,11 +129,11 @@ void Controller::requestForFile(QString filename){
 
             /* connecting */
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
-            connect(client, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-            connect(client, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-            connect(this->finder, &ShowFiles::logout, this->client, &Client::logOut);
+            connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+            connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
-            connect(editor, &Editor::logout, client, &Client::logOut);
+            connect(editor, &Editor::logout, messanger, &Messanger::logOut);
         }else{
             editor->reset();
         }
@@ -150,19 +150,19 @@ void Controller::showEditor(){
 
 void Controller::localInsert(QString chars, Pos startPos) {
     // send insert at the server. To insert it in the model we need the position computed by the server.
-    this->client->insert(chars, startPos);
+    this->messanger->insert(chars, startPos);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        this->client->deleteChar(QString{c.getValue()}, c.getPosition());
+        this->messanger->deleteChar(QString{c.getValue()}, c.getPosition());
     }
 }
 
 void Controller::newMessage(Message message) {
-    // Message message = this->client->getMessage();
+    // Message message = this->messanger->getMessage();
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();

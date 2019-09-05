@@ -1,5 +1,5 @@
 #include "Controller.h"
-#include "Networking/Client.h"
+#include "Networking/Messanger.h"
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCommandLineParser>
@@ -15,19 +15,19 @@ int main(int argc, char *argv[]) {
 #else
     #if REGISTRATION_TEST
         /* TEST: REGISTRATION FEATURE */
-        Client client;
-        client.connectTo("127.0.0.1");
-        client.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
+        Messanger messanger;
+        messanger.connectTo("127.0.0.1");
+        messanger.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
     #else
         /* TEST: TEXT EDITOR */
-        Client client;
+        Messanger messanger;
 
         CRDT crdt{}; // model
-        client.setCRDT( &crdt);
+        messanger.setCRDT( &crdt);
 
-        client.connectTo("127.0.0.1");
+        messanger.connectTo("127.0.0.1");
         QString username = "u1";
-        client.logIn(username, "prova");
+        messanger.logIn(username, "prova");
 
         QString siteId = username;
         crdt.setSiteId(siteId);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
         Editor editor{siteId};
 
         // controller
-        Controller controller{&crdt, &editor, &client};
+        Controller controller{&crdt, &editor, &messanger};
 
         /*const QRect availableGeometry = QApplication::desktop()->availableGeometry(&editor);
         editor.resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);

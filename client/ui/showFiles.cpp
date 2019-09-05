@@ -1,7 +1,7 @@
 #include <QMessageBox>
 #include "showFiles.h"
 #include "ui_showFiles.h"
-#include "../Networking/Client.h"
+#include "../Networking/Messanger.h"
 
 ShowFiles::ShowFiles(QWidget *parent) :
     QMainWindow(parent),

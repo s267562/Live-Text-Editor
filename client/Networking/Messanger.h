@@ -1,5 +1,5 @@
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef MESSANGER_H
+#define MESSANGER_H
 
 #include <QObject>
 #include <QTcpSocket>
@@ -12,7 +12,7 @@
 #include "message/Message.h"
 #include "../CRDT.h"
 
-class Client: public QObject{
+class Messanger: public QObject{
     Q_OBJECT
 private:
     QString siteId;
@@ -26,11 +26,9 @@ private:
 
 private:
     std::queue<QByteArray> messages;
-    std::queue<Message> incomingInsertMessagesQueue;
-    std::queue<Message> incomingDeleteMessagesQueue;
 
 public:
-    Client(QObject *parent = nullptr);
+    Messanger(QObject *parent = nullptr);
     void setCRDT(CRDT *crdt);
     bool writeOnSocket(QString);
     bool insert(QString, Pos pos);
@@ -42,10 +40,10 @@ public:
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
-    Message getMessage();
     bool readUsernames();
     bool readRemoveUser();
     bool readFile();
+    bool despatchMessage();
 
 public slots:
     void onReadyRead();
@@ -64,4 +62,4 @@ signals:
     void fileRecive(std::vector<std::vector<Character>> file);
 };
 
-#endif // CLIENT_H
+#endif // MESSANGER_H

@@ -11,7 +11,7 @@
 #include "ui/login.h"
 #include "ui/connection.h"
 #include "ui/showFiles.h"
-#include "Networking/Client.h"
+#include "Networking/Messanger.h"
 #include <iostream>
 
 class Editor;
@@ -33,7 +33,7 @@ private:
     QWidget *now;
 
     /* networking */
-    Client *client;
+    Messanger *messanger;
 
 public slots:
     /* NETWORKING */
@@ -59,7 +59,7 @@ public slots:
     void openFile(std::vector<std::vector<Character>> structure);
 
 public:
-    Controller(CRDT *crdt, Editor *editor, Client *client);
+    Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
     void localInsert(QString chars, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);

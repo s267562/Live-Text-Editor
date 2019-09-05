@@ -44,7 +44,7 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
     sendListOfUsers(soc);
     sendNewUser(soc);
 
-    qDebug() << "                             " << socketDescriptor << " Client connected" << soc;
+    qDebug() << "                             " << socketDescriptor << " Messanger connected" << soc;
     qDebug() << ""; // newLine
 }
 
