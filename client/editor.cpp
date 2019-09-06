@@ -106,7 +106,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             ch = textCursor.positionInBlock();
             Pos endPos{ch, line}; // Pos(int ch, int line);
             redo();
-            
+
             //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
             //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
             //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
@@ -137,7 +137,12 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
         restoreCursor();
+        if(this->startSelection != this->endSelection) {
+            // text was selected... restore the selction
+            restoreCursorSelection();
+        }
     }
+    restoreCursor();
 }
 
 CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
@@ -278,12 +283,12 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     redo();
     if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
-        // qDebug() << "INVALID SIGNAL";
+        //qDebug() << "INVALID SIGNAL 1";
         validSignal = false;
     }
 
     if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
-        //qDebug() << "WRONG SIGNAL;";
+        //qDebug() << "WRONG SIGNAL 2";
         // wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
         validSignal = false;
     }
@@ -291,16 +296,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     QString test = textEdit->toPlainText().mid(position, charsAdded);
     if(validSignal && charsAdded == charsRemoved && test.isEmpty()) {
         // wrong signal when editor opens.
-        validSignal = false;
-    }
-
-    textCursor.movePosition(QTextCursor::StartOfLine);
-    int positionFirstLineChar = textCursor.position(); // the position of the first char in the current line .
-    int currentSize = textEdit->toPlainText().size();
-    if(validSignal && charsAdded == charsRemoved && position == positionFirstLineChar && currentSize != 0) {
-        // TODO never reached... deleting it (?)
-        // wrong signal when cursor move after the editor get focuses.
-        // std::cout << "current size: " << currentSize << std::endl;
+        //qDebug() << "WRONG SIGNAL 3";
         validSignal = false;
     }
 
@@ -308,11 +304,13 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     bool textSelected = false;
     int beginPos = textEdit->textCursor().selectionStart();
     int endPos = textEdit->textCursor().selectionEnd();
+    int currentSize = textEdit->toPlainText().size();
     if(beginPos != endPos) {
         textSelected = true;
     }
     if(validSignal && textSelected && charsAdded == charsRemoved && currentSize != 0) {
         // this solve the bug when we select text (in multilines), when the textedit has not the fucus, and we delete them.
+        //qDebug() << "WRONG SIGNAL 5";
         validSignal = false;
     }
 
@@ -346,13 +344,14 @@ void Editor::saveCursor() {
 
 void Editor::restoreCursor() {
     QTextCursor cursor = this->textCursor;
-    if(this->startSelection != this->endSelection) {
-        // text was selected... restore the selction
-        cursor.setPosition(this->startSelection);
-        cursor.setPosition(this->endSelection, QTextCursor::KeepAnchor);
-    } else {
-        cursor.setPosition(this->cursorPos, QTextCursor::MoveAnchor);
-    }
+    cursor.setPosition(this->cursorPos, QTextCursor::MoveAnchor);
+    textEdit->setTextCursor(cursor);
+}
+
+void Editor::restoreCursorSelection() {
+    QTextCursor cursor = this->textCursor;
+    cursor.setPosition(this->startSelection);
+    cursor.setPosition(this->endSelection, QTextCursor::KeepAnchor);
     textEdit->setTextCursor(cursor);
 }
 

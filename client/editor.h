@@ -64,6 +64,7 @@ private:
     bool validSignal(int i, int i1, int i2);
     void resizeEvent (QResizeEvent *event);
     void restoreCursor();
+    void restoreCursorSelection();
     void saveCursor();
 
     CharFormat getSelectedCharFormat(QTextCursor cursor);
