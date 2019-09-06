@@ -10,6 +10,7 @@
 #include <QtCore/QString>
 #include "Identifier.h"
 #include "CharFormat.h"
+#include <QJsonDocument>
 
 class Character {
 public:
@@ -24,6 +25,8 @@ public:
 	void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
     int compareTo(Character otherCharacter);
+    QByteArray toQByteArray();
+    static Character toCharacter(QJsonDocument jsonDocument);
 
 private:
     char value;

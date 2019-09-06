@@ -61,9 +61,6 @@ bool Thread::readInsert(QTcpSocket *soc){
 	}
 	readSpace(soc);
 
-	// TODO read charFormat...
-	CharFormat charFormat();
-
 	//siteID
 	int sizeSiteId = readNumberFromSocket(soc);
 	readSpace(soc);
@@ -78,6 +75,23 @@ bool Thread::readInsert(QTcpSocket *soc){
 	readSpace(soc);
 
 	int posLineInt = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    int boldInt = readNumberFromSocket(soc);
+    bool bold = boldInt == 1;
+    readSpace(soc);
+
+    int italicInt = readNumberFromSocket(soc);
+    bool italic = italicInt == 1;
+    readSpace(soc);
+
+    int underlineInt = readNumberFromSocket(soc);
+    bool underline = underlineInt == 1;
+
+    CharFormat charFormat;
+    charFormat.setBold(bold);
+    charFormat.setItalic(italic);
+    charFormat.setUnderline(underline);
 
     qDebug() << "                              ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
     qDebug() << ""; // newLine
@@ -86,7 +100,8 @@ bool Thread::readInsert(QTcpSocket *soc){
 
     for(char c : letter) {
         Character character = crdt->handleInsert(c, charFormat, startPos, QString{siteId});
-        this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+        //this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+        this->insert(character);
 
         // increment startPos
         if(c == '\n') {
@@ -219,7 +234,8 @@ bool Thread::readDelete(QTcpSocket *soc){
     crdt->handleDelete(character);
 
     // broadcast
-    this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+    //this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
+    this->deleteChar(character);
 
 	needToSaveFile = true;
 	if (!timerStarted) {
@@ -258,6 +274,24 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
     }
 }
 
+void Thread::insert(Character character){
+    qDebug() << "Thread.cpp - insert()     ---------- WRITE INSERT ----------";
+
+    QByteArray message(INSERT_MESSAGE);
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        writeMessage(socket.second, message);
+    }
+}
+
 void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> pos){
     qDebug() << "Thread.cpp - deleteChar()     ---------- WRITE DELETE ----------";
 
@@ -277,6 +311,24 @@ void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> po
     }
     message.append(position);
     qDebug() << "                             " << message;
+    qDebug() << ""; // newLine
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        writeMessage(socket.second, message);
+    }
+}
+
+void Thread::deleteChar(Character character){
+    qDebug() << "Thread.cpp - insert()     ---------- WRITE DELETE ----------";
+
+    QByteArray message(DELETE_MESSAGE);
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+    qDebug() << "                         " << message;
     qDebug() << ""; // newLine
 
     //broadcast
@@ -360,7 +412,7 @@ void Thread::sendFile(QTcpSocket *soc){
 
     message.append(" " + numLines);
 
-    for (int i = 0; i < file.size(); i++){
+    /*for (int i = 0; i < file.size(); i++){
         std::vector<Character> line = file[i];
         QByteArray numChar = convertionNumber(file[i].size());
 
@@ -385,6 +437,20 @@ void Thread::sendFile(QTcpSocket *soc){
             }
             message.append(position);
 
+        }
+    }*/
+
+    for (int i = 0; i < file.size(); i++){
+        std::vector<Character> line = file[i];
+        QByteArray numChar = convertionNumber(file[i].size());
+
+        message.append(" " + numChar);
+        for (int j = 0; j < line.size(); j++){
+            Character character = line[j];
+            QByteArray characterByteFormat = character.toQByteArray();
+            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+            message.append(" " + sizeOfMessage + " " + characterByteFormat);
         }
     }
     qDebug() << "                         " << message;

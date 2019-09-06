@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QPixmap>
 #include <iostream>
+#include <QJsonDocument>
 
 Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
@@ -279,7 +280,7 @@ bool Messanger::readRemoveUser(){
     return true;
 }
 
-bool Messanger::readFile(){
+/*bool Messanger::readFile(){
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
     readSpace(socket);
@@ -339,6 +340,39 @@ bool Messanger::readFile(){
 
     emit fileRecive(file);
     return true;
+}*/
+
+bool Messanger::readFile(){
+    qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
+    std::vector<std::vector<Character>> file;
+    readSpace(socket);
+    int numLines = readNumberFromSocket(socket);
+
+    for (int i = 0; i < numLines; i++){
+        std::vector<Character> line;
+        readSpace(socket);
+        int numCharacters = readNumberFromSocket(socket);
+
+        for (int j = 0; j < numCharacters; j++){
+            readSpace(socket);
+            int messageSize = readNumberFromSocket(socket);
+            readSpace(socket);
+
+            QByteArray characterByteFormat;
+            if (!readChunck(socket, characterByteFormat, messageSize)){
+                return false;
+            }
+
+            QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+            Character character = Character::toCharacter(jsonDocument);
+
+            line.push_back(character);
+        }
+        file.push_back(line);
+    }
+
+    emit fileRecive(file);
+    return true;
 }
 
 bool Messanger::insert(QString str, CharFormat charFormat, Pos pos){
@@ -350,10 +384,11 @@ bool Messanger::insert(QString str, CharFormat charFormat, Pos pos){
         QByteArray siteIdSize = convertionNumber(siteId.size());
         QByteArray posCh = convertionNumber(pos.getCh());
         QByteArray posLine = convertionNumber(pos.getLine());
+        QByteArray bold = convertionNumber(charFormat.isBold()? 1 : 0);
+        QByteArray italic = convertionNumber(charFormat.isItalic()? 1 : 0);
+        QByteArray underline = convertionNumber(charFormat.isUnderline()? 1: 0);
 
-        // TODO add charFormat...
-
-        message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine);
+        message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine + " " + bold + " " + italic + " " + underline);
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
         messages.push(message);
@@ -401,7 +436,7 @@ bool Messanger::deleteChar(QString str, std::vector<Identifier> pos){
     return true;
 }
 
-bool Messanger::readInsert(){
+/*bool Messanger::readInsert(){
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
 
     readSpace(socket);
@@ -447,9 +482,30 @@ bool Messanger::readInsert(){
 
     emit newMessage(message);
     return true;
+}*/
+
+bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
+    qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
+
+    readSpace(socket);
+    int messageSize = readNumberFromSocket(socket);
+    readSpace(socket);
+
+    QByteArray characterByteFormat;
+    if (!readChunck(socket, characterByteFormat, messageSize)){
+        return false;
+    }
+
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character character = Character::toCharacter(jsonDocument);
+
+    Message message(character, socket->socketDescriptor(), INSERT);
+
+    emit newMessage(message);
+    return true;
 }
 
-bool Messanger::readDelete(){
+/*bool Messanger::readDelete(){
     qDebug() << "Messanger.cpp - readDelete()     ---------- READ DELETE ----------";
 
     readSpace(socket);
@@ -491,6 +547,27 @@ bool Messanger::readDelete(){
     qDebug() << ""; // newLine
 
     Character character(letter[0], charFormat, 0, siteId, position);
+    Message message(character, socket->socketDescriptor(), DELETE);
+
+    emit newMessage(message);
+    return true;
+}*/
+
+bool Messanger::readDelete(){
+    qDebug() << "Messanger.cpp - readInsert()     ---------- READ DELETE ----------";
+
+    readSpace(socket);
+    int messageSize = readNumberFromSocket(socket);
+    readSpace(socket);
+
+    QByteArray characterByteFormat;
+    if (!readChunck(socket, characterByteFormat, messageSize)){
+        return false;
+    }
+
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character character = Character::toCharacter(jsonDocument);
+
     Message message(character, socket->socketDescriptor(), DELETE);
 
     emit newMessage(message);

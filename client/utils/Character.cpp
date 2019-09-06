@@ -54,8 +54,13 @@ const std::vector<Identifier> &Character::getPosition() const {
 void Character::read(const QJsonObject &json) {
 	if (json.contains("value") && json["value"].isDouble())
 		value = static_cast<char>(json["value"].toInt());
+
+	if (json.contains("charFormat"))
+		charFormat.read(json["charFormat"].toObject());
+
 	if (json.contains("counter") && json["counter"].isDouble())
 		counter = json["counter"].toInt();
+
 	if (json.contains("siteId") && json["siteId"].isString())
 		siteId = json["siteId"].toString();
 
@@ -78,6 +83,11 @@ void Character::read(const QJsonObject &json) {
 */
 void Character::write(QJsonObject &json) const {
 	json["value"] = value;
+
+	QJsonObject charFormatObject;
+	charFormat.write(charFormatObject);
+	json["charFormat"] = charFormatObject;
+
 	json["counter"] = counter;
 	json["siteId"] = siteId;
 
@@ -103,4 +113,18 @@ const CharFormat &Character::getCharFormat() const {
 
 void Character::setCharFormat(const CharFormat &charFormat) {
     Character::charFormat = charFormat;
+}
+
+QByteArray Character::toQByteArray(){
+	QJsonObject json;
+	this->write(json);
+	QJsonDocument document(json);
+	return document.toBinaryData();
+}
+
+Character Character::toCharacter(QJsonDocument jsonDocument){
+	QJsonObject jsonObject = jsonDocument.object();
+	Character character;
+	character.read(jsonObject);
+	return character;
 }

@@ -23,6 +23,20 @@ public:
     const QColor &getColor() const { return color; }
     void setColor(const QColor &color) { CharFormat::color = color; }
 
+    void write(QJsonObject &json) const {
+        json["bold"] = bold;
+        json["italic"] = italic;
+        json["underline"] = underline;
+        // TODO: color...
+    }
+
+    void read(QJsonObject json) {
+        bold = json["bold"].toBool();
+        italic = json["italic"].toBool();
+        underline = json["underline"].toBool();
+        //TODO: color...
+    }
+
 private:
     bool bold;
     bool italic;
