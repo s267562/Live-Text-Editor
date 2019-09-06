@@ -115,6 +115,11 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << "                         username: " << username << " password: " << password;
 	qDebug() << ""; // newLine
 
+	//******************************** test in attesa della registration funzionante lato client **************
+	if(QString(username)=="test" && QString(password)=="test")
+		return true;
+	//*********************************************************************************************************
+
 	// Check if user is already logged in
 	for (std::pair<quintptr, QString> pair : usernames) {
 		if (pair.second == QString(username))
