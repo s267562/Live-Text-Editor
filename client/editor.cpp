@@ -51,7 +51,7 @@ void Editor::setController(Controller *controller) {
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
-    //qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded << " chars removed: " << charsRemoved;
+    qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded << " chars removed: " << charsRemoved;
 
     saveCursor();
 
@@ -60,18 +60,22 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //std::cout << "VALID SIGNAL" << std::endl;
 
         if(charsAdded) {
+            QTextCursor cursor = textEdit->textCursor();
             QString chars = textEdit->toPlainText().mid(position, charsAdded);
 
-            // get start position
-            textCursor.setPosition(position);
-            int line = textCursor.blockNumber();
-            int ch = textCursor.positionInBlock();
-            Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+            for(int i=0; i<charsAdded; i++) {
+                // for each char added
+                cursor.setPosition(position + i);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                // select char
+                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
 
-            //TODO foreach char added
-            CharFormat charFormat;
+                CharFormat charFormat = getSelectedCharFormat(cursor);
 
-            this->controller->localInsert(chars, charFormat, startPos);
+                this->controller->localInsert(chars.at(i), charFormat, startPos);
+            }
         }
 
         if(charsRemoved) {
@@ -104,18 +108,49 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     restoreCursor();
 }
 
-void Editor::insertChar(char character, Pos pos) {
+CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
+    bool    bold = cursor.charFormat().fontWeight() == QFont::Bold,
+            italic = cursor.charFormat().fontItalic(),
+            underline = cursor.charFormat().fontUnderline();
+    QColor color{ cursor.charFormat().foreground().color() };
+
+    qDebug() << "italic:" << italic;
+    qDebug() << "weight:" << bold;
+    qDebug() << "underline:" << underline;
+    qDebug() << "color:" << color.name();
+
+    CharFormat charFormat{
+            bold,
+            italic,
+            underline,
+            color
+    };
+
+    qDebug() << " ";
+
+    return charFormat;
+}
+
+void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
+    // setting char format
+    QTextCharFormat format;
+    format.setFontWeight((charFormat.isBold() ? QFont::Bold : QFont::Normal));
+    format.setFontItalic(charFormat.isItalic());
+    format.setFontItalic(charFormat.isItalic());
+    format.setForeground(charFormat.getColor());
+
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+    textCursor.mergeCharFormat(format);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);

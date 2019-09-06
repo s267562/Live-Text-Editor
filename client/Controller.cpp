@@ -173,7 +173,7 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            this->editor->insertChar(character.getValue(), pos);
+            this->editor->insertChar(character.getValue(), character.getCharFormat(), pos);
         }
     } else if(message.getType() == DELETE) {
         if(!(message.getCharacter().getSiteId() == this->crdt->getSiteId())) {
