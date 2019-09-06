@@ -280,68 +280,6 @@ bool Messanger::readRemoveUser(){
     return true;
 }
 
-/*bool Messanger::readFile(){
-    qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
-    std::vector<std::vector<Character>> file;
-    readSpace(socket);
-    int numLines = readNumberFromSocket(socket);
-
-    for (int i = 0; i < numLines; i++){
-        std::vector<Character> line;
-        readSpace(socket);
-        int numCharacters = readNumberFromSocket(socket);
-
-        for (int j = 0; j < numCharacters; j++){
-            readSpace(socket);
-            int sizeString = readNumberFromSocket(socket);
-            readSpace(socket);
-
-            QByteArray letter;
-            if (!readChunck(socket, letter, sizeString)){
-                qDebug() << "letter";
-                return false;
-            }
-            readSpace(socket);
-
-            //TODO read charFormat
-            CharFormat charFormat();
-
-            //siteID
-            int siteIdSize = readNumberFromSocket(socket);
-            readSpace(socket);
-            QByteArray siteId;
-            if (!readChunck(socket, siteId, siteIdSize)){
-                qDebug() << "site";
-                return false;
-            }
-            readSpace(socket);
-            int posSize = readNumberFromSocket(socket);
-
-            readSpace(socket);
-            std::vector<Identifier> position;
-            qDebug() << "                              ch: "<<letter << " siteId: "<< siteId;
-
-            for (int i = 0; i < posSize; i++){
-                int pos = readNumberFromSocket(socket);
-                Identifier identifier(pos, siteId);
-                position.push_back(identifier);
-                qDebug() << "                             " << pos;
-                if (i != posSize - 1 || posSize != 1){
-                    readSpace(socket);
-                }
-            }
-            qDebug() << ""; // newLine
-
-            Character character(letter[0], charFormat, 0, siteId, position);
-            line.push_back(character);
-        }
-        file.push_back(line);
-    }
-
-    emit fileRecive(file);
-    return true;
-}*/
-
 bool Messanger::readFile(){
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
@@ -364,7 +302,7 @@ bool Messanger::readFile(){
             }
 
             QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-            Character character = Character::toCharacter(jsonDocument);
+            Character character = Character::toCharacterInsertVersion(jsonDocument);
 
             line.push_back(character);
         }
@@ -375,22 +313,15 @@ bool Messanger::readFile(){
     return true;
 }
 
-bool Messanger::insert(QString str, CharFormat charFormat, Pos pos){
+bool Messanger::insert(InsertCharacter character){
     qDebug() << "Messanger.cpp - insert()     ---------- WRITE INSERT ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
-        QByteArray strSize = convertionNumber(str.size());
-        QByteArray siteIdSize = convertionNumber(siteId.size());
-        QByteArray posCh = convertionNumber(pos.getCh());
-        QByteArray posLine = convertionNumber(pos.getLine());
-        QByteArray bold = convertionNumber(charFormat.isBold()? 1 : 0);
-        QByteArray italic = convertionNumber(charFormat.isItalic()? 1 : 0);
-        QByteArray underline = convertionNumber(charFormat.isUnderline()? 1: 0);
+        QByteArray characterByteFormat = character.toQByteArray();
+        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-        message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine + " " + bold + " " + italic + " " + underline);
-        qDebug() << "                         " << message;
-        qDebug() << ""; // newLine
+        message.append(" " + sizeOfMessage + " " + characterByteFormat);
         messages.push(message);
         if (reciveOkMessage){
             reciveOkMessage = false;
@@ -403,27 +334,15 @@ bool Messanger::insert(QString str, CharFormat charFormat, Pos pos){
     return true;
 }
 
-bool Messanger::deleteChar(QString str, std::vector<Identifier> pos){
+bool Messanger::deleteChar(Character character){
     qDebug() << "Messanger.cpp - insert()     ---------- WRITE DELETE ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
-        QByteArray siteIdSize = convertionNumber(siteId.size());
-        QByteArray posSize = convertionNumber(pos.size());
-        message.append(" " + str.toUtf8() + " "  + siteIdSize + " " + siteId.toUtf8() + " " + posSize + " ");
-        QByteArray position;
+        QByteArray characterByteFormat = character.toQByteArrayDeleteVersion();
+        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-        for (int i = 0; i < pos.size(); i++){
-            position.append(convertionNumber(pos[i].getDigit()));
-            if (i != pos.size() - 1 || pos.size() != 1){
-                position.append(" ");
-            }
-        }
-
-        message.append(position);
-        qDebug() << "                         " << message;
-        qDebug() << ""; // newLine
-
+        message.append(" " + sizeOfMessage + " " + characterByteFormat);
         messages.push(message);
         if (reciveOkMessage){
             reciveOkMessage = false;
@@ -435,54 +354,6 @@ bool Messanger::deleteChar(QString str, std::vector<Identifier> pos){
     }
     return true;
 }
-
-/*bool Messanger::readInsert(){
-    qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
-
-    readSpace(socket);
-    int sizeString = readNumberFromSocket(socket);
-    readSpace(socket);
-
-    QByteArray letter;
-    if (!readChunck(socket, letter, sizeString)){
-        return false;
-    }
-    readSpace(socket);
-
-    // TODO read charFormat
-    CharFormat charFormat();
-
-    //siteID
-    int siteIdSize = readNumberFromSocket(socket);
-    readSpace(socket);
-    QByteArray siteId;
-    if (!readChunck(socket, siteId, siteIdSize)){
-        return false;
-    }
-    readSpace(socket);
-    int posSize = readNumberFromSocket(socket);
-
-    readSpace(socket);
-    std::vector<Identifier> position;
-    qDebug() << "                              ch: "<<letter << " siteId: "<< siteId;
-
-    for (int i = 0; i < posSize; i++){
-        int pos = readNumberFromSocket(socket);
-        Identifier identifier(pos, siteId);
-        position.push_back(identifier);
-        qDebug() << "                             " << pos;
-        if (i != posSize - 1 || posSize != 1){
-            readSpace(socket);
-        }
-    }
-    qDebug() << ""; // newLine
-
-    Character character(letter[0], charFormat, 0, siteId, position);
-    Message message(character, socket->socketDescriptor(), INSERT);
-
-    emit newMessage(message);
-    return true;
-}*/
 
 bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
@@ -497,61 +368,13 @@ bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacter(jsonDocument);
+    Character character = Character::toCharacterInsertVersion(jsonDocument);
 
     Message message(character, socket->socketDescriptor(), INSERT);
 
     emit newMessage(message);
     return true;
 }
-
-/*bool Messanger::readDelete(){
-    qDebug() << "Messanger.cpp - readDelete()     ---------- READ DELETE ----------";
-
-    readSpace(socket);
-
-    QByteArray letter;
-    if (!readChunck(socket, letter, 1)){
-        return false;
-    }
-    readSpace(socket);
-
-    // charFormat is not important when delete char.
-    CharFormat charFormat;
-
-    //siteID
-    int siteIdSize = readNumberFromSocket(socket);
-    readSpace(socket);
-    QByteArray siteId;
-    if (!readChunck(socket, siteId, siteIdSize)){
-        return false;
-    }
-    readSpace(socket);
-
-    int size = readNumberFromSocket(socket);
-
-    readSpace(socket);
-    std::vector<Identifier> position;
-
-    qDebug() << "                              ch: "<<letter << " siteId: "<< siteId;
-
-    for (int i = 0; i < size; i++){
-        int pos = readNumberFromSocket(socket);
-        Identifier identifier(pos, siteId);
-        position.push_back(identifier);
-        qDebug() << "                              pos:" << pos;
-        if (i != size - 1 || size != 1){
-            readSpace(socket);
-        }
-    }
-    qDebug() << ""; // newLine
-
-    Character character(letter[0], charFormat, 0, siteId, position);
-    Message message(character, socket->socketDescriptor(), DELETE);
-
-    emit newMessage(message);
-    return true;
-}*/
 
 bool Messanger::readDelete(){
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ DELETE ----------";
@@ -566,7 +389,7 @@ bool Messanger::readDelete(){
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacter(jsonDocument);
+    Character character = Character::toCharacterDeleteVersion(jsonDocument);
 
     Message message(character, socket->socketDescriptor(), DELETE);
 

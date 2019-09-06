@@ -25,8 +25,10 @@ public:
 	void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
     int compareTo(Character otherCharacter);
-    QByteArray toQByteArray();
-    static Character toCharacter(QJsonDocument jsonDocument);
+    QByteArray toQByteArrayInsertVersion();
+    static Character toCharacterInsertVersion(QJsonDocument jsonDocument);
+	QByteArray toQByteArrayDeleteVersion();
+	static Character toCharacterDeleteVersion(QJsonDocument jsonDocument);
 
 private:
     char value;

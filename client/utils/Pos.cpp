@@ -38,3 +38,13 @@ std::ostream &operator<<(std::ostream &os, const Pos &pos) {
     os << "(" << pos.line << ", " << pos.ch << ")";
     return os;
 }
+
+void Pos::write(QJsonObject &json) const {
+    json["ch"] = ch;
+    json["line"] = line;
+}
+
+void Pos::read(QJsonObject json) {
+    ch = json["ch"].toInt();
+    line = json["line"].toInt();
+}

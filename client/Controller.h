@@ -12,6 +12,7 @@
 #include "ui/connection.h"
 #include "ui/showFiles.h"
 #include "Networking/Messanger.h"
+#include "utils/InsertCharacter.h"
 #include <iostream>
 
 class Editor;

@@ -5,6 +5,7 @@
 #include "Controller.h"
 #include <QMessageBox>
 
+
 Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
@@ -150,14 +151,15 @@ void Controller::showEditor(){
 
 void Controller::localInsert(QString chars, CharFormat charFormat, Pos startPos) {
     // send insert at the server. To insert it in the model we need the position computed by the server.
-    this->messanger->insert(chars, charFormat, startPos);
+    InsertCharacter character((char)chars[0].toLatin1(), crdt->getSiteId(), charFormat, startPos);
+    this->messanger->insert(character);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        this->messanger->deleteChar(QString{c.getValue()}, c.getPosition());
+        this->messanger->deleteChar(c);
     }
 }
 

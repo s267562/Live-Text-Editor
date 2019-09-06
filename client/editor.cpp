@@ -188,7 +188,7 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    textCursor.insertText(QString{character});
+    textCursor.insertText(QString::fromLatin1((char*)&character,1));
     textCursor.setPosition(insertPos);
     textCursor.setPosition(insertPos + 1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(format);

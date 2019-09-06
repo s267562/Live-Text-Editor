@@ -1,5 +1,6 @@
 #include "Thread.h"
 #include <QDataStream>
+#include "../../client/utils/InsertCharacter.h"
 
 class Identifier;
 
@@ -46,78 +47,6 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 
     qDebug() << "                             " << socketDescriptor << " Messanger connected" << soc;
     qDebug() << ""; // newLine
-}
-
-bool Thread::readInsert(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
-
-	readSpace(soc);
-	int sizeString = readNumberFromSocket(soc);
-	readSpace(soc);
-
-	QByteArray letter;
-	if (!readChunck(soc, letter, sizeString)){
-		return false;
-	}
-	readSpace(soc);
-
-	//siteID
-	int sizeSiteId = readNumberFromSocket(soc);
-	readSpace(soc);
-
-	QByteArray siteId;
-	if (!readChunck(soc, siteId, sizeSiteId)){
-		return false;
-	}
-	readSpace(soc);
-
-	int posChInt = readNumberFromSocket(soc);
-	readSpace(soc);
-
-	int posLineInt = readNumberFromSocket(soc);
-    readSpace(soc);
-
-    int boldInt = readNumberFromSocket(soc);
-    bool bold = boldInt == 1;
-    readSpace(soc);
-
-    int italicInt = readNumberFromSocket(soc);
-    bool italic = italicInt == 1;
-    readSpace(soc);
-
-    int underlineInt = readNumberFromSocket(soc);
-    bool underline = underlineInt == 1;
-
-    CharFormat charFormat;
-    charFormat.setBold(bold);
-    charFormat.setItalic(italic);
-    charFormat.setUnderline(underline);
-
-    qDebug() << "                              ch: "<<letter << "siteId: " << siteId << " posCh: " << posChInt << " posLine: " << posLineInt;
-    qDebug() << ""; // newLine
-
-    Pos startPos{posChInt, posLineInt};
-
-    for(char c : letter) {
-        Character character = crdt->handleInsert(c, charFormat, startPos, QString{siteId});
-        //this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
-        this->insert(character);
-
-        // increment startPos
-        if(c == '\n') {
-            startPos.resetCh();
-            startPos.incrementLine();
-        } else {
-            startPos.incrementCh();
-        }
-    }
-
-	needToSaveFile = true;
-	if (!timerStarted) {
-		saveTimer->start(saveInterval);
-		timerStarted = true;
-	}
-	return true;
 }
 
 void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d) {
@@ -180,105 +109,77 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         //writeOkMessage(soc);
 
     }else{
-		writeErrMessage(soc);
-	}
+        writeErrMessage(soc);
+    }
 }
 
 void Thread::saveCRDTToFile() {
-	if (needToSaveFile)
-		crdt->saveCRDT(filename);
+    if (needToSaveFile)
+        crdt->saveCRDT(filename);
 }
 
-bool Thread::readDelete(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
+bool Thread::readInsert(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
 
     readSpace(soc);
-    QByteArray letter;
-    if (!readChunck(soc, letter, 1)){
+    int messageSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    QByteArray characterByteFormat;
+    if (!readChunck(soc, characterByteFormat, messageSize)){
         return false;
     }
-    readSpace(soc);
 
-    // charFormat is not important when delete char.
-    CharFormat charFormat;
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    InsertCharacter insertCharacter = InsertCharacter::toInsertCharacter(jsonDocument);
 
-    //siteID
-    int sizeSiteId = readNumberFromSocket(soc);
-    readSpace(soc);
+    qDebug() << "char: "<<insertCharacter.getCharacter();
 
-    QByteArray siteId;
-    if (!readChunck(soc, siteId, sizeSiteId)){
-        return false;
-    }
-    readSpace(soc);
+    Character character = crdt->handleInsert(insertCharacter.getCharacter(), insertCharacter.getCharFormat(), insertCharacter.getPos(), insertCharacter.getSiteId());
+    this->insert(character);
 
-    int size = readNumberFromSocket(soc);
-    qDebug() << "                              size:" << size << " size Int:" << size;
-    readSpace(soc);
-    std::vector<Identifier> position;
-    qDebug() << "                             " << letter;
-
-    for (int i = 0; i < size; i++){
-        int pos = readNumberFromSocket(soc);
-        Identifier identifier(pos, siteId);
-        position.push_back(identifier);
-        qDebug() << "                              pos:" << pos;
-        if (i != size - 1 || size != 1){
-            readSpace(soc);
-        }
-    }
-    qDebug() << ""; // newLine
-
-    Character character(letter[0], charFormat, 0, siteId, position);
-
-    crdt->handleDelete(character);
-
-    // broadcast
-    //this->deleteChar(QString{character.getValue()}, character.getSiteId(), character.getPosition());
-    this->deleteChar(character);
 
 	needToSaveFile = true;
 	if (!timerStarted) {
 		saveTimer->start(saveInterval);
 		timerStarted = true;
 	}
-    return true;
+	return true;
 }
 
-void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
-    qDebug() << "Thread.cpp - insert()     ---------- WRITE INSERT ----------";
+bool Thread::readDelete(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
 
-    QByteArray message(INSERT_MESSAGE);
-    QByteArray strSize = convertionNumber(str.size());
-    QByteArray siteIdSize = convertionNumber(siteId.size());
-    QByteArray posSize = convertionNumber(pos.size());
+    readSpace(soc);
+    int messageSize = readNumberFromSocket(soc);
+    readSpace(soc);
 
-    // TODO add charFormat...
-
-    message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posSize + " ");
-    QByteArray position;
-
-    for (int i = 0; i < pos.size(); i++){
-        position.append(convertionNumber(pos[i].getDigit()));
-        if (i != pos.size() - 1 || pos.size() != 1){
-            position.append(" ");
-        }
+    QByteArray characterByteFormat;
+    if (!readChunck(soc, characterByteFormat, messageSize)){
+        return false;
     }
-    message.append(position);
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
 
-    //broadcast
-    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        writeMessage(socket.second, message);
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character character = Character::toCharacterDeleteVersion(jsonDocument);
+
+    crdt->handleDelete(character);
+
+    // broadcast
+    this->deleteChar(character);
+
+    needToSaveFile = true;
+    if (!timerStarted) {
+        saveTimer->start(saveInterval);
+        timerStarted = true;
     }
+    return true;
 }
 
 void Thread::insert(Character character){
     qDebug() << "Thread.cpp - insert()     ---------- WRITE INSERT ----------";
 
     QByteArray message(INSERT_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray characterByteFormat = character.toQByteArrayInsertVersion();
     QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
     message.append(" " + sizeOfMessage + " " + characterByteFormat);
@@ -292,38 +193,11 @@ void Thread::insert(Character character){
     }
 }
 
-void Thread::deleteChar(QString str,  QString siteId, std::vector<Identifier> pos){
-    qDebug() << "Thread.cpp - deleteChar()     ---------- WRITE DELETE ----------";
-
-    QByteArray message(DELETE_MESSAGE);
-    QByteArray siteIdSize = convertionNumber(siteId.size());
-    QByteArray posSize = convertionNumber(pos.size());
-
-    qDebug() << "                              pos.size: " << pos.size();
-    message.append(" " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " "+ posSize + " ");
-    QByteArray position;
-
-    for (int i = 0; i < pos.size(); i++){
-        position.append(convertionNumber(pos[i].getDigit()));
-        if (i != pos.size() - 1 || pos.size() != 1){
-            position.append(" ");
-        }
-    }
-    message.append(position);
-    qDebug() << "                             " << message;
-    qDebug() << ""; // newLine
-
-    //broadcast
-    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        writeMessage(socket.second, message);
-    }
-}
-
 void Thread::deleteChar(Character character){
     qDebug() << "Thread.cpp - insert()     ---------- WRITE DELETE ----------";
 
     QByteArray message(DELETE_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray characterByteFormat = character.toQByteArrayDeleteVersion();
     QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
     message.append(" " + sizeOfMessage + " " + characterByteFormat);
@@ -387,6 +261,35 @@ void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
     }
 }
 
+void Thread::sendFile(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
+    QByteArray message(SENDING_FILE);
+    const std::vector<std::vector<Character>> file = crdt->getStructure();
+    QByteArray numLines = convertionNumber(file.size());
+
+    message.append(" " + numLines);
+
+    for (int i = 0; i < file.size(); i++){
+        std::vector<Character> line = file[i];
+        QByteArray numChar = convertionNumber(file[i].size());
+
+        message.append(" " + numChar);
+        for (int j = 0; j < line.size(); j++){
+            Character character = line[j];
+            QByteArray characterByteFormat = character.toQByteArrayInsertVersion();
+            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+            message.append(" " + sizeOfMessage + " " + characterByteFormat);
+        }
+    }
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    if (!writeMessage(soc,message)){
+        return;
+    }
+}
+
 void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d){
     std::lock_guard<std::mutex> lg(mutexSockets);
     qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
@@ -402,61 +305,4 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
     sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
     usernames.erase(socketDescriptor);
     qDebug() << usernames;
-}
-
-void Thread::sendFile(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
-    QByteArray message(SENDING_FILE);
-    const std::vector<std::vector<Character>> file = crdt->getStructure();
-    QByteArray numLines = convertionNumber(file.size());
-
-    message.append(" " + numLines);
-
-    /*for (int i = 0; i < file.size(); i++){
-        std::vector<Character> line = file[i];
-        QByteArray numChar = convertionNumber(file[i].size());
-
-        message.append(" " + numChar);
-        for (int j = 0; j < line.size(); j++){
-            QString str(line[j].getValue());
-            QString siteId = line[j].getSiteId();
-            std::vector<Identifier> pos = line[j].getPosition();
-
-            QByteArray strSize = convertionNumber(str.size());
-            QByteArray siteIdSize = convertionNumber(siteId.size());
-            QByteArray posSize = convertionNumber(pos.size());
-
-            message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posSize + " ");
-            QByteArray position;
-
-            for (int k = 0; k < pos.size(); k++){
-                position.append(convertionNumber(pos[i].getDigit()));
-                if (k != pos.size() - 1 || pos.size() != 1){
-                    position.append(" ");
-                }
-            }
-            message.append(position);
-
-        }
-    }*/
-
-    for (int i = 0; i < file.size(); i++){
-        std::vector<Character> line = file[i];
-        QByteArray numChar = convertionNumber(file[i].size());
-
-        message.append(" " + numChar);
-        for (int j = 0; j < line.size(); j++){
-            Character character = line[j];
-            QByteArray characterByteFormat = character.toQByteArray();
-            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
-
-            message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        }
-    }
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
-
-    if (!writeMessage(soc,message)){
-        return;
-    }
 }

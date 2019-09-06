@@ -49,7 +49,7 @@ add_executable(client
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h client/utils/InsertCharacter.h)
 
 add_executable(client2
         client/textEditor.qrc
@@ -74,7 +74,7 @@ add_executable(client2
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h client/utils/InsertCharacter.h)
 
 add_executable(server
         server/main.cpp

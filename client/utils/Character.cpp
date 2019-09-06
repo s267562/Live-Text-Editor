@@ -115,16 +115,63 @@ void Character::setCharFormat(const CharFormat &charFormat) {
     Character::charFormat = charFormat;
 }
 
-QByteArray Character::toQByteArray(){
+QByteArray Character::toQByteArrayInsertVersion(){
 	QJsonObject json;
 	this->write(json);
 	QJsonDocument document(json);
 	return document.toBinaryData();
 }
 
-Character Character::toCharacter(QJsonDocument jsonDocument){
+Character Character::toCharacterInsertVersion(QJsonDocument jsonDocument){
 	QJsonObject jsonObject = jsonDocument.object();
 	Character character;
 	character.read(jsonObject);
+	return character;
+}
+
+QByteArray Character::toQByteArrayDeleteVersion(){
+	QJsonObject json;
+	json["value"] = value;
+	json["siteId"] = siteId;
+
+	QJsonArray identifierArray;
+	for (const Identifier &identifier : position) {
+		QJsonObject identifierObject;
+		identifier.write(identifierObject);
+		identifierArray.append(identifierObject);
+	}
+	json["position"] = identifierArray;
+	QJsonDocument document(json);
+	return document.toBinaryData();
+}
+
+Character Character::toCharacterDeleteVersion(QJsonDocument jsonDocument){
+	QJsonObject json = jsonDocument.object();
+	Character character;
+
+	if (json.contains("value") && json["value"].isDouble())
+		character.value = static_cast<char>(json["value"].toInt());
+
+	if (json.contains("charFormat"))
+		character.charFormat.read(json["charFormat"].toObject());
+
+	if (json.contains("counter") && json["counter"].isDouble())
+		character.counter = json["counter"].toInt();
+
+	if (json.contains("siteId") && json["siteId"].isString())
+		character.siteId = json["siteId"].toString();
+
+	if (json.contains("position") && json["position"].isArray()) {
+		QJsonArray positionArray = json["position"].toArray();
+		character.position.clear();
+		character.position.reserve(positionArray.size());
+		for (int i = 0; i < positionArray.size(); ++i) {
+			QJsonObject identifierObj = positionArray[i].toObject();
+			Identifier ident;
+			ident.read(identifierObj);
+			character.position.push_back(ident);
+		}
+	}
+
 	return character;
 }

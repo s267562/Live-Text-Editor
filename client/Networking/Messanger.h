@@ -11,6 +11,8 @@
 #include "../utils/Pos.h"
 #include "message/Message.h"
 #include "../CRDT.h"
+#include "../utils/InsertCharacter.h"
+
 
 class Messanger: public QObject{
     Q_OBJECT
@@ -30,9 +32,8 @@ private:
 public:
     Messanger(QObject *parent = nullptr);
     void setCRDT(CRDT *crdt);
-    bool writeOnSocket(QString);
-    bool insert(QString, CharFormat charFormat, Pos pos);
-    bool deleteChar(QString str, std::vector<Identifier> pos);
+    bool insert(InsertCharacter character);
+    bool deleteChar(Character character);
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <ostream>
+#include <QJsonObject>
 
 class Pos {
 public:
@@ -26,6 +27,8 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &os, const Pos &pos);
+    void write(QJsonObject &json) const;
+    void read(QJsonObject json);
 
 private:
     int ch; // position in the line
