@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <iostream>
 #include <QJsonDocument>
+#include <QtCore/QBuffer>
 
 Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
@@ -134,11 +135,13 @@ bool Messanger::logIn(QString username, QString password) {
     return true;
 }
 
-bool Messanger::registration(QString username, QString password, QString pathAvatar){
+bool Messanger::registration(QString username, QString password, QPixmap avatar){
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
-    QPixmap pix;
-    pix.load(pathAvatar);
-    QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
+
+    QByteArray image;
+    QBuffer buffer(&image);
+    buffer.open(QIODevice::WriteOnly);
+    avatar.save(&buffer,"PNG");
 
     QDataStream out(socket);
     QByteArray message(REGISTRATION_MESSAGE);
@@ -151,14 +154,14 @@ bool Messanger::registration(QString username, QString password, QString pathAva
     }
 
     //avatar
-    out << pix.toImage().sizeInBytes();
+    out << avatar.toImage().sizeInBytes();
     socket->write(" ");
 
     if (!writeMessage(socket, image)){
         return false;
     }
 
-    qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << pix.toImage().sizeInBytes();
+    qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.toImage().sizeInBytes();
     qDebug() << ""; // newLine
 
     this->crdt->setSiteId(username);
@@ -166,6 +169,39 @@ bool Messanger::registration(QString username, QString password, QString pathAva
 
     return true;
 }
+
+//bool Messanger::registration(QString username, QString password, QString pathAvatar){
+//	qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
+//	QPixmap pix;
+//	pix.load(pathAvatar);
+//	QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
+//
+//	QDataStream out(socket);
+//	QByteArray message(REGISTRATION_MESSAGE);
+//
+//	QByteArray usernameSize = convertionNumber(username.size());
+//	QByteArray passwordSize = convertionNumber(password.size());
+//	message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " ");
+//	if (!writeMessage(socket, message)){
+//		return false;
+//	}
+//
+//	//avatar
+//	out << pix.toImage().sizeInBytes();
+//	socket->write(" ");
+//
+//	if (!writeMessage(socket, image)){
+//		return false;
+//	}
+//
+//	qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << pix.toImage().sizeInBytes();
+//	qDebug() << ""; // newLine
+//
+//	this->crdt->setSiteId(username);
+//	this->siteId = username;
+//
+//	return true;
+//}
 
 bool Messanger::readFileNames(){
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";

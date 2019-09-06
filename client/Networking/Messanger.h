@@ -37,7 +37,7 @@ public:
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
-    bool registration(QString username, QString password, QString pathAvatar);
+    bool registration(QString username, QString password, QPixmap avatar);
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
