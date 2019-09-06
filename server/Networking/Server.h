@@ -8,6 +8,7 @@
 #include "Thread.h"
 #include "../Utils/Constants.h"
 #include "common/commonFunctions.h"
+#include "../DB/Database.h"
 
 class Thread;
 
@@ -19,6 +20,7 @@ private:
     std::map<qintptr, SocketState> socketsState;
     std::map<qintptr, QString> usernames;
     QTcpSocket *socket;
+    Database DB;
 
 public:
     explicit Server(QObject *parent = nullptr);
