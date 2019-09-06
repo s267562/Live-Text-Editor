@@ -19,7 +19,7 @@ namespace Ui {
 }
 
 class Editor : public QMainWindow {
-    Q_OBJECT
+Q_OBJECT
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
@@ -39,6 +39,9 @@ public slots:
     void on_actionLogout_triggered();
     void removeUser(QString user);
     void setUsers(QStringList user);
+
+private slots:
+    void textBold();
 
 signals:
     void logout();
@@ -61,9 +64,18 @@ private:
     bool validSignal(int i, int i1, int i2);
     void resizeEvent (QResizeEvent *event);
     void restoreCursor();
+    void restoreCursorSelection();
     void saveCursor();
 
     CharFormat getSelectedCharFormat(QTextCursor cursor);
+    void setupTextActions();
+    void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+
+    // actions
+    QAction *actionTextBold;
 };
 
 #endif //TEXTEDITOR_EDITOR_H
+
+
+

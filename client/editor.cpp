@@ -17,33 +17,65 @@
 #include <QPrinter>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-												  siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
-	ui->setupUi(this);
-	setWindowTitle(QCoreApplication::applicationName());
-	setCentralWidget(textEdit);
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
+    ui->setupUi(this);
+    setWindowTitle(QCoreApplication::applicationName());
+    setCentralWidget(textEdit);
 
-	ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
+    ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
 
-	ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
+    ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-	QPixmap pix;
-	pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
-	// TODO: from QByteArray to QPixMap
+    QPixmap pix;
+    pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
+    // TODO: from QByteArray to QPixMap
 
-	ui->actionAvatar->setIcon(QIcon(pix));
-	ui->actionAvatar->setIconVisibleInMenu(true);
+    ui->actionAvatar->setIcon(QIcon(pix));
+    ui->actionAvatar->setIconVisibleInMenu(true);
 
-	this->textCursor = textEdit->textCursor();
+    this->textCursor = textEdit->textCursor();
 
-	// Controller
-	connect(textDocument, &QTextDocument::contentsChange,
-			this, &Editor::onTextChanged);
+    setupTextActions();
 
-	//connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
-	/*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
-	connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
-	connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
-	connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
+    // Controller
+    connect(textDocument, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+    //connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
+    /*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
+    connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
+    connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
+    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
+}
+
+void Editor::setupTextActions() {
+    QToolBar *tb = addToolBar(tr("Format Actions"));
+    QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
+
+    // bold
+    const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/images/win/textbold.png"));
+    actionTextBold = menu->addAction(boldIcon, tr("&Bold"), this, &Editor::textBold);
+    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    actionTextBold->setPriority(QAction::LowPriority);
+    QFont bold;
+    bold.setBold(true);
+    actionTextBold->setFont(bold);
+    tb->addAction(actionTextBold);
+    actionTextBold->setCheckable(true);
+}
+
+void Editor::textBold() {
+    QTextCharFormat fmt;
+    fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
+    QTextCursor cursor = textEdit->textCursor();
+    if (!cursor.hasSelection())
+        cursor.select(QTextCursor::WordUnderCursor);
+    cursor.mergeCharFormat(format);
+    textEdit->mergeCurrentCharFormat(format);
 }
 
 void Editor::setController(Controller *controller) {
@@ -58,25 +90,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
-
-        if(charsAdded) {
-            QTextCursor cursor = textEdit->textCursor();
-            QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-            for(int i=0; i<charsAdded; i++) {
-                // for each char added
-                cursor.setPosition(position + i);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-                // select char
-                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                CharFormat charFormat = getSelectedCharFormat(cursor);
-
-                this->controller->localInsert(chars.at(i), charFormat, startPos);
-            }
-        }
 
         if(charsRemoved) {
             // get startPos
@@ -97,14 +110,38 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
             //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
             //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
+            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
             this->controller->localDelete(startPos, endPos);
+        }
+
+        if(charsAdded) {
+            QTextCursor cursor = textEdit->textCursor();
+            QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+            for(int i=0; i<charsAdded; i++) {
+                // for each char added
+                cursor.setPosition(position + i);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                // select char
+                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                CharFormat charFormat = getSelectedCharFormat(cursor);
+
+                this->controller->localInsert(chars.at(i), charFormat, startPos);
+            }
         }
 
     } else {
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
+        restoreCursor();
+        if(this->startSelection != this->endSelection) {
+            // text was selected... restore the selction
+            restoreCursorSelection();
+        }
     }
-
     restoreCursor();
 }
 
@@ -115,7 +152,7 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
     QColor color{ cursor.charFormat().foreground().color() };
 
     qDebug() << "italic:" << italic;
-    qDebug() << "weight:" << bold;
+    qDebug() << "bold:" << bold;
     qDebug() << "underline:" << underline;
     qDebug() << "color:" << color.name();
 
@@ -138,6 +175,8 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
+    int insertPos = textCursor.position();
+
     // setting char format
     QTextCharFormat format;
     format.setFontWeight((charFormat.isBold() ? QFont::Bold : QFont::Normal));
@@ -150,6 +189,8 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+    textCursor.setPosition(insertPos);
+    textCursor.setPosition(insertPos + 1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(format);
 
     connect(doc, &QTextDocument::contentsChange,
@@ -242,12 +283,12 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     redo();
     if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
-        // qDebug() << "INVALID SIGNAL";
+        //qDebug() << "INVALID SIGNAL 1";
         validSignal = false;
     }
 
     if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
-        //qDebug() << "WRONG SIGNAL;";
+        //qDebug() << "WRONG SIGNAL 2";
         // wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
         validSignal = false;
     }
@@ -255,16 +296,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     QString test = textEdit->toPlainText().mid(position, charsAdded);
     if(validSignal && charsAdded == charsRemoved && test.isEmpty()) {
         // wrong signal when editor opens.
-        validSignal = false;
-    }
-
-    textCursor.movePosition(QTextCursor::StartOfLine);
-    int positionFirstLineChar = textCursor.position(); // the position of the first char in the current line .
-    int currentSize = textEdit->toPlainText().size();
-    if(validSignal && charsAdded == charsRemoved && position == positionFirstLineChar && currentSize != 0) {
-        // TODO never reached... deleting it (?)
-        // wrong signal when cursor move after the editor get focuses.
-        // std::cout << "current size: " << currentSize << std::endl;
+        //qDebug() << "WRONG SIGNAL 3";
         validSignal = false;
     }
 
@@ -272,11 +304,13 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     bool textSelected = false;
     int beginPos = textEdit->textCursor().selectionStart();
     int endPos = textEdit->textCursor().selectionEnd();
+    int currentSize = textEdit->toPlainText().size();
     if(beginPos != endPos) {
         textSelected = true;
     }
     if(validSignal && textSelected && charsAdded == charsRemoved && currentSize != 0) {
         // this solve the bug when we select text (in multilines), when the textedit has not the fucus, and we delete them.
+        //qDebug() << "WRONG SIGNAL 5";
         validSignal = false;
     }
 
@@ -310,13 +344,14 @@ void Editor::saveCursor() {
 
 void Editor::restoreCursor() {
     QTextCursor cursor = this->textCursor;
-    if(this->startSelection != this->endSelection) {
-        // text was selected... restore the selction
-        cursor.setPosition(this->startSelection);
-        cursor.setPosition(this->endSelection, QTextCursor::KeepAnchor);
-    } else {
-        cursor.setPosition(this->cursorPos, QTextCursor::MoveAnchor);
-    }
+    cursor.setPosition(this->cursorPos, QTextCursor::MoveAnchor);
+    textEdit->setTextCursor(cursor);
+}
+
+void Editor::restoreCursorSelection() {
+    QTextCursor cursor = this->textCursor;
+    cursor.setPosition(this->startSelection);
+    cursor.setPosition(this->endSelection, QTextCursor::KeepAnchor);
     textEdit->setTextCursor(cursor);
 }
 
