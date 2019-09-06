@@ -49,7 +49,9 @@ void Registration::setDefaultProfileIcon(){
 
 
 void Registration::on_pushButton_registration_clicked(){
-
+	QString username = ui->username->text();
+	QString password = ui->password->text();
+	QPixmap avatar = ui->label->pixmap()->copy(); // TODO controllare se giusto. Togliendo il copy abbiamo un QPixmap*
 }
 
 void Registration::on_pushButton_login_clicked(){
