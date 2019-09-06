@@ -207,7 +207,7 @@ std::vector<Character> CRDT::handleDelete(Pos startPos, Pos endPos) {
 
     this->removeEmptyLines();
 
-    if (newlineRemoved && this->structure[startPos.getLine() + 1].size() > 0) {
+    if (newlineRemoved && startPos.getCh() > 0) {
         //qDebug() << "need to merge line" << startPos.getLine();
         this->mergeLines(startPos.getLine());
     }
@@ -280,7 +280,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
 
     this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
-    if (character.getValue() == '\n' && this->structure.size() > pos.getLine()) {
+    if (character.getValue() == '\n') {
         this->mergeLines(pos.getLine());
     }
 

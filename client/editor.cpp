@@ -17,33 +17,65 @@
 #include <QPrinter>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-												  siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
-	ui->setupUi(this);
-	setWindowTitle(QCoreApplication::applicationName());
-	setCentralWidget(textEdit);
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
+    ui->setupUi(this);
+    setWindowTitle(QCoreApplication::applicationName());
+    setCentralWidget(textEdit);
 
-	ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
+    ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
 
-	ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
+    ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-	QPixmap pix;
-	pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
-	// TODO: from QByteArray to QPixMap
+    QPixmap pix;
+    pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
+    // TODO: from QByteArray to QPixMap
 
-	ui->actionAvatar->setIcon(QIcon(pix));
-	ui->actionAvatar->setIconVisibleInMenu(true);
+    ui->actionAvatar->setIcon(QIcon(pix));
+    ui->actionAvatar->setIconVisibleInMenu(true);
 
-	this->textCursor = textEdit->textCursor();
+    this->textCursor = textEdit->textCursor();
 
-	// Controller
-	connect(textDocument, &QTextDocument::contentsChange,
-			this, &Editor::onTextChanged);
+    setupTextActions();
 
-	//connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
-	/*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
-	connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
-	connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
-	connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
+    // Controller
+    connect(textDocument, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+    //connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
+    /*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
+    connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
+    connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
+    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
+}
+
+void Editor::setupTextActions() {
+    QToolBar *tb = addToolBar(tr("Format Actions"));
+    QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
+
+    // bold
+    const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/images/win/textbold.png"));
+    actionTextBold = menu->addAction(boldIcon, tr("&Bold"), this, &Editor::textBold);
+    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    actionTextBold->setPriority(QAction::LowPriority);
+    QFont bold;
+    bold.setBold(true);
+    actionTextBold->setFont(bold);
+    tb->addAction(actionTextBold);
+    actionTextBold->setCheckable(true);
+}
+
+void Editor::textBold() {
+    QTextCharFormat fmt;
+    fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
+    QTextCursor cursor = textEdit->textCursor();
+    if (!cursor.hasSelection())
+        cursor.select(QTextCursor::WordUnderCursor);
+    cursor.mergeCharFormat(format);
+    textEdit->mergeCurrentCharFormat(format);
 }
 
 void Editor::setController(Controller *controller) {
@@ -58,6 +90,29 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
+
+        if(charsRemoved) {
+            // get startPos
+            int line, ch;
+            textCursor.setPosition(position);
+            line = textCursor.blockNumber();
+            ch = textCursor.positionInBlock();
+            Pos startPos{ch, line}; // Pos(int ch, int line);
+
+            // get endPos
+            undo();
+            textCursor.setPosition(position + charsRemoved);
+            line = textCursor.blockNumber();
+            ch = textCursor.positionInBlock();
+            Pos endPos{ch, line}; // Pos(int ch, int line);
+            redo();
+            
+            //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+            //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
+            //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
+            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
+            this->controller->localDelete(startPos, endPos);
+        }
 
         if(charsAdded) {
             QTextCursor cursor = textEdit->textCursor();
@@ -78,34 +133,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             }
         }
 
-        if(charsRemoved) {
-            // get startPos
-            int line, ch;
-            textCursor.setPosition(position);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos startPos{ch, line}; // Pos(int ch, int line);
-
-            // get endPos
-            undo();
-            textCursor.setPosition(position + charsRemoved);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos endPos{ch, line}; // Pos(int ch, int line);
-            redo();
-
-            //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-            //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
-            //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
-            this->controller->localDelete(startPos, endPos);
-        }
-
     } else {
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
+        restoreCursor();
     }
-
-    restoreCursor();
 }
 
 CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
@@ -115,7 +147,7 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
     QColor color{ cursor.charFormat().foreground().color() };
 
     qDebug() << "italic:" << italic;
-    qDebug() << "weight:" << bold;
+    qDebug() << "bold:" << bold;
     qDebug() << "underline:" << underline;
     qDebug() << "color:" << color.name();
 
@@ -138,6 +170,8 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
+    int insertPos = textCursor.position();
+
     // setting char format
     QTextCharFormat format;
     format.setFontWeight((charFormat.isBold() ? QFont::Bold : QFont::Normal));
@@ -150,6 +184,8 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+    textCursor.setPosition(insertPos);
+    textCursor.setPosition(insertPos + 1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(format);
 
     connect(doc, &QTextDocument::contentsChange,

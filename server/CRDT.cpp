@@ -191,7 +191,7 @@ void CRDT::handleDelete(const Character &character) {
 	if (pos) {
 		this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
-		if (character.getValue() == '\n' && this->structure.size() > pos.getLine()) {
+		if (character.getValue() == '\n') {
             qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
 
 		    this->mergeLines(pos.getLine());
