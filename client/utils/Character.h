@@ -9,12 +9,15 @@
 #include <vector>
 #include <QtCore/QString>
 #include "Identifier.h"
+#include "CharFormat.h"
 
 class Character {
 public:
-    Character(char value, int counter, const QString &siteId, const std::vector<Identifier> &position);
+    Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
 	Character();
     char getValue() const;
+    const CharFormat &getCharFormat() const;
+    void setCharFormat(const CharFormat &charFormat);
     int getCounter() const;
     const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
@@ -24,6 +27,7 @@ public:
 
 private:
     char value;
+    CharFormat charFormat;
     int counter;
     QString siteId;
     std::vector<Identifier> position;

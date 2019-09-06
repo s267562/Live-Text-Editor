@@ -61,6 +61,9 @@ bool Thread::readInsert(QTcpSocket *soc){
 	}
 	readSpace(soc);
 
+	// TODO read charFormat...
+	CharFormat charFormat();
+
 	//siteID
 	int sizeSiteId = readNumberFromSocket(soc);
 	readSpace(soc);
@@ -82,7 +85,7 @@ bool Thread::readInsert(QTcpSocket *soc){
     Pos startPos{posChInt, posLineInt};
 
     for(char c : letter) {
-        Character character = crdt->handleInsert(c, startPos, QString{siteId});
+        Character character = crdt->handleInsert(c, charFormat, startPos, QString{siteId});
         this->insert(QString{character.getValue()}, character.getSiteId(), character.getPosition());
 
         // increment startPos
@@ -181,6 +184,9 @@ bool Thread::readDelete(QTcpSocket *soc){
     }
     readSpace(soc);
 
+    // charFormat is not important when delete char.
+    CharFormat charFormat;
+
     //siteID
     int sizeSiteId = readNumberFromSocket(soc);
     readSpace(soc);
@@ -208,7 +214,7 @@ bool Thread::readDelete(QTcpSocket *soc){
     }
     qDebug() << ""; // newLine
 
-    Character character(letter[0], 0, siteId, position);
+    Character character(letter[0], charFormat, 0, siteId, position);
 
     crdt->handleDelete(character);
 
@@ -230,6 +236,8 @@ void Thread::insert(QString str, QString siteId,std::vector<Identifier> pos){
     QByteArray strSize = convertionNumber(str.size());
     QByteArray siteIdSize = convertionNumber(siteId.size());
     QByteArray posSize = convertionNumber(pos.size());
+
+    // TODO add charFormat...
 
     message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posSize + " ");
     QByteArray position;

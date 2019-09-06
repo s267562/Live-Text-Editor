@@ -68,7 +68,10 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             int ch = textCursor.positionInBlock();
             Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
 
-            this->controller->localInsert(chars, startPos);
+            //TODO foreach char added
+            CharFormat charFormat;
+
+            this->controller->localInsert(chars, charFormat, startPos);
         }
 
         if(charsRemoved) {

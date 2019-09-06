@@ -17,7 +17,7 @@ class CRDT {
 public:
     CRDT();
 
-    Character handleInsert(char val, Pos pos, QString siteId);
+    Character handleInsert(char val, CharFormat charFormat, Pos pos, QString siteId);
     void handleDelete(const Character &character);
 	bool loadCRDT(QString filename);
 	bool saveCRDT(QString filename);
@@ -29,7 +29,7 @@ private:
     static const int base = 32;
 
     // insert
-    const Character generateChar(char val, Pos pos, QString siteId);
+    const Character generateChar(char val, CharFormat charFormat, Pos pos, QString siteId);
     const std::vector<Identifier> findPosBefore(Pos pos);
     const std::vector<Identifier> findPosAfter(Pos pos);
     std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos = {}, int level = 0);

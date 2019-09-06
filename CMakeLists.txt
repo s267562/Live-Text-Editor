@@ -36,6 +36,7 @@ add_executable(client
         client/editor.cpp client/editor.h
         client/CRDT.cpp client/CRDT.h
         client/utils/Character.cpp client/utils/Character.h
+        client/utils/CharFormat.h
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
         client/Controller.cpp client/Controller.h
@@ -48,7 +49,7 @@ add_executable(client
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h)
 
 add_executable(client2
         client/textEditor.qrc
@@ -60,6 +61,7 @@ add_executable(client2
         client/editor.cpp client/editor.h
         client/CRDT.cpp client/CRDT.h
         client/utils/Character.cpp client/utils/Character.h
+        client/utils/CharFormat.h
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
         client/Controller.cpp client/Controller.h
@@ -88,6 +90,7 @@ add_executable(server
         client/utils/Identifier.cpp
         client/utils/Character.h
         client/utils/Character.cpp
+        client/utils/CharFormat.h
         client/utils/Pos.h
         client/utils/Pos.cpp
         server/Utils/Constants.h

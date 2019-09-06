@@ -61,7 +61,7 @@ public slots:
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
-    void localInsert(QString chars, Pos startPos);
+    void localInsert(QString chars, CharFormat charFormat, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
 };

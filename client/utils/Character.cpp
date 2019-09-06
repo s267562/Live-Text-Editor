@@ -5,8 +5,8 @@
 #include <QtCore/QJsonArray>
 #include "Character.h"
 
-Character::Character(char value, int counter, const QString &siteId, const std::vector<Identifier> &position)
-		: value(value), counter(counter), siteId(siteId), position(position) {}
+Character::Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
+		: value(value), charFormat(charFormat), counter(counter), siteId(siteId), position(position) {}
 
 int Character::compareTo(Character otherCharacter) {
 	std::vector<Identifier> pos1 = this->getPosition();
@@ -95,4 +95,12 @@ Character::Character() {
 	counter = -1;
 	siteId = nullptr;
 	position = std::vector<Identifier>();
+}
+
+const CharFormat &Character::getCharFormat() const {
+    return charFormat;
+}
+
+void Character::setCharFormat(const CharFormat &charFormat) {
+    Character::charFormat = charFormat;
 }

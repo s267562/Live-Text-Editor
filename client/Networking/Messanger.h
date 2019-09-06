@@ -31,7 +31,7 @@ public:
     Messanger(QObject *parent = nullptr);
     void setCRDT(CRDT *crdt);
     bool writeOnSocket(QString);
-    bool insert(QString, Pos pos);
+    bool insert(QString, CharFormat charFormat, Pos pos);
     bool deleteChar(QString str, std::vector<Identifier> pos);
     bool connectTo(QString host);
     bool logIn(QString username, QString passsword);

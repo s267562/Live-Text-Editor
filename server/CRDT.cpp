@@ -15,11 +15,11 @@ CRDT::CRDT() {
 }
 
 
-Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
+Character CRDT::handleInsert(char val, CharFormat charFormat, Pos pos, QString siteId) {
     //increment version vector
     this->versionsVector[siteId]++;
 
-	const Character character = generateChar(val, pos, siteId);
+	const Character character = generateChar(val, charFormat, pos, siteId);
 	insertChar(character, pos);
     //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
@@ -48,12 +48,12 @@ Character CRDT::handleInsert(char val, Pos pos, QString siteId) {
 	return character;
 }
 
-const Character CRDT::generateChar(char val, Pos pos, QString siteId) {
+const Character CRDT::generateChar(char val, CharFormat charFormat, Pos pos, QString siteId) {
 	const std::vector<Identifier> posBefore = findPosBefore(pos);
 	const std::vector<Identifier> posAfter = findPosAfter(pos);
 	const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter, siteId);
 
-	Character character(val, this->versionsVector[siteId], siteId, newPos);
+	Character character(val, charFormat, this->versionsVector[siteId], siteId, newPos);
 
 	return character;
 }

@@ -302,6 +302,9 @@ bool Messanger::readFile(){
             }
             readSpace(socket);
 
+            //TODO read charFormat
+            CharFormat charFormat();
+
             //siteID
             int siteIdSize = readNumberFromSocket(socket);
             readSpace(socket);
@@ -328,7 +331,7 @@ bool Messanger::readFile(){
             }
             qDebug() << ""; // newLine
 
-            Character character(letter[0], 0, siteId, position);
+            Character character(letter[0], charFormat, 0, siteId, position);
             line.push_back(character);
         }
         file.push_back(line);
@@ -338,7 +341,7 @@ bool Messanger::readFile(){
     return true;
 }
 
-bool Messanger::insert(QString str, Pos pos){
+bool Messanger::insert(QString str, CharFormat charFormat, Pos pos){
     qDebug() << "Messanger.cpp - insert()     ---------- WRITE INSERT ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -347,6 +350,8 @@ bool Messanger::insert(QString str, Pos pos){
         QByteArray siteIdSize = convertionNumber(siteId.size());
         QByteArray posCh = convertionNumber(pos.getCh());
         QByteArray posLine = convertionNumber(pos.getLine());
+
+        // TODO add charFormat...
 
         message.append(" " + strSize + " " + str.toUtf8() + " " + siteIdSize + " " + siteId.toUtf8() + " " + posCh + " " + posLine);
         qDebug() << "                         " << message;
@@ -409,6 +414,9 @@ bool Messanger::readInsert(){
     }
     readSpace(socket);
 
+    // TODO read charFormat
+    CharFormat charFormat();
+
     //siteID
     int siteIdSize = readNumberFromSocket(socket);
     readSpace(socket);
@@ -434,7 +442,7 @@ bool Messanger::readInsert(){
     }
     qDebug() << ""; // newLine
 
-    Character character(letter[0], 0, siteId, position);
+    Character character(letter[0], charFormat, 0, siteId, position);
     Message message(character, socket->socketDescriptor(), INSERT);
 
     emit newMessage(message);
@@ -451,6 +459,9 @@ bool Messanger::readDelete(){
         return false;
     }
     readSpace(socket);
+
+    // charFormat is not important when delete char.
+    CharFormat charFormat;
 
     //siteID
     int siteIdSize = readNumberFromSocket(socket);
@@ -479,7 +490,7 @@ bool Messanger::readDelete(){
     }
     qDebug() << ""; // newLine
 
-    Character character(letter[0], 0, siteId, position);
+    Character character(letter[0], charFormat, 0, siteId, position);
     Message message(character, socket->socketDescriptor(), DELETE);
 
     emit newMessage(message);

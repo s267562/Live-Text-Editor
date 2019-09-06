@@ -148,9 +148,9 @@ void Controller::showEditor(){
     editor->show();
 }
 
-void Controller::localInsert(QString chars, Pos startPos) {
+void Controller::localInsert(QString chars, CharFormat charFormat, Pos startPos) {
     // send insert at the server. To insert it in the model we need the position computed by the server.
-    this->messanger->insert(chars, startPos);
+    this->messanger->insert(chars, charFormat, startPos);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
