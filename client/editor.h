@@ -24,7 +24,7 @@ public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-    void insertChar(char character, Pos pos);
+    void insertChar(char character, CharFormat charFormat, Pos pos);
     void deleteChar(Pos pos);
     void reset();
     void replaceText(const QString initialText);
@@ -63,6 +63,7 @@ private:
     void restoreCursor();
     void saveCursor();
 
+    CharFormat getSelectedCharFormat(QTextCursor cursor);
 };
 
 #endif //TEXTEDITOR_EDITOR_H
