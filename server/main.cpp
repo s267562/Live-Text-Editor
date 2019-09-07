@@ -17,7 +17,10 @@ int main(int argc, char *argv[]) {
 
 	// Make a server and starts it
 	Server server;
-	server.startServer(1234);
-
-	return a.exec();
+	if (server.startServer(1234)){
+		/* server is started */
+		return  a.exec();
+	}else{
+		return -1;
+	}
 }

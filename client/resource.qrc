@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/rec">
+        <file>img/share.png</file>
+        <file>img/logout.png</file>
+        <file>img/new-file.png</file>
+        <file>img/open-archive.png</file>
+        <file>img/pdf.png</file>
+        <file>img/avatar.png</file>
+    </qresource>
+</RCC>

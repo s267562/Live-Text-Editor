@@ -1,17 +1,18 @@
+cmake-build-debug/CMakeFiles
 
-texteditor/cmake-build-debug/CMakeFiles/
+cmake-build-debug/client
 
-texteditor/cmake-build-debug/texteditor_autogen/
+cmake-build-debug/cmake_install\.cmake
 
-texteditor/cmake-build-debug/cmake_install\.cmake
+cmake-build-debug/CMakeCache\.txt
 
-texteditor/cmake-build-debug/CMakeCache\.txt
+cmake-build-debug/Makefile
 
-texteditor/cmake-build-debug/Makefile
+cmake-build-debug/server
 
-texteditor/cmake-build-debug/
+cmake-build-debug/textEditor
 
-texteditor/\.idea/
+cmake-build-debug/textEditor\.cbp
 
 cmake-build-debug/
 

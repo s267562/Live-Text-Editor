@@ -8,20 +8,29 @@
 #include "Thread.h"
 #include "../Utils/Constants.h"
 #include "common/commonFunctions.h"
+#include "../DB/Database.h"
+
+class Thread;
 
 class Server: public QTcpServer{
     Q_OBJECT
 private:
-    std::map<std::string,std::shared_ptr<Thread>> threads;
+    std::map<QString,std::shared_ptr<Thread>> threads;
+    std::mutex mutexThread;
     std::map<qintptr, SocketState> socketsState;
+    std::map<qintptr, QString> usernames;
     QTcpSocket *socket;
+    Database DB;
 
 public:
     explicit Server(QObject *parent = nullptr);
-    void startServer(quint16 port);
+    bool startServer(quint16 port);
+    std::shared_ptr<Thread> getThread(QString fileName);
+    std::shared_ptr<Thread> addThread(QString fileName);
 
 private:
     bool logIn(QTcpSocket *soc);
+    bool sendFileNames(QTcpSocket *soc);
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
 

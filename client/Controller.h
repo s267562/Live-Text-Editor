@@ -6,23 +6,65 @@
 #define TEXTEDITOR_CONTROLLER_H
 
 #include "CRDT.h"
-#include "Editor.h"
+#include "editor.h"
+#include "User.h"
+#include "ui/login.h"
+#include "ui/connection.h"
+#include "ui/showFiles.h"
+#include "Networking/Messanger.h"
+#include "utils/InsertCharacter.h"
 #include <iostream>
 
 class Editor;
 
-class Controller {
+class Controller : public QMainWindow {
+    Q_OBJECT
 private:
+    /* model */
     CRDT *crdt;
+    User *user;
+    QString siteId;
+
+    /* view */
     Editor *editor;
-    std::string siteId;
+    Login *login;
+    Connection *connection;
+    Registration *registration;
+    ShowFiles *finder;
+    QWidget *now;
+
+    /* networking */
+    Messanger *messanger;
+
+public slots:
+    /* NETWORKING */
+    void errorConnection();
+
+    /* CONNECTION */
+    void connectClient(QString address);
+
+    /* LOGIN */
+    void showLogin();
+
+    /* REGISTRATION */
+    void showRegistration();
+
+    /* SHOW FILES */
+    void showFileFinder(QStringList);
+    void showFileFinderOtherView();
+    void requestForFile(QString filename);
+
+    /* EDITOR */
+    void showEditor();
+    void newMessage(Message message);
+    void openFile(std::vector<std::vector<Character>> initialStructure);
 
 public:
-    Controller(CRDT *crdt, Editor *editor);
-    void localInsert(std::vector<char> chars, Pos startPos);
+    Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
+    Controller();
+    void localInsert(QString chars, CharFormat charFormat, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
-    // TODO handleRemoteOperation -> remoteInsert, remoteDelete
-
+    void resetModel();
 };
 
 

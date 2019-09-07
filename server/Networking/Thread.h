@@ -1,42 +1,62 @@
 #ifndef THREAD_H
 #define THREAD_H
+
 #include <QThread>
 #include <QTcpSocket>
 #include <queue>
+#include <QtCore/QTimer>
 #include "../Utils/Constants.h"
 #include "../../client/utils/Identifier.h"
 #include "../../client/utils/Character.h"
 #include "common/commonFunctions.h"
 #include "message/Message.h"
+#include "../../client/utils/Pos.h"
+#include "../CRDT.h"
+#include "Server.h"
 
 class Identifier;
 class Character;
+class Server;
 
-class Thread : public QThread{
+class Thread : public QThread {
 Q_OBJECT
 private:
-    std::map<qintptr, std::shared_ptr<QTcpSocket>> sockets;  /* TO-DO: sincronizzazione con il thread principale */
+    std::map<qintptr, QTcpSocket*> sockets;  /* TO-DO: sincronizzazione con il thread principale */
+    std::map<qintptr, QString> usernames;
+    std::mutex mutexSockets;
     std::queue<Message> messagesQueue;
+    CRDT *crdt;
+    QString filename;
+    QTimer *saveTimer;
+    Server *server;
+    int saveInterval = 2 * 60 * 1000; // 2 min (in ms) // TODO decidere intervallo
+    bool needToSaveFile = false;
+    bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
 
 public:
-    explicit Thread(QObject *parent = nullptr);
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);
     void run();
-    void addSocket(qintptr socketDescriptor);
+    void addSocket(QTcpSocket *soc, QString username);
+    void sendListOfUsers(QTcpSocket *soc);
 private:
     bool readInsert(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
-    void insert(QString str, QString siteId, std::vector<int> pos);
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
-    void deleteChar(QString str, QString siteId, std::vector<int> pos);
+    void insert(Character character);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
+    void deleteChar(QTcpSocket *soc, Character character);
+    void sendNewUser(QTcpSocket *soc);
+    void sendRemoveUser(qintptr socketDescriptor, QString username);
+    void sendFile(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
     void newMessage();
 
 public slots:
-    void readyRead(QTcpSocket *socket);
-    void disconnected(QTcpSocket *socket, qintptr socketDescriptor);
+    void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);
+    void disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);
+    void saveCRDTToFile();
 };
 
 #endif // THREAD_H

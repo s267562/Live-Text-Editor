@@ -6,17 +6,23 @@
 #define TEXTEDITOR_IDENTIFIER_H
 
 #include <string>
+#include <QtCore/QString>
+#include <QtCore/QJsonObject>
 
 class Identifier {
 public:
-    Identifier(int digit, const std::string &siteId);
+    Identifier(int digit, const QString &siteId);
+    Identifier();
 
     int getDigit() const;
-    const std::string &getSiteId() const;
+    const QString &getSiteId() const;
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
+    int compareTo(Identifier otherIdentifier);
 
 private:
     int digit;
-    std::string siteId;
+    QString siteId;
 };
 
 

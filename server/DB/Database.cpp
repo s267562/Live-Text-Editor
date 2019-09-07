@@ -21,11 +21,12 @@ Database::Database() {
 	db.setDatabaseName("database.sqlite");
 
 	// DB opening
-	if (!db.open())
+	if (!db.open()) {
 		qDebug() << "Error opening DB";
+		return;
+	}
 
 	// Check DB was created empty
-
 	QString checkEmptyQuery = "SELECT * FROM sqlite_master WHERE name = 'users' OR name = 'files'";
 
 	// CREATE TABLE query string
@@ -45,7 +46,6 @@ Database::Database() {
 			"write INT,"
 			"PRIMARY KEY (fileID, username));";
 
-
 	// Query executions
 	QSqlQuery qry;
 	if (qry.exec(checkEmptyQuery)) { // check db is empty
@@ -55,13 +55,10 @@ Database::Database() {
 			qDebug() << "DB need table creation";
 			// Query execution
 			if (!qry.exec(createTableQuery))
-
 				qDebug() << "Error creating table users";
 			if (!qry.exec(createTableQueryFiles))
 				qDebug() << "Error creating table files\n" << qry.lastError();
-
 		}
-
 	}
 	db.close();
 }
@@ -110,11 +107,14 @@ bool Database::registerUser(QString username, QString password) {
 	bool result = false; // result of registration
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	db.open();
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QString querySelect = "SELECT * FROM users WHERE username='" + hashedUsername + "'";
-QSqlQuery checkUsernameQuery;
+	QSqlQuery checkUsernameQuery;
 
 	if (checkUsernameQuery.exec(querySelect)) {
 		if (checkUsernameQuery.isActive()) {
@@ -130,7 +130,6 @@ QSqlQuery checkUsernameQuery;
 							"password,"
 							"salt)"
 							"VALUES (?,?,?);");
-
 
 				qry.addBindValue(hashedUsername);
 				qry.addBindValue(hashedPassword);
@@ -157,14 +156,16 @@ bool Database::authenticateUser(QString username, QString password) {
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	db.open();
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QSqlQuery authenticationQuery;
 	authenticationQuery.prepare("SELECT username, password, salt FROM users WHERE username=:username");
 
 	authenticationQuery.bindValue(":username", hashedUsername);
-
 
 	if (authenticationQuery.exec()) {
 		if (authenticationQuery.isActive()) {
@@ -194,9 +195,11 @@ bool Database::changeAvatar(QString username, const QByteArray &image) {
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QSqlQuery query;
 	query.prepare("UPDATE users SET avatar=:avatar WHERE username=:username");
@@ -207,7 +210,7 @@ bool Database::changeAvatar(QString username, const QByteArray &image) {
 		qDebug() << "Error inserting image into table:\n" << query.lastError();
 	} else
 		result = true;
-	//}
+
 	db.close();
 	return result;
 }
@@ -215,14 +218,16 @@ bool Database::changeAvatar(QString username, const QByteArray &image) {
 /**
  * Get user's avatar
  * @param username : usrname of the user requested avatar
- * @return : QbyteArray of the avatar, may be NULL if user doesn't have an avatar yet
+ * @return : QbyteArray of the avatar, or "NULL" string if user doesn't have an avatar yet. May be nullptr in case of error
  */
 QByteArray Database::getAvatar(QString username) {
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return nullptr;
+	}
 
 	QSqlQuery query;
 	query.prepare("SELECT avatar FROM users WHERE username=:username");
@@ -232,6 +237,8 @@ QByteArray Database::getAvatar(QString username) {
 		qDebug() << "Error getting image from table:\n" << query.lastError();
 	query.first();
 	QByteArray avatar = query.value(0).toByteArray();
+	if(avatar.isNull())
+		avatar.append("NULL");
 	db.close();
 	return avatar;
 }
@@ -246,16 +253,21 @@ bool Database::createFile(QString fileID, QString userOwner) {
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(userOwner));
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QSqlQuery queryCheckUsername;
 	queryCheckUsername.prepare("SELECT * FROM users WHERE username=:username");
 	queryCheckUsername.bindValue(":username", hashedUsername);
 
-	if (!queryCheckUsername.exec())
+	if (!queryCheckUsername.exec()){
 		qDebug() << "Error getting username from table:\n" << queryCheckUsername.lastError();
+		db.close();
+		return false;
+	}
 
 	// Username is valid, register file id
 	if (queryCheckUsername.first()) {
@@ -292,9 +304,11 @@ bool Database::isOwner(QString fileID, QString username) {
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QSqlQuery queryCheckOwner;
 	queryCheckOwner.prepare("SELECT * FROM files WHERE fileID=:fileID AND username=:username AND owner=:owner");
@@ -302,8 +316,11 @@ bool Database::isOwner(QString fileID, QString username) {
 	queryCheckOwner.bindValue(":username", hashedUsername);
 	queryCheckOwner.bindValue(":owner", true);
 
-	if (!queryCheckOwner.exec())
+	if (!queryCheckOwner.exec()) {
 		qDebug() << "Error getting file owner from table:\n" << queryCheckOwner.lastError();
+		db.close();
+		return false;
+	}
 
 	// User is the owner
 	if (queryCheckOwner.first()) {
@@ -324,17 +341,22 @@ bool Database::addPermission(QString fileID, QString username, Database::Permiss
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
 
 	QSqlQuery queryCheckUser;
 	queryCheckUser.prepare("SELECT owner, read ,write FROM files WHERE fileID=:fileID AND username=:username");
 	queryCheckUser.bindValue(":fileID", fileID);
 	queryCheckUser.bindValue(":username", hashedUsername);
 
-	if (!queryCheckUser.exec())
+	if (!queryCheckUser.exec()){
 		qDebug() << "Error getting file permission for the user from table:\n" << queryCheckUser.lastError();
+		db.close();
+		return false;
+	}
 
 	// User already have some permissions
 	if (queryCheckUser.first()) {
@@ -384,34 +406,49 @@ bool Database::addPermission(QString fileID, QString username, Database::Permiss
 			qDebug() << "Error setting new file permission for the user:\n" << grantPermissions.lastError();
 		else
 			result = true;
-
 	}
 	db.close();
 	return result;
 }
 
+/**
+ * Retrieve permissions for a given user and a given filename
+ * @param fileID : filename
+ * @param username : user
+ * @return : List of permissions: --> [R,W] / [R] / [W] / empty  ------- [R,R,R] is returned in case of error
+ */
 QList<Database::Permission> Database::getPermissions(QString fileID, QString username) {
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 	QList<Database::Permission> permissions;
 
-	// Connect to db
-	if (!db.open())
-		qDebug() << "Cannot open DB";
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		permissions.append(Database::Permission::READ);
+		permissions.append(Database::Permission::READ);
+		permissions.append(Database::Permission::READ);
+		return permissions;
+	}
 
 	QSqlQuery getPermissions;
 	getPermissions.prepare("SELECT owner, read, write FROM files WHERE fileID=:fileID AND username=:username");
 	getPermissions.bindValue(":fileID", fileID);
 	getPermissions.bindValue(":username", hashedUsername);
 
-	if (!getPermissions.exec())
-		qDebug() << "Error getting file permission for the user:\n" << getPermissions.lastError();
+	if (!getPermissions.exec()){
+		qDebug() << "Error getting file permission for the user: " << username << "\n" << getPermissions.lastError();
+		db.close();
+		permissions.append(Database::Permission::READ);
+		permissions.append(Database::Permission::READ);
+		permissions.append(Database::Permission::READ);
+		return permissions;
+	}
 
 	if (getPermissions.first()) {
-		if (getPermissions.value(0) == true){
+		if (getPermissions.value(0) == true) {
 			permissions.append(Database::Permission::READ);
 			permissions.append(Database::Permission::WRITE);
-		}
-		else{
+		} else {
 			if (getPermissions.value(1) == true)
 				permissions.append(Database::Permission::READ);
 			if (getPermissions.value(2) == true)
@@ -420,4 +457,38 @@ QList<Database::Permission> Database::getPermissions(QString fileID, QString use
 	}
 	db.close();
 	return permissions;
+}
+
+/**
+ * Retrieve all filenames owned by the given user
+ * @param username : username to get files owned
+ * @return : list of filenames (QString) --------- return list with single object "DBERROR" in case of error
+ */
+QList<QString> Database::getFiles(QString username) {
+	QString hashedUsername = hashUsername(username);
+	QList<QString> userFiles;
+
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		userFiles.append("DBERROR");
+		return userFiles;
+	}
+
+	QSqlQuery getUserFiles;
+	getUserFiles.prepare("SELECT fileID FROM files WHERE username=:username AND owner=:owner");
+	getUserFiles.bindValue(":username", hashedUsername);
+	getUserFiles.bindValue(":owner", true);
+
+	if (!getUserFiles.exec()) {
+		qDebug() << "Error getting files for the user: " << username << "\n" << getUserFiles.lastError();
+		db.close();
+		userFiles.append("DBERROR");
+		return userFiles;
+	}
+
+	while(getUserFiles.next()){
+		userFiles.push_back(getUserFiles.value(0).toString());
+	}
+	return userFiles;
 }

@@ -7,21 +7,34 @@
 
 #include <string>
 #include <vector>
+#include <QtCore/QString>
 #include "Identifier.h"
+#include "CharFormat.h"
+#include <QJsonDocument>
 
 class Character {
 public:
-    Character(char value, int counter, const std::string &siteId, const std::vector<Identifier> &position);
-
+    Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
+	Character();
     char getValue() const;
+    const CharFormat &getCharFormat() const;
+    void setCharFormat(const CharFormat &charFormat);
     int getCounter() const;
-    const std::string &getSiteId() const;
+    const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
+	void read(const QJsonObject &json);
+	void write( QJsonObject &json) const;
+    int compareTo(Character otherCharacter);
+    QByteArray toQByteArrayInsertVersion();
+    static Character toCharacterInsertVersion(QJsonDocument jsonDocument);
+	QByteArray toQByteArrayDeleteVersion();
+	static Character toCharacterDeleteVersion(QJsonDocument jsonDocument);
 
 private:
     char value;
+    CharFormat charFormat;
     int counter;
-    std::string siteId;
+    QString siteId;
     std::vector<Identifier> position;
 };
 

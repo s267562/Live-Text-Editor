@@ -10,7 +10,8 @@
 
 enum TypeMessage {
     INSERT,
-    DELETE};
+    DELETE,
+    RESET};
 
 class Message {
     Character character;
