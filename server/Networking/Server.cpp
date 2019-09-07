@@ -116,8 +116,10 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	//******************************** test in attesa della registration funzionante lato client **************
-	if(QString(username)=="test" && QString(password)=="test")
+	if((QString(username)=="test1" && QString(password)=="test1") || (QString(username)=="test2" && QString(password)=="test2")) {
+		usernames[soc->socketDescriptor()] = username;
 		return true;
+	}
 	//*********************************************************************************************************
 
 	// Check if user is already logged in

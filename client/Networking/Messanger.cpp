@@ -111,9 +111,9 @@ bool Messanger::despatchMessage(){
 bool Messanger::logIn(QString username, QString password) {
     qDebug() << "Messanger.cpp - logIn()     ---------- LOGIN ----------";
     //TODO: Connessione al server, verifica di credenziali...
-    if( username=="test" && password=="test" ){                 //only for testing...
+    /*if( username=="test" && password=="test" ){                 //only for testing...
         return true;
-    }
+    }*/
 
     if (!clientIsLogged) {
         QByteArray message(LOGIN_MESSAGE);
