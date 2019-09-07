@@ -379,13 +379,9 @@ bool Messanger::deleteChar(Character character){
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        messages.push(message);
-        if (reciveOkMessage){
-            reciveOkMessage = false;
-            if (!writeMessage(socket, message)){
-                return false;
-            }
-            messages.pop();
+
+        if (!writeMessage(socket, message)){
+            return false;
         }
     }
     return true;
