@@ -208,7 +208,7 @@ void Thread::deleteChar(QTcpSocket *soc, Character character){
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
-        if(socket.second != soc) {
+        if(socket.first != soc->socketDescriptor()) {
             writeMessage(socket.second, message);
         }
     }
