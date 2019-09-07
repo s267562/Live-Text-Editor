@@ -79,7 +79,7 @@ void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
 }
 
 void Editor::setController(Controller *controller) {
-	Editor::controller = controller;
+    Editor::controller = controller;
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
@@ -90,29 +90,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
-
-        if(charsRemoved) {
-            // get startPos
-            int line, ch;
-            textCursor.setPosition(position);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos startPos{ch, line}; // Pos(int ch, int line);
-
-            // get endPos
-            undo();
-            textCursor.setPosition(position + charsRemoved);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos endPos{ch, line}; // Pos(int ch, int line);
-            redo();
-
-            //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-            //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
-            //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
-            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
-            this->controller->localDelete(startPos, endPos);
-        }
 
         if(charsAdded) {
             QTextCursor cursor = textEdit->textCursor();
@@ -133,16 +110,40 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             }
         }
 
+        if(charsRemoved) {
+            // get startPos
+            int line, ch;
+            textCursor.setPosition(position);
+            line = textCursor.blockNumber();
+            ch = textCursor.positionInBlock();
+            Pos startPos{ch, line}; // Pos(int ch, int line);
+
+            // get endPos
+            undo();
+            textCursor.setPosition(position + charsRemoved);
+            line = textCursor.blockNumber();
+            ch = textCursor.positionInBlock();
+            Pos endPos{ch, line}; // Pos(int ch, int line);
+            redo();
+
+            //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+            //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
+            //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
+            //qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
+            this->controller->localDelete(startPos, endPos);
+        }
+
+        restoreCursor();
     } else {
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
-        restoreCursor();
         if(this->startSelection != this->endSelection) {
             // text was selected... restore the selction
             restoreCursorSelection();
+        } else {
+            restoreCursor();
         }
     }
-    restoreCursor();
 }
 
 CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
@@ -188,10 +189,10 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    textCursor.insertText(QString::fromLatin1((char*)&character,1));
-    textCursor.setPosition(insertPos);
-    textCursor.setPosition(insertPos + 1, QTextCursor::KeepAnchor);
-    textCursor.mergeCharFormat(format);
+    textCursor.insertText(QString{character});
+    textCursor.select(QTextCursor::BlockUnderCursor);
+    //textCursor.mergeCharFormat(format); // TODO BUG HERE! if this is done, from next time a wrong signal is emitted when editor get focus.
+    textEdit->mergeCurrentCharFormat(format);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -219,58 +220,58 @@ void Editor::deleteChar(Pos pos) {
 }
 
 void Editor::on_actionNew_File_triggered() {
-	QMessageBox::information(this, "File", "File!");
+    QMessageBox::information(this, "File", "File!");
 }
 
 void Editor::on_actionShare_file_triggered() {
-	QMessageBox::information(this, "Share", "Share!");
+    QMessageBox::information(this, "Share", "Share!");
 }
 
 void Editor::on_actionOpen_triggered() {
-	QMessageBox::information(this, "Open", "Open!");
-	emit showFinder();
+    QMessageBox::information(this, "Open", "Open!");
+    emit showFinder();
 }
 
 void Editor::on_actionSave_as_PDF_triggered() {
-	QFileDialog fileDialog(this, tr("Export PDF"));
-	fileDialog.setAcceptMode(QFileDialog::AcceptSave);
-	fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
-	fileDialog.setDefaultSuffix("pdf");
-	if (fileDialog.exec() != QDialog::Accepted)
-		return;
-	QString fileName = fileDialog.selectedFiles().first();
-	QPrinter printer(QPrinter::HighResolution);
-	printer.setOutputFormat(QPrinter::PdfFormat);
-	printer.setOutputFileName(fileName);
-	textEdit->document()->print(&printer);
+    QFileDialog fileDialog(this, tr("Export PDF"));
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
+    fileDialog.setDefaultSuffix("pdf");
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    QString fileName = fileDialog.selectedFiles().first();
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fileName);
+    textEdit->document()->print(&printer);
 //	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 
-	QMessageBox::information(this, "PDF", "File Esportato");
+    QMessageBox::information(this, "PDF", "File Esportato");
 }
 
 void Editor::on_actionLogout_triggered() {
-	QMessageBox::information(this, "Logout", "Logout!");
-	emit logout();
+    QMessageBox::information(this, "Logout", "Logout!");
+    emit logout();
 }
 
 Editor::~Editor() {
-	delete ui;
+    delete ui;
 }
 
 void Editor::undo() {
-	disconnect(textDocument, &QTextDocument::contentsChange,
-			   this, &Editor::onTextChanged);
-	textEdit->undo();
-	connect(textDocument, &QTextDocument::contentsChange,
-			this, &Editor::onTextChanged);
+    disconnect(textDocument, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+    textEdit->undo();
+    connect(textDocument, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 }
 
 void Editor::redo() {
-	disconnect(textDocument, &QTextDocument::contentsChange,
-			   this, &Editor::onTextChanged);
-	textEdit->redo();
-	connect(textDocument, &QTextDocument::contentsChange,
-			this, &Editor::onTextChanged);
+    disconnect(textDocument, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+    textEdit->redo();
+    connect(textDocument, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 }
 
 bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
@@ -283,7 +284,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     redo();
     if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
-        //qDebug() << "INVALID SIGNAL 1";
+        //qDebug() << "WRONG SIGNAL 1";
         validSignal = false;
     }
 
@@ -310,7 +311,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     }
     if(validSignal && textSelected && charsAdded == charsRemoved && currentSize != 0) {
         // this solve the bug when we select text (in multilines), when the textedit has not the fucus, and we delete them.
-        //qDebug() << "WRONG SIGNAL 5";
+        //qDebug() << "WRONG SIGNAL 4";
         validSignal = false;
     }
 
@@ -318,21 +319,21 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 }
 
 void Editor::resizeEvent(QResizeEvent *event) {
-	ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18);
+    ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18);
 }
 
 void Editor::removeUser(QString user) {
-	users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
-		return s == user;
-	}));
+    users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
+        return s == user;
+    }));
 
-	ui->userListWidget->clear();
-	ui->userListWidget->addItems(users);
+    ui->userListWidget->clear();
+    ui->userListWidget->addItems(users);
 }
 
 void Editor::setUsers(QStringList users) {
-	this->users = users;
-	ui->userListWidget->addItems(users);
+    this->users = users;
+    ui->userListWidget->addItems(users);
 }
 
 void Editor::saveCursor() {
