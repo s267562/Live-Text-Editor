@@ -129,7 +129,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
             //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
             //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
-            //qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
+            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
             this->controller->localDelete(startPos, endPos);
         }
 

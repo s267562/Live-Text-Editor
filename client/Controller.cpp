@@ -178,13 +178,11 @@ void Controller::newMessage(Message message) {
             this->editor->insertChar(character.getValue(), character.getCharFormat(), pos);
         }
     } else if(message.getType() == DELETE) {
-        if(!(message.getCharacter().getSiteId() == this->crdt->getSiteId())) {
-            Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
+        Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
 
-            if(pos) {
-                // delete from the editor.
-                this->editor->deleteChar(pos);
-            }
+        if(pos) {
+            // delete from the editor.
+            this->editor->deleteChar(pos);
         }
     }
 }

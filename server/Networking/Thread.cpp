@@ -165,7 +165,7 @@ bool Thread::readDelete(QTcpSocket *soc){
     crdt->handleDelete(character);
 
     // broadcast
-    this->deleteChar(character);
+    this->deleteChar(soc, character);
 
     needToSaveFile = true;
     if (!timerStarted) {
@@ -193,7 +193,7 @@ void Thread::insert(Character character){
     }
 }
 
-void Thread::deleteChar(Character character){
+void Thread::deleteChar(QTcpSocket *soc, Character character){
     qDebug() << "Thread.cpp - insert()     ---------- WRITE DELETE ----------";
 
     QByteArray message(DELETE_MESSAGE);
@@ -207,7 +207,10 @@ void Thread::deleteChar(Character character){
 
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        writeMessage(socket.second, message);
+        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+        if(socket.second != soc) {
+            writeMessage(socket.second, message);
+        }
     }
 }
 

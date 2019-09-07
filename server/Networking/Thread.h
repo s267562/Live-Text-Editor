@@ -44,7 +44,7 @@ private:
     void insert(QString str, QString siteId, std::vector<Identifier> pos);
     void insert(Character character);
     void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
-    void deleteChar(Character character);
+    void deleteChar(QTcpSocket *soc, Character character);
     void sendNewUser(QTcpSocket *soc);
     void sendRemoveUser(qintptr socketDescriptor, QString username);
     void sendFile(QTcpSocket *soc);
