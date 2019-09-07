@@ -95,3 +95,44 @@ void Login::loginDone(){
     emit loginSuccessful();
 }
  */
+
+void Login::resizeEvent(QResizeEvent *event) {
+    int centralWidgetX = 0;
+    int centralWidgetY = 0;
+    int widgetX = 0;
+    int widgetY = 0;
+
+
+    if (width() > ui->centralWidget_2->width()){
+        centralWidgetX = width()/2 - ui->centralWidget_2->width()/2;
+        widgetX = ui->centralWidget_2->width()/2 - ui->widget->width()/2;
+    }else{
+        centralWidgetX = 0;
+        widgetX = width()/2 - ui->widget->width()/2;
+    }
+
+    /*if (height() > ui->centralWidget_2->height()){
+
+    }*/
+
+    /*if (width()/2 - ui->centralWidget_2->width()/2 > 0){
+        centralWidgetX = width()/2 - ui->centralWidget_2->width()/2;
+    }else{
+        //widgetX = ui->centralWidget_2->width()/2 - ui->widget->width()/2;
+    }*/
+
+    ui->centralWidget_2->setGeometry(centralWidgetX, 0, ui->centralWidget_2->width(), height());
+
+    if (height()/2 - ui->widget->height() > 0){
+        widgetY = height()/2 - ui->widget->height();
+
+    }
+
+    /*if (ui->centralWidget_2->width()/2 - ui->widget->width()/2 > 0 && width()/2 - ui->centralWidget_2->width()/2 > 0){
+        widgetX = ui->centralWidget_2->width()/2 - ui->widget->width()/2;
+    }*/
+
+    if (widgetX != 0 || widgetY != 0)
+        ui->widget->setGeometry(widgetX, widgetY, ui->widget->width(), ui->widget->height());
+
+}

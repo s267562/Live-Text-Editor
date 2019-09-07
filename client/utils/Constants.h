@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define UI 0
+#define UI 1
 #define REGISTRATION_TEST 0
 
 #define OK_MESSAGE "OKY\r\n"
