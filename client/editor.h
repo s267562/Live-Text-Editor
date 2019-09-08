@@ -31,7 +31,6 @@ public:
     ~Editor();
 
 public slots:
-    void onTextChanged(int position, int charsRemoved, int charsAdded);
     void on_actionNew_File_triggered();
     void on_actionShare_file_triggered();
     void on_actionOpen_triggered();
@@ -45,6 +44,8 @@ signals:
     void showFinder();
 
 private slots:
+    void onTextChanged(int position, int charsRemoved, int charsAdded);
+    void onCursorPositionChanged();
     void textBold();
     void textUnderline();
     void textItalic();
@@ -57,11 +58,13 @@ private:
     int cursorPos;
     int startSelection;
     int endSelection;
+    bool isRedoAvailable;
     QString siteId;
     Controller *controller;
     QStringList users;
 
-    void setTextFormat(CharFormat charFormat);
+    void setFormat(CharFormat charFormat);
+    void setTextCharFormat(QTextCharFormat textCharFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
