@@ -65,6 +65,7 @@ public:
     void localInsert(QString chars, CharFormat charFormat, Pos startPos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
+    User* getUser();
 };
 
 

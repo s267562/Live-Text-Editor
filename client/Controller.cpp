@@ -24,6 +24,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
 Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(crdt), editor(editor), messanger(messanger) {
     editor->setController(this);
+    user = nullptr;
 
     // Controller
     connect(messanger, &Messanger::newMessage,
@@ -190,4 +191,12 @@ void Controller::newMessage(Message message) {
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure) {
     crdt->setStructure(initialStructure);
     this->editor->replaceText(this->crdt->toText());
+}
+
+User* Controller::getUser(){
+    if (user == nullptr){
+        user = new User(login->getUsername());
+        user->setIsLogged(true);
+    }
+    return user;
 }

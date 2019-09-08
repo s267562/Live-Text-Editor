@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QTextEdit>
 #include <iostream>
+#include <QMovie>
 
 class Controller;
 
@@ -58,6 +59,8 @@ private:
     QString siteId;
     Controller *controller;
     QStringList users;
+    QMovie *loadingMovie;
+    bool loadingFlag = true;
 
     void undo();
     void redo();

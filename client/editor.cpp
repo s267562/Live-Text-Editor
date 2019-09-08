@@ -26,12 +26,24 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-    QPixmap pix;
-    pix.load("/Users/andrea/Documents/sfondi/preview.jpeg");
+
     // TODO: from QByteArray to QPixMap
 
-    ui->actionAvatar->setIcon(QIcon(pix));
-    ui->actionAvatar->setIconVisibleInMenu(true);
+    #if UI
+        QPixmap pix;
+        pix.load(":/icons/user_icon.jpg");
+        int w=ui->avatar->width();
+        int h=ui->avatar->height();
+        ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+        ui->username->setText(controller->getUser()->getUsername());
+        loadingMovie = new QMovie("/Users/andrea/Downloads/103 (7).gif");
+        ui->loading->setMovie(loadingMovie);
+        loadingMovie->start();
+        ui->editAccount->close();
+        ui->loading->show();
+
+    #endif
+
 
     this->textCursor = textEdit->textCursor();
 
@@ -319,7 +331,9 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 }
 
 void Editor::resizeEvent(QResizeEvent *event) {
-    ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18);
+    ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18 -100);
+
+    ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 -100, ui->userWidget->width(), ui->userWidget->height());
 }
 
 void Editor::removeUser(QString user) {
@@ -332,6 +346,21 @@ void Editor::removeUser(QString user) {
 }
 
 void Editor::setUsers(QStringList users) {
+    #if UI
+        if (loadingFlag){
+            loadingMovie->stop();
+            ui->loading->close();
+            loadingFlag = false;
+            ui->editAccount->show();
+        }
+    #else
+    QPixmap pix;
+    pix.load(":/icons/user_icon.jpg");
+    int w=ui->avatar->width();
+    int h=ui->avatar->height();
+    ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->username->setText("Debug");
+#endif
     this->users = users;
     ui->userListWidget->addItems(users);
 }
