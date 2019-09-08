@@ -17,7 +17,7 @@ class CRDT {
 public:
     CRDT();
 
-    Character handleInsert(char val, CharFormat charFormat, Pos pos, QString siteId);
+    Pos handleInsert(Character character);
     void handleDelete(const Character &character);
 	bool loadCRDT(QString filename);
 	bool saveCRDT(QString filename);
@@ -28,13 +28,12 @@ private:
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
 
+
     // insert
-    const Character generateChar(char val, CharFormat charFormat, Pos pos, QString siteId);
-    const std::vector<Identifier> findPosBefore(Pos pos);
-    const std::vector<Identifier> findPosAfter(Pos pos);
-    std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos = {}, int level = 0);
-    int generateIdBetween(int min, int max);
+    Pos findInsertPosition(Character character);
+    Pos findEndPosition(Character lastChar, std::vector<Character> lastLine, int totalLines);
     void insertChar(Character character, Pos pos);
+
 
     // delete
     Pos findPosition(Character character);

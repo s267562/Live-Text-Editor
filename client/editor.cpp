@@ -35,11 +35,17 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
     this->textCursor = textEdit->textCursor();
 
+    isRedoAvailable = false;
+
     setupTextActions();
 
     // Controller
     connect(textDocument, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
+
+    // cursor position (for change style)
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &Editor::onCursorPositionChanged);
 
     //connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
     /*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
@@ -62,6 +68,30 @@ void Editor::setupTextActions() {
     actionTextBold->setFont(bold);
     tb->addAction(actionTextBold);
     actionTextBold->setCheckable(true);
+
+    // italic
+    const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(":/images/win/textitalic.png"));
+    actionTextItalic = menu->addAction(italicIcon, tr("&Italic"), this, &Editor::textItalic);
+    actionTextItalic->setPriority(QAction::LowPriority);
+    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    QFont italic;
+    italic.setItalic(true);
+    actionTextItalic->setFont(italic);
+    tb->addAction(actionTextItalic);
+    actionTextItalic->setCheckable(true);
+
+    // underline
+    const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(":/images/win/textunder.png"));
+    actionTextUnderline = menu->addAction(underlineIcon, tr("&Underline"), this, &Editor::textUnderline);
+    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
+    actionTextUnderline->setPriority(QAction::LowPriority);
+    QFont underline;
+    underline.setUnderline(true);
+    actionTextUnderline->setFont(underline);
+    tb->addAction(actionTextUnderline);
+    actionTextUnderline->setCheckable(true);
+
+    menu->addSeparator();
 }
 
 void Editor::textBold() {
@@ -70,10 +100,20 @@ void Editor::textBold() {
     mergeFormatOnWordOrSelection(fmt);
 }
 
+void Editor::textUnderline() {
+    QTextCharFormat fmt;
+    fmt.setFontUnderline(actionTextUnderline->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::textItalic() {
+    QTextCharFormat fmt;
+    fmt.setFontItalic(actionTextItalic->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
-        cursor.select(QTextCursor::WordUnderCursor);
     cursor.mergeCharFormat(format);
     textEdit->mergeCurrentCharFormat(format);
 }
@@ -83,6 +123,9 @@ void Editor::setController(Controller *controller) {
 }
 
 void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &Editor::onCursorPositionChanged);
+
     qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded << " chars removed: " << charsRemoved;
 
     saveCursor();
@@ -91,49 +134,85 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
-        if(charsAdded) {
-            QTextCursor cursor = textEdit->textCursor();
-            QString chars = textEdit->toPlainText().mid(position, charsAdded);
+        // it is possible that user change only the style or the user re-paste the same letters... check it
+        QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+        undo();
+        QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
+        redo();
+        if(charsAdded == charsRemoved && textAdded == textRemoved) {
+            qDebug() << "text doesn't change (maybe style changed)";
+            // TODO style changed
+        } else {
+            if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
+                // correction when paste something in first position.
+                charsAdded--;
+                charsRemoved--;
+            }
 
-            for(int i=0; i<charsAdded; i++) {
-                // for each char added
-                cursor.setPosition(position + i);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-                // select char
-                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+            if(charsRemoved) {
+                if(isRedoAvailable) {
+                    // chars removed due to undo operation.
 
-                CharFormat charFormat = getSelectedCharFormat(cursor);
+                    // get endPos
+                    qDebug() << "position" << position;
+                    textCursor.setPosition(position);
+                    int line = textCursor.blockNumber();
+                    int ch = textCursor.positionInBlock();
+                    Pos startPos{ch, line}; // Pos(int ch, int line);
 
-                this->controller->localInsert(chars.at(i), charFormat, startPos);
+                    // get startPos
+                    redo();
+                    textCursor.setPosition(position + charsRemoved - 1);
+                    line = textCursor.blockNumber();
+                    ch = textCursor.positionInBlock();
+                    Pos endPos{ch, line}; // Pos(int ch, int line);
+                    undo();
+
+                    //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+                    this->controller->localDelete(startPos, endPos);
+                } else {
+                    // get startPos
+                    int line, ch;
+                    textCursor.setPosition(position);
+                    line = textCursor.blockNumber();
+                    ch = textCursor.positionInBlock();
+                    Pos startPos{ch, line}; // Pos(int ch, int line);
+
+                    // get endPos
+                    undo();
+                    textCursor.setPosition(position + charsRemoved);
+                    line = textCursor.blockNumber();
+                    ch = textCursor.positionInBlock();
+                    Pos endPos{ch, line}; // Pos(int ch, int line);
+                    redo();
+
+                    //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+                    this->controller->localDelete(startPos, endPos);
+                }
+            }
+
+            if(charsAdded) {
+                QTextCursor cursor = textEdit->textCursor();
+                QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+                for(int i=0; i<charsAdded; i++) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    CharFormat charFormat = getSelectedCharFormat(cursor);
+
+                    this->controller->localInsert(chars.at(i), charFormat, startPos);
+                }
             }
         }
 
-        if(charsRemoved) {
-            // get startPos
-            int line, ch;
-            textCursor.setPosition(position);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos startPos{ch, line}; // Pos(int ch, int line);
-
-            // get endPos
-            undo();
-            textCursor.setPosition(position + charsRemoved);
-            line = textCursor.blockNumber();
-            ch = textCursor.positionInBlock();
-            Pos endPos{ch, line}; // Pos(int ch, int line);
-            redo();
-
-            //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-            //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
-            //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
-            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
-            this->controller->localDelete(startPos, endPos);
-        }
-
         restoreCursor();
+        onCursorPositionChanged();
     } else {
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
@@ -144,6 +223,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             restoreCursor();
         }
     }
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &Editor::onCursorPositionChanged);
 }
 
 CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
@@ -152,10 +233,10 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
             underline = cursor.charFormat().fontUnderline();
     QColor color{ cursor.charFormat().foreground().color() };
 
-    qDebug() << "italic:" << italic;
-    qDebug() << "bold:" << bold;
-    qDebug() << "underline:" << underline;
-    qDebug() << "color:" << color.name();
+    //qDebug() << "italic:" << italic;
+    //qDebug() << "bold:" << bold;
+    //qDebug() << "underline:" << underline;
+    //qDebug() << "color:" << color.name();
 
     CharFormat charFormat{
             bold,
@@ -163,8 +244,6 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
             underline,
             color
     };
-
-    qDebug() << " ";
 
     return charFormat;
 }
@@ -176,23 +255,11 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
-    int insertPos = textCursor.position();
-
-    // setting char format
-    QTextCharFormat format;
-    format.setFontWeight((charFormat.isBold() ? QFont::Bold : QFont::Normal));
-    format.setFontItalic(charFormat.isItalic());
-    format.setFontItalic(charFormat.isItalic());
-    format.setForeground(charFormat.getColor());
-
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
-    textCursor.select(QTextCursor::BlockUnderCursor);
-    //textCursor.mergeCharFormat(format); // TODO BUG HERE! if this is done, from next time a wrong signal is emitted when editor get focus.
-    textEdit->mergeCurrentCharFormat(format);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -217,6 +284,49 @@ void Editor::deleteChar(Pos pos) {
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+}
+
+void Editor::setFormat(CharFormat charFormat) {
+    QTextCharFormat fmt;
+    if(charFormat.isBold()) {
+        actionTextBold->setChecked(true);
+        fmt.setFontWeight(QFont::Bold);
+    } else {
+        actionTextBold->setChecked(false);
+        fmt.setFontWeight(QFont::Normal);
+    }
+    if(charFormat.isItalic()) {
+        actionTextItalic->setChecked(true);
+        fmt.setFontItalic(true);
+    } else {
+        actionTextItalic->setChecked(false);
+        fmt.setFontItalic(false);
+    }
+    if(charFormat.isUnderline()) {
+        actionTextUnderline->setChecked(true);
+        fmt.setFontUnderline(true);
+    } else {
+        actionTextUnderline->setChecked(false);
+        fmt.setFontUnderline(false);
+    }
+
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::onCursorPositionChanged() {
+    QTextCursor cursor = textEdit->textCursor();
+    if(!cursor.hasSelection()) {
+        int cursorPos = cursor.position();
+        if(cursorPos == 0) {
+            setFormat(CharFormat(false, false, false));
+        } else if(cursorPos > 0) {
+            cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
+            QTextCharFormat textCharFormat = cursor.charFormat();
+            setFormat(CharFormat(textCharFormat.fontWeight() == QFont::Bold,
+                                 textCharFormat.fontItalic(),
+                                 textCharFormat.fontUnderline()));
+        }
+    }
 }
 
 void Editor::on_actionNew_File_triggered() {
@@ -277,22 +387,24 @@ void Editor::redo() {
 bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     // check if signal is valid
     bool validSignal = true;
+    isRedoAvailable = textDocument->isRedoAvailable();
 
     int currentDocumentSize = textDocument->characterCount()-1;
     undo();
     int undoDocumentSize = textDocument->characterCount()-1;
     redo();
+    //qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
     if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
         //qDebug() << "WRONG SIGNAL 1";
         validSignal = false;
     }
 
-    if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
+    /*if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
         //qDebug() << "WRONG SIGNAL 2";
         // wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
         validSignal = false;
-    }
+    }*/
 
     QString test = textEdit->toPlainText().mid(position, charsAdded);
     if(validSignal && charsAdded == charsRemoved && test.isEmpty()) {

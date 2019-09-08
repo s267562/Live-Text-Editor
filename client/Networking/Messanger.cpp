@@ -338,7 +338,7 @@ bool Messanger::readFile(){
             }
 
             QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-            Character character = Character::toCharacterInsertVersion(jsonDocument);
+            Character character = Character::toCharacter(jsonDocument);
 
             line.push_back(character);
         }
@@ -349,8 +349,8 @@ bool Messanger::readFile(){
     return true;
 }
 
-bool Messanger::insert(InsertCharacter character){
-    qDebug() << "Messanger.cpp - insert()     ---------- WRITE INSERT ----------";
+bool Messanger::writeInsert(Character character){
+    qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
@@ -359,6 +359,10 @@ bool Messanger::insert(InsertCharacter character){
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
         messages.push(message);
+
+        qDebug() << "                         " << message;
+        qDebug() << ""; // newLine
+
         if (reciveOkMessage){
             reciveOkMessage = false;
             if (!writeMessage(socket, message)){
@@ -370,12 +374,12 @@ bool Messanger::insert(InsertCharacter character){
     return true;
 }
 
-bool Messanger::deleteChar(Character character){
-    qDebug() << "Messanger.cpp - insert()     ---------- WRITE DELETE ----------";
+bool Messanger::writeDelete(Character character){
+    qDebug() << "Messanger.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(DELETE_MESSAGE);
-        QByteArray characterByteFormat = character.toQByteArrayDeleteVersion();
+        QByteArray characterByteFormat = character.toQByteArray();
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
@@ -387,7 +391,7 @@ bool Messanger::deleteChar(Character character){
     return true;
 }
 
-bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
+bool Messanger::readInsert(){
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
 
     readSpace(socket);
@@ -400,7 +404,7 @@ bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacterInsertVersion(jsonDocument);
+    Character character = Character::toCharacter(jsonDocument);
 
     Message message(character, socket->socketDescriptor(), INSERT);
 
@@ -409,7 +413,7 @@ bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
 }
 
 bool Messanger::readDelete(){
-    qDebug() << "Messanger.cpp - readInsert()     ---------- READ DELETE ----------";
+    qDebug() << "Messanger.cpp - readDelete()     ---------- READ DELETE ----------";
 
     readSpace(socket);
     int messageSize = readNumberFromSocket(socket);
@@ -421,7 +425,7 @@ bool Messanger::readDelete(){
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacterDeleteVersion(jsonDocument);
+    Character character = Character::toCharacter(jsonDocument);
 
     Message message(character, socket->socketDescriptor(), DELETE);
 

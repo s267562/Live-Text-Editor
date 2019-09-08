@@ -31,7 +31,6 @@ public:
     ~Editor();
 
 public slots:
-    void onTextChanged(int position, int charsRemoved, int charsAdded);
     void on_actionNew_File_triggered();
     void on_actionShare_file_triggered();
     void on_actionOpen_triggered();
@@ -40,12 +39,16 @@ public slots:
     void removeUser(QString user);
     void setUsers(QStringList user);
 
-private slots:
-    void textBold();
-
 signals:
     void logout();
     void showFinder();
+
+private slots:
+    void onTextChanged(int position, int charsRemoved, int charsAdded);
+    void onCursorPositionChanged();
+    void textBold();
+    void textUnderline();
+    void textItalic();
 
 private:
     Ui::Editor *ui;
@@ -55,10 +58,12 @@ private:
     int cursorPos;
     int startSelection;
     int endSelection;
+    bool isRedoAvailable;
     QString siteId;
     Controller *controller;
     QStringList users;
 
+    void setFormat(CharFormat charFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
@@ -73,6 +78,8 @@ private:
 
     // actions
     QAction *actionTextBold;
+    QAction *actionTextUnderline;
+    QAction *actionTextItalic;
 };
 
 #endif //TEXTEDITOR_EDITOR_H

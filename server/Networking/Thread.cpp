@@ -1,6 +1,5 @@
 #include "Thread.h"
 #include <QDataStream>
-#include "../../client/utils/InsertCharacter.h"
 
 class Identifier;
 
@@ -66,6 +65,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         if (!readInsert(soc)) {
             writeErrMessage(soc);
         }
+        writeOkMessage(soc);
         readyRead(soc, c, d);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
@@ -131,13 +131,16 @@ bool Thread::readInsert(QTcpSocket *soc){
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    InsertCharacter insertCharacter = InsertCharacter::toInsertCharacter(jsonDocument);
+    Character character = Character::toCharacter(jsonDocument);
 
-    qDebug() << "char: "<<insertCharacter.getCharacter();
+    qDebug() << "bold:" << character.getCharFormat().isBold();
 
-    Character character = crdt->handleInsert(insertCharacter.getCharacter(), insertCharacter.getCharFormat(), insertCharacter.getPos(), insertCharacter.getSiteId());
-    this->insert(character);
+    //qDebug() << "char: "<< character.getValue();
 
+    crdt->handleInsert(character);
+
+    // broadcast
+    this->writeInsert(soc, character);
 
 	needToSaveFile = true;
 	if (!timerStarted) {
@@ -160,12 +163,12 @@ bool Thread::readDelete(QTcpSocket *soc){
     }
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacterDeleteVersion(jsonDocument);
+    Character character = Character::toCharacter(jsonDocument);
 
     crdt->handleDelete(character);
 
     // broadcast
-    this->deleteChar(soc, character);
+    this->writeDelete(soc, character);
 
     needToSaveFile = true;
     if (!timerStarted) {
@@ -175,11 +178,11 @@ bool Thread::readDelete(QTcpSocket *soc){
     return true;
 }
 
-void Thread::insert(Character character){
-    qDebug() << "Thread.cpp - insert()     ---------- WRITE INSERT ----------";
+void Thread::writeInsert(QTcpSocket *soc, Character character){
+    qDebug() << "Thread.cpp - writeInsert()     ---------- WRITE INSERT ----------";
 
     QByteArray message(INSERT_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArrayInsertVersion();
+    QByteArray characterByteFormat = character.toQByteArray();
     QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
     message.append(" " + sizeOfMessage + " " + characterByteFormat);
@@ -189,15 +192,18 @@ void Thread::insert(Character character){
 
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        writeMessage(socket.second, message);
+        if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
     }
 }
 
-void Thread::deleteChar(QTcpSocket *soc, Character character){
-    qDebug() << "Thread.cpp - insert()     ---------- WRITE DELETE ----------";
+void Thread::writeDelete(QTcpSocket *soc, Character character){
+    qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
     QByteArray message(DELETE_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArrayDeleteVersion();
+    QByteArray characterByteFormat = character.toQByteArray();
     QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
     message.append(" " + sizeOfMessage + " " + characterByteFormat);
@@ -209,6 +215,7 @@ void Thread::deleteChar(QTcpSocket *soc, Character character){
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
         if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
         }
     }
@@ -279,7 +286,7 @@ void Thread::sendFile(QTcpSocket *soc){
         message.append(" " + numChar);
         for (int j = 0; j < line.size(); j++){
             Character character = line[j];
-            QByteArray characterByteFormat = character.toQByteArrayInsertVersion();
+            QByteArray characterByteFormat = character.toQByteArray();
             QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
             message.append(" " + sizeOfMessage + " " + characterByteFormat);

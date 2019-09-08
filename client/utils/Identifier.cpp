@@ -20,7 +20,13 @@ int Identifier::compareTo(Identifier otherIdentifier) {
 	} else if (this->getDigit() > otherIdentifier.getDigit()) {
 		return 1;
 	} else {
-	    return 0;
+	    if(this->getSiteId() < otherIdentifier.getSiteId()) {
+            return -1;
+	    } else if(this->getSiteId() > otherIdentifier.getSiteId()) {
+            return 1;
+	    } else {
+	        return 0;
+	    }
 	}
 }
 
