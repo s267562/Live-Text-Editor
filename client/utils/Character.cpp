@@ -3,6 +3,7 @@
 //
 
 #include <QtCore/QJsonArray>
+#include <iostream>
 #include "Character.h"
 
 Character::Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
@@ -118,6 +119,9 @@ void Character::setCharFormat(const CharFormat &charFormat) {
 QByteArray Character::toQByteArray(){
 	QJsonObject json;
 	json["value"] = value;
+    QJsonObject charFormatObject;
+    charFormat.write(charFormatObject);
+    json["charFormat"] = charFormatObject;
 	json["counter"] = counter;
 	json["siteId"] = siteId;
 
@@ -140,7 +144,7 @@ Character Character::toCharacter(QJsonDocument jsonDocument){
 		character.value = static_cast<char>(json["value"].toInt());
 
 	if (json.contains("charFormat"))
-		character.charFormat.read(json["charFormat"].toObject());
+	    character.charFormat.read(json["charFormat"].toObject());
 
 	if (json.contains("counter") && json["counter"].isDouble())
 		character.counter = json["counter"].toInt();

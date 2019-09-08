@@ -40,12 +40,14 @@ public slots:
     void removeUser(QString user);
     void setUsers(QStringList user);
 
-private slots:
-    void textBold();
-
 signals:
     void logout();
     void showFinder();
+
+private slots:
+    void textBold();
+    void textUnderline();
+    void textItalic();
 
 private:
     Ui::Editor *ui;
@@ -59,6 +61,7 @@ private:
     Controller *controller;
     QStringList users;
 
+    void setTextFormat(CharFormat charFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
@@ -73,6 +76,8 @@ private:
 
     // actions
     QAction *actionTextBold;
+    QAction *actionTextUnderline;
+    QAction *actionTextItalic;
 };
 
 #endif //TEXTEDITOR_EDITOR_H

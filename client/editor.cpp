@@ -62,11 +62,47 @@ void Editor::setupTextActions() {
     actionTextBold->setFont(bold);
     tb->addAction(actionTextBold);
     actionTextBold->setCheckable(true);
+
+    // italic
+    const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(":/images/win/textitalic.png"));
+    actionTextItalic = menu->addAction(italicIcon, tr("&Italic"), this, &Editor::textItalic);
+    actionTextItalic->setPriority(QAction::LowPriority);
+    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    QFont italic;
+    italic.setItalic(true);
+    actionTextItalic->setFont(italic);
+    tb->addAction(actionTextItalic);
+    actionTextItalic->setCheckable(true);
+
+    // underline
+    const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(":/images/win/textunder.png"));
+    actionTextUnderline = menu->addAction(underlineIcon, tr("&Underline"), this, &Editor::textUnderline);
+    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
+    actionTextUnderline->setPriority(QAction::LowPriority);
+    QFont underline;
+    underline.setUnderline(true);
+    actionTextUnderline->setFont(underline);
+    tb->addAction(actionTextUnderline);
+    actionTextUnderline->setCheckable(true);
+
+    menu->addSeparator();
 }
 
 void Editor::textBold() {
     QTextCharFormat fmt;
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::textUnderline() {
+    QTextCharFormat fmt;
+    fmt.setFontUnderline(actionTextUnderline->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::textItalic() {
+    QTextCharFormat fmt;
+    fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
 
@@ -91,7 +127,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
-        if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
+        if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
             // correction when paste something in first position.
             charsAdded--;
             charsRemoved--;
@@ -180,21 +216,13 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
-    // setting char format
-    QTextCharFormat format;
-    format.setFontWeight((charFormat.isBold() ? QFont::Bold : QFont::Normal));
-    format.setFontItalic(charFormat.isItalic());
-    format.setFontItalic(charFormat.isItalic());
-    format.setForeground(charFormat.getColor());
-
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
-    textCursor.select(QTextCursor::BlockUnderCursor);
-    //textCursor.mergeCharFormat(format); // TODO BUG HERE! if this is done, from next time a wrong signal is emitted when editor get focus.
-    textEdit->mergeCurrentCharFormat(format);
+    // setting char format
+    setTextFormat(charFormat);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -219,6 +247,33 @@ void Editor::deleteChar(Pos pos) {
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+}
+
+void Editor::setTextFormat(CharFormat charFormat) {
+    QTextCharFormat fmt;
+    if(charFormat.isBold()) {
+        actionTextBold->setChecked(true);
+        fmt.setFontWeight(QFont::Bold);
+    } else {
+        actionTextBold->setChecked(false);
+        fmt.setFontWeight(QFont::Normal);
+    }
+    if(charFormat.isItalic()) {
+        actionTextItalic->setChecked(true);
+        fmt.setFontItalic(true);
+    } else {
+        actionTextItalic->setChecked(false);
+        fmt.setFontItalic(false);
+    }
+    if(charFormat.isUnderline()) {
+        actionTextUnderline->setChecked(true);
+        fmt.setFontUnderline(true);
+    } else {
+        actionTextUnderline->setChecked(false);
+        fmt.setFontUnderline(false);
+    }
+
+    mergeFormatOnWordOrSelection(fmt);
 }
 
 void Editor::on_actionNew_File_triggered() {
@@ -284,6 +339,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     undo();
     int undoDocumentSize = textDocument->characterCount()-1;
     redo();
+    //qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
     if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
         //qDebug() << "WRONG SIGNAL 1";
