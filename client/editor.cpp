@@ -139,7 +139,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         undo();
         QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
         redo();
-        if(charsAdded == charsRemoved && charsAdded == charsRemoved) {
+        if(charsAdded == charsRemoved && textAdded == textRemoved) {
             qDebug() << "text doesn't change (maybe style changed)";
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
@@ -259,8 +259,6 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
-    // setting char format
-    // setTextFormat(charFormat); // TODO bug here. When change style in client1 and get focus on client2 and do something
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);

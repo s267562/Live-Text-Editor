@@ -64,7 +64,6 @@ private:
     QStringList users;
 
     void setFormat(CharFormat charFormat);
-    void setTextCharFormat(QTextCharFormat textCharFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
