@@ -149,17 +149,19 @@ void Controller::showEditor(){
     editor->show();
 }
 
-void Controller::localInsert(QString chars, CharFormat charFormat, Pos startPos) {
-    // send insert at the server. To insert it in the model we need the position computed by the server.
-    InsertCharacter character((char)chars[0].toLatin1(), crdt->getSiteId(), charFormat, startPos);
-    this->messanger->insert(character);
+void Controller::localInsert(QString val, CharFormat charFormat, Pos pos) {
+    // insert into the model
+    Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), charFormat, pos);
+
+    // send insert at the server.
+    this->messanger->writeInsert(character);
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
-    std::vector<Character> removedChars = this->crdt->handleDelete(startPos, endPos);
+    std::vector<Character> removedChars = this->crdt->handleLocalDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        this->messanger->deleteChar(c);
+        this->messanger->writeDelete(c);
     }
 }
 
@@ -169,7 +171,7 @@ void Controller::newMessage(Message message) {
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
 
-        Pos pos = this->crdt->insert(character);
+        Pos pos = this->crdt->handleRemoteInsert(character);
 
         if(character.getSiteId() == this->crdt->getSiteId()) {
             // local insert - only in the model; the char is already in the view.

@@ -21,8 +21,9 @@ public:
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
     const QString &getSiteId() const;
-    std::vector<Character> handleDelete(Pos startPos, Pos endPos);
-    Pos insert(Character character);
+    Character handleLocalInsert(char val, CharFormat charFormat, Pos pos);
+    Pos handleRemoteInsert(Character character);
+    std::vector<Character> handleLocalDelete(Pos startPos, Pos endPos);
     Pos handleRemoteDelete(const Character &character);
     const QString toText();
 
@@ -32,16 +33,21 @@ private:
     std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
 
+
     // insert
+    const Character generateChar(char val, CharFormat charFormat, Pos pos, QString siteId);
+    const std::vector<Identifier> findPosBefore(Pos pos);
+    const std::vector<Identifier> findPosAfter(Pos pos);
+    std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos = {}, int level = 0);
+    int generateIdBetween(int min, int max);
     Pos findInsertPosition(Character character);
     Pos findEndPosition(Character lastChar, std::vector<Character> lastLine, int totalLines);
-    int findInsertIndexInLine(Character character, std::vector<Character> line);
     void insertChar(Character character, Pos pos);
 
-    // delete
-    Pos findPosition(Character character);
-    int findIndexInLine(Character character, std::vector<Character> line);
 
+    // delete
+    Pos findDeletePosition(Character character);
+    int findIndexInLine(Character character, std::vector<Character> line);
 
     std::vector<Character> deleteMultipleLines(Pos startPos, Pos endPos);
     std::vector<Character> deleteSingleLine(Pos startPos, Pos endPos);

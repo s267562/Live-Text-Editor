@@ -8,6 +8,13 @@
 Character::Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
 		: value(value), charFormat(charFormat), counter(counter), siteId(siteId), position(position) {}
 
+Character::Character() {
+    value = '*';
+    counter = -1;
+    siteId = nullptr;
+    position = std::vector<Identifier>();
+}
+
 int Character::compareTo(Character otherCharacter) {
 	std::vector<Identifier> pos1 = this->getPosition();
 	std::vector<Identifier> pos2 = otherCharacter.getPosition();
@@ -100,13 +107,6 @@ void Character::write(QJsonObject &json) const {
 	json["position"] = identifierArray;
 }
 
-Character::Character() {
-	value = '*';
-	counter = -1;
-	siteId = nullptr;
-	position = std::vector<Identifier>();
-}
-
 const CharFormat &Character::getCharFormat() const {
     return charFormat;
 }
@@ -115,23 +115,10 @@ void Character::setCharFormat(const CharFormat &charFormat) {
     Character::charFormat = charFormat;
 }
 
-QByteArray Character::toQByteArrayInsertVersion(){
-	QJsonObject json;
-	this->write(json);
-	QJsonDocument document(json);
-	return document.toBinaryData();
-}
-
-Character Character::toCharacterInsertVersion(QJsonDocument jsonDocument){
-	QJsonObject jsonObject = jsonDocument.object();
-	Character character;
-	character.read(jsonObject);
-	return character;
-}
-
-QByteArray Character::toQByteArrayDeleteVersion(){
+QByteArray Character::toQByteArray(){
 	QJsonObject json;
 	json["value"] = value;
+	json["counter"] = counter;
 	json["siteId"] = siteId;
 
 	QJsonArray identifierArray;
@@ -145,7 +132,7 @@ QByteArray Character::toQByteArrayDeleteVersion(){
 	return document.toBinaryData();
 }
 
-Character Character::toCharacterDeleteVersion(QJsonDocument jsonDocument){
+Character Character::toCharacter(QJsonDocument jsonDocument){
 	QJsonObject json = jsonDocument.object();
 	Character character;
 

@@ -22,13 +22,12 @@ public:
     int getCounter() const;
     const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
+    int compareTo(Character otherCharacter);
+
 	void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
-    int compareTo(Character otherCharacter);
-    QByteArray toQByteArrayInsertVersion();
-    static Character toCharacterInsertVersion(QJsonDocument jsonDocument);
-	QByteArray toQByteArrayDeleteVersion();
-	static Character toCharacterDeleteVersion(QJsonDocument jsonDocument);
+	QByteArray toQByteArray();
+	static Character toCharacter(QJsonDocument jsonDocument);
 
 private:
     char value;

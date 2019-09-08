@@ -12,7 +12,6 @@
 #include "ui/connection.h"
 #include "ui/showFiles.h"
 #include "Networking/Messanger.h"
-#include "utils/InsertCharacter.h"
 #include <iostream>
 
 class Editor;
@@ -62,7 +61,7 @@ public slots:
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
-    void localInsert(QString chars, CharFormat charFormat, Pos startPos);
+    void localInsert(QString val, CharFormat charFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
 };
