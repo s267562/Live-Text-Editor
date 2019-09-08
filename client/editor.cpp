@@ -36,12 +36,11 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
         int h=ui->avatar->height();
         ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
         ui->username->setText(controller->getUser()->getUsername());
-        loadingMovie = new QMovie("/Users/andrea/Downloads/103 (7).gif");
+        loadingMovie = new QMovie(":/rec/img/loading.gif");
         ui->loading->setMovie(loadingMovie);
         loadingMovie->start();
         ui->editAccount->close();
         ui->loading->show();
-
     #endif
 
 
