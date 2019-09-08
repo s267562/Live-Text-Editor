@@ -141,6 +141,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
             qDebug() << "text doesn't change (maybe style changed)";
+            // TODO style changed
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
                 // correction when paste something in first position.
