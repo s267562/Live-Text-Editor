@@ -25,7 +25,7 @@ private slots:
     void connectButtonClicked();
 
 signals:
-    void connectToAddress(QString address);
+    void connectToAddress(QString host, QString port);
 
 };
 

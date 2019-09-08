@@ -41,7 +41,7 @@ public slots:
     void errorConnection();
 
     /* CONNECTION */
-    void connectClient(QString address);
+    void connectClient(QString address, QString port);
 
     /* LOGIN */
     void showLogin();

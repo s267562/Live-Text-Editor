@@ -15,7 +15,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
     connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
-    connect(this->connection, SIGNAL(connectToAddress(QString)),this, SLOT(connectClient(QString)));
+    connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
     now = connection;
@@ -45,8 +45,8 @@ void Controller::errorConnection(){
 
 /* CONNECTION */
 
-void Controller::connectClient(QString address) {
-    bool res = this->messanger->connectTo(address);    // TODO: non va...
+void Controller::connectClient(QString address, QString port) {
+    bool res = this->messanger->connectTo(address, port);    // TODO: non va...
 
     if (res) {
         this->connection->close();

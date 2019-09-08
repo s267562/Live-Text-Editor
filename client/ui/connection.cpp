@@ -6,7 +6,8 @@ Connection::Connection(QWidget *parent) :
     ui(new Ui::Connection)
 {
     ui->setupUi(this);
-    this->ui->lineEdit->setText("127.0.0.1");
+    this->ui->serverIP->setText("127.0.0.1");
+    this->ui->serverPort->setText("1234");
     connect(this->ui->pushButton, SIGNAL(clicked()), this,SLOT(connectButtonClicked()));
 
 }
@@ -17,8 +18,9 @@ Connection::~Connection()
 }
 
 void Connection::connectButtonClicked() {
-    QString address = this->ui->lineEdit->text();
-    emit connectToAddress(address);
+    QString address = this->ui->serverIP->text();
+    QString port = this->ui->serverPort->text();
+    emit connectToAddress(address, port);
 }
 
 void Connection::resizeEvent(QResizeEvent *event) {

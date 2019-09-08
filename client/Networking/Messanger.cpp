@@ -20,8 +20,10 @@ void Messanger::setCRDT(CRDT *crdt) {
     this->crdt = crdt;
 }
 
-bool Messanger::connectTo(QString host){
-    socket->connectToHost(host, 1234);
+bool Messanger::connectTo(QString host, QString port){
+    serverIP = host;
+    serverPort = port;
+    socket->connectToHost(host, port.toInt());
 
     if (!socket->waitForConnected(TIMEOUT)){
         emit errorConnection();
@@ -239,7 +241,7 @@ void Messanger::logOut(){
         socket->deleteLater();
         delete socket;
         socket = new QTcpSocket();
-        if (!connectTo("127.0.0.1")){
+        if (!connectTo(serverIP, serverPort)){
             qDebug() << "Connesione fallita";
             return;
         }

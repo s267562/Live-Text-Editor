@@ -99,7 +99,7 @@
        <string>CHOOSE THE SERVER</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="serverIP">
       <property name="geometry">
        <rect>
         <x>110</x>
@@ -109,7 +109,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_2">
+     <widget class="QLineEdit" name="serverPort">
       <property name="geometry">
        <rect>
         <x>110</x>
