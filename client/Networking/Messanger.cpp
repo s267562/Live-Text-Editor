@@ -391,7 +391,7 @@ bool Messanger::writeDelete(Character character){
     return true;
 }
 
-bool Messanger::readInsert(){ // TODO: cambiare nome -> readCharacter
+bool Messanger::readInsert(){
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
 
     readSpace(socket);

@@ -65,6 +65,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         if (!readInsert(soc)) {
             writeErrMessage(soc);
         }
+        writeOkMessage(soc);
         readyRead(soc, c, d);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
@@ -190,7 +191,7 @@ void Thread::writeInsert(QTcpSocket *soc, Character character){
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         if(socket.first != soc->socketDescriptor()) {
-            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
         }
     }
@@ -212,7 +213,7 @@ void Thread::writeDelete(QTcpSocket *soc, Character character){
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
         if(socket.first != soc->socketDescriptor()) {
-            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
         }
     }

@@ -91,25 +91,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
-        if(charsAdded) {
-            QTextCursor cursor = textEdit->textCursor();
-            QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
-            for(int i=0; i<charsAdded; i++) {
-                // for each char added
-                cursor.setPosition(position + i);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-                // select char
-                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                CharFormat charFormat = getSelectedCharFormat(cursor);
-
-                this->controller->localInsert(chars.at(i), charFormat, startPos);
-            }
-        }
-
         if(charsRemoved) {
             // get startPos
             int line, ch;
@@ -129,8 +110,27 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
             //qDebug() << "startPos:" << startPos.getLine() << startPos.getCh();
             //qDebug() << "endPos:" << endPos.getLine() << endPos.getCh();
-            qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
+            //qDebug() << "DEBUG - this->controller->localDelete(" << startPos.getLine() << startPos.getCh() << ", " << endPos.getLine() << endPos.getCh() << ")";
             this->controller->localDelete(startPos, endPos);
+        }
+
+        if(charsAdded) {
+            QTextCursor cursor = textEdit->textCursor();
+            QString chars = textEdit->toPlainText().mid(position, charsAdded);
+
+            for(int i=0; i<charsAdded; i++) {
+                // for each char added
+                cursor.setPosition(position + i);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                // select char
+                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                CharFormat charFormat = getSelectedCharFormat(cursor);
+
+                this->controller->localInsert(chars.at(i), charFormat, startPos);
+            }
         }
 
         restoreCursor();
