@@ -133,7 +133,7 @@ bool Thread::readInsert(QTcpSocket *soc){
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
     Character character = Character::toCharacter(jsonDocument);
 
-    qDebug() << "char: "<< character.getValue();
+    //qDebug() << "char: "<< character.getValue();
 
     crdt->handleInsert(character);
 

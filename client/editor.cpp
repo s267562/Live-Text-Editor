@@ -91,6 +91,12 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
+        if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
+            // correction when paste something in first position.
+            charsAdded--;
+            charsRemoved--;
+        }
+
         if(charsRemoved) {
             // get startPos
             int line, ch;
@@ -152,10 +158,10 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
             underline = cursor.charFormat().fontUnderline();
     QColor color{ cursor.charFormat().foreground().color() };
 
-    qDebug() << "italic:" << italic;
-    qDebug() << "bold:" << bold;
-    qDebug() << "underline:" << underline;
-    qDebug() << "color:" << color.name();
+    //qDebug() << "italic:" << italic;
+    //qDebug() << "bold:" << bold;
+    //qDebug() << "underline:" << underline;
+    //qDebug() << "color:" << color.name();
 
     CharFormat charFormat{
             bold,
@@ -163,8 +169,6 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
             underline,
             color
     };
-
-    qDebug() << " ";
 
     return charFormat;
 }
@@ -175,8 +179,6 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
     textCursor.movePosition(QTextCursor::Start);
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
-
-    int insertPos = textCursor.position();
 
     // setting char format
     QTextCharFormat format;
