@@ -307,27 +307,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             this, &Editor::onCursorPositionChanged);
 }
 
-CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
-    bool    bold = cursor.charFormat().fontWeight() == QFont::Bold,
-            italic = cursor.charFormat().fontItalic(),
-            underline = cursor.charFormat().fontUnderline();
-    QColor color{ cursor.charFormat().foreground().color() };
-
-    //qDebug() << "italic:" << italic;
-    //qDebug() << "bold:" << bold;
-    //qDebug() << "underline:" << underline;
-    //qDebug() << "color:" << color.name();
-
-    CharFormat charFormat{
-            bold,
-            italic,
-            underline,
-            color
-    };
-
-    return charFormat;
-}
-
 void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos) {
     int oldCursorPos = textCursor.position();
 
@@ -372,33 +351,6 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
-}
-
-QTextCharFormat Editor::getTextCharFormat(CharFormat charFormat) {
-    QTextCharFormat fmt;
-    if(charFormat.isBold()) {
-        actionTextBold->setChecked(true);
-        fmt.setFontWeight(QFont::Bold);
-    } else {
-        actionTextBold->setChecked(false);
-        fmt.setFontWeight(QFont::Normal);
-    }
-    if(charFormat.isItalic()) {
-        actionTextItalic->setChecked(true);
-        fmt.setFontItalic(true);
-    } else {
-        actionTextItalic->setChecked(false);
-        fmt.setFontItalic(false);
-    }
-    if(charFormat.isUnderline()) {
-        actionTextUnderline->setChecked(true);
-        fmt.setFontUnderline(true);
-    } else {
-        actionTextUnderline->setChecked(false);
-        fmt.setFontUnderline(false);
-    }
-
-    return fmt;
 }
 
 void Editor::deleteChar(Pos pos) {

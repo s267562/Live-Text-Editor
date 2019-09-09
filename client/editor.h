@@ -71,7 +71,6 @@ private:
     bool loadingFlag = true;
 
     void setFormat(CharFormat charFormat);
-    QTextCharFormat getTextCharFormat(CharFormat charFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);
@@ -80,7 +79,6 @@ private:
     void restoreCursorSelection();
     void saveCursor();
 
-    CharFormat getSelectedCharFormat(QTextCursor cursor);
     void setupTextActions();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
 
