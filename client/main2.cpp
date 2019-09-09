@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         /* TEST: REGISTRATION FEATURE */
         Messanger messanger;
         Messanger messanger;
-        messanger.connectTo("127.0.0.1");
+        messanger.connectTo("127.0.0.1", "1234");
         messanger.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
     #else
         /* TEST: TEXT EDITOR */
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         CRDT crdt{}; // model
         messanger.setCRDT( &crdt);
 
-        messanger.connectTo("127.0.0.1");
+        messanger.connectTo("127.0.0.1", "1234");
         QString username = "test2";
         messanger.logIn(username, "test2");
 
