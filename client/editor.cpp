@@ -208,7 +208,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
             qDebug() << "text doesn't change (maybe style changed)";
-            // TODO style changed
+            // TODO use this to capture when style changed
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
                 // correction when paste something in first position.
@@ -221,7 +221,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     // chars removed due to undo operation.
 
                     // get endPos
-                    qDebug() << "position" << position;
                     textCursor.setPosition(position);
                     int line = textCursor.blockNumber();
                     int ch = textCursor.positionInBlock();
@@ -229,7 +228,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
                     // get startPos
                     redo();
-                    textCursor.setPosition(position + charsRemoved - 1);
+                    textCursor.setPosition(position + charsRemoved);
                     line = textCursor.blockNumber();
                     ch = textCursor.positionInBlock();
                     Pos endPos{ch, line}; // Pos(int ch, int line);
