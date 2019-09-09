@@ -32,6 +32,7 @@ public slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
 signals:
     void disconnect();

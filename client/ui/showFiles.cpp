@@ -41,7 +41,7 @@ void ShowFiles::on_actionNew_File_triggered(){
     if (!newFileShown){
         ui->filename->show();
         ui->pushButton_newFile->show();
-        ui->listWidget->move(10,40);
+        ui->listWidget->move(10,50);
         newFileShown = true;
     }else{
         ui->filename->close();

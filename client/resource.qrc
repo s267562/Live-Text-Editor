@@ -6,5 +6,6 @@
         <file>img/open-archive.png</file>
         <file>img/pdf.png</file>
         <file>img/avatar.png</file>
+        <file>img/loading.gif</file>
     </qresource>
 </RCC>

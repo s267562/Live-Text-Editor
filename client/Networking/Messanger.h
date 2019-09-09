@@ -16,6 +16,8 @@ class Messanger: public QObject{
     Q_OBJECT
 private:
     QString siteId;
+    QString serverIP;
+    QString serverPort;
     QTcpSocket *socket;
     qintptr socketDescriptor;
     CRDT *crdt;
@@ -32,7 +34,7 @@ public:
     void setCRDT(CRDT *crdt);
     bool writeInsert(Character character);
     bool writeDelete(Character character);
-    bool connectTo(QString host);
+    bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
     bool registration(QString username, QString password, QPixmap avatar);

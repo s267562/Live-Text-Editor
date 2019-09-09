@@ -40,7 +40,7 @@ public slots:
     void errorConnection();
 
     /* CONNECTION */
-    void connectClient(QString address);
+    void connectClient(QString address, QString port);
 
     /* LOGIN */
     void showLogin();
@@ -64,6 +64,7 @@ public:
     void localInsert(QString val, CharFormat charFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
+    User* getUser();
 };
 
 

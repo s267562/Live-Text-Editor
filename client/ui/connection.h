@@ -19,11 +19,13 @@ private:
     Ui::Connection *ui;
     QString address;
 
+    void resizeEvent(QResizeEvent *event);
+
 private slots:
     void connectButtonClicked();
 
 signals:
-    void connectToAddress(QString address);
+    void connectToAddress(QString host, QString port);
 
 };
 

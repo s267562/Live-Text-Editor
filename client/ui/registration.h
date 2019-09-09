@@ -32,6 +32,7 @@ private slots:
 
 private:
     Ui::Registration *ui;
+    void resizeEvent(QResizeEvent *event);
 
 };
 
