@@ -274,6 +274,11 @@ bool Server::registration(QTcpSocket *soc) {
 	if (registeredSuccessfully) {
 		bool avatarChanged = DB.changeAvatar(QString(username), avatarDef);
 
+		//qDebug() << "Registered succesfully";
+		//if(avatarChanged)
+		//	qDebug() << "Avatar changed";
+
+
 		usernames[soc->socketDescriptor()] = username;
 		return true;
 
