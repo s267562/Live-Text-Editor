@@ -71,6 +71,7 @@ private:
     bool loadingFlag = true;
 
     void setFormat(CharFormat charFormat);
+    QTextCharFormat getTextCharFormat(CharFormat charFormat);
     void undo();
     void redo();
     bool validSignal(int i, int i1, int i2);

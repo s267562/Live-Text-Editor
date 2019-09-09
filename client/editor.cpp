@@ -178,7 +178,6 @@ void Editor::textAlign(QAction *a)
 }
 
 
-
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();
     cursor.mergeCharFormat(format);
@@ -207,6 +206,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
+            if(position == 0 && textDocument->characterCount()-1 != charsAdded) {
+                // correction when paste something in first position.
+                qDebug() << "HERE";
+                charsAdded--;
+            }
             // qDebug() << "text doesn't change (maybe style changed)";
             QTextCursor cursor = textEdit->textCursor();
 
@@ -361,12 +365,42 @@ void Editor::changeStyle(Pos pos, const CharFormat &format) {
                this, &Editor::onTextChanged);
 
     // TODO il cursore dovrebbe essere settato nella posizione dove c'è il carattere
-
+    QTextCharFormat textCharFormat = getTextCharFormat(format);
+    textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(textCharFormat);
+    textEdit->mergeCurrentCharFormat(textCharFormat);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+}
+
+QTextCharFormat Editor::getTextCharFormat(CharFormat charFormat) {
+    QTextCharFormat fmt;
+    if(charFormat.isBold()) {
+        actionTextBold->setChecked(true);
+        fmt.setFontWeight(QFont::Bold);
+    } else {
+        actionTextBold->setChecked(false);
+        fmt.setFontWeight(QFont::Normal);
+    }
+    if(charFormat.isItalic()) {
+        actionTextItalic->setChecked(true);
+        fmt.setFontItalic(true);
+    } else {
+        actionTextItalic->setChecked(false);
+        fmt.setFontItalic(false);
+    }
+    if(charFormat.isUnderline()) {
+        actionTextUnderline->setChecked(true);
+        fmt.setFontUnderline(true);
+    } else {
+        actionTextUnderline->setChecked(false);
+        fmt.setFontUnderline(false);
+    }
+
+    return fmt;
 }
 
 void Editor::deleteChar(Pos pos) {
