@@ -103,6 +103,48 @@ void Editor::setupTextActions() {
     actionTextUnderline->setCheckable(true);
 
     menu->addSeparator();
+
+    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":/images/win/textleft.png"));
+    actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
+    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
+    actionAlignLeft->setCheckable(true);
+    actionAlignLeft->setPriority(QAction::LowPriority);
+    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":/images/win/textcenter.png"));
+    actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
+    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionAlignCenter->setCheckable(true);
+    actionAlignCenter->setPriority(QAction::LowPriority);
+    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":/images/win/textright.png"));
+    actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
+    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionAlignRight->setCheckable(true);
+    actionAlignRight->setPriority(QAction::LowPriority);
+    const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(":/images/win/textjustify.png"));
+    actionAlignJustify = new QAction(fillIcon, tr("&Justify"), this);
+    actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
+    actionAlignJustify->setCheckable(true);
+    actionAlignJustify->setPriority(QAction::LowPriority);
+
+    // Make sure the alignLeft  is always left of the alignRight
+    QActionGroup *alignGroup = new QActionGroup(this);
+    connect(alignGroup, &QActionGroup::triggered, this, &Editor::textAlign);
+
+    if (QApplication::isLeftToRight()) {
+        alignGroup->addAction(actionAlignLeft);
+        alignGroup->addAction(actionAlignCenter);
+        alignGroup->addAction(actionAlignRight);
+    } else {
+        alignGroup->addAction(actionAlignRight);
+        alignGroup->addAction(actionAlignCenter);
+        alignGroup->addAction(actionAlignLeft);
+    }
+    alignGroup->addAction(actionAlignJustify);
+
+    tb->addActions(alignGroup->actions());
+    menu->addActions(alignGroup->actions());
+
+    menu->addSeparator();
+
 }
 
 void Editor::textBold() {
@@ -122,6 +164,20 @@ void Editor::textItalic() {
     fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
+
+void Editor::textAlign(QAction *a)
+{
+    if (a == actionAlignLeft)
+        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+    else if (a == actionAlignCenter)
+        textEdit->setAlignment(Qt::AlignHCenter);
+    else if (a == actionAlignRight)
+        textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+    else if (a == actionAlignJustify)
+        textEdit->setAlignment(Qt::AlignJustify);
+}
+
+
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();

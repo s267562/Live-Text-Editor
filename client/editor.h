@@ -50,6 +50,8 @@ private slots:
     void textBold();
     void textUnderline();
     void textItalic();
+    void textAlign(QAction *a);
+
 
 private:
     Ui::Editor *ui;
@@ -83,6 +85,10 @@ private:
     QAction *actionTextBold;
     QAction *actionTextUnderline;
     QAction *actionTextItalic;
+    QAction *actionAlignLeft;
+    QAction *actionAlignCenter;
+    QAction *actionAlignRight;
+    QAction *actionAlignJustify;
 };
 
 #endif //TEXTEDITOR_EDITOR_H
