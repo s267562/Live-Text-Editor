@@ -64,12 +64,19 @@ bool writeOkMessage(QTcpSocket *soc){
     }
 }
 
-bool writeErrMessage(QTcpSocket *soc){
+bool writeErrMessage(QTcpSocket *soc, QString type){
     if (soc == nullptr){
         return false;
     }
 
-    soc->write(ERR_MESSAGE);
+    QByteArray message;
+    message.append(ERR_MESSAGE);
+
+    if (type != ""){
+        message.append(" " + type.toUtf8());
+    }
+
+    soc->write(message);
     if (soc->waitForBytesWritten(TIMEOUT)){
         qDebug() << "server/Networking/common/commonFunctions.cpp - writeErrMessage()     \"Err\" scritto";
         qDebug() << ""; // newLine

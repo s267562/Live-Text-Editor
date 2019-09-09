@@ -47,7 +47,7 @@ void Server::connection() {
 				//error in login phase
 				qDebug() << "                              error login";
 				qDebug() << ""; // newLine
-				writeErrMessage(soc);
+				writeErrMessage(soc, LOGIN_MESSAGE);
 				return;
 			}
 		} else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
@@ -55,7 +55,7 @@ void Server::connection() {
 				sendFileNames(soc);
 				socketsState[socketDescriptor] = LOGGED;
 			} else {
-				writeErrMessage(soc);
+				writeErrMessage(soc, REGISTRATION_MESSAGE);
 				return;
 			}
 		} else if (data.toStdString() == REQUEST_FILE_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
@@ -69,7 +69,7 @@ void Server::connection() {
 			qDebug() << ""; // newLine
 
 			if (!readFileName(soc->socketDescriptor(), soc)) {
-				writeErrMessage(soc);
+				writeErrMessage(soc, REQUEST_FILE_MESSAGE);
 			}
 		} else {
 			qDebug() << "                              error message";
@@ -236,7 +236,7 @@ bool Server::registration(QTcpSocket *soc) {
 	//username
 	QByteArray username;
 	if (!readChunck(soc, username, sizeUsername)) {
-		writeErrMessage(soc);
+		return false;
 	}
 	readSpace(soc);
 
@@ -246,13 +246,14 @@ bool Server::registration(QTcpSocket *soc) {
 	//password
 	QByteArray password;
 	if (!readChunck(soc, password, sizePassword)) {
-		writeErrMessage(soc);
+		return false;
 	}
 	readSpace(soc);
 
-	QDataStream in(soc);
+	/*QDataStream in(soc);
 	qsizetype sizeAvatar;
-	in >> sizeAvatar;
+	in >> sizeAvatar;*/
+	int sizeAvatar = readNumberFromSocket(soc); 
 	readSpace(soc);
 
 	qDebug() << "                                username: " << username << " size: " << sizeUsername;
@@ -262,10 +263,8 @@ bool Server::registration(QTcpSocket *soc) {
 	//avatar
 	QByteArray avatarDef;
 
-	if (readChunck(soc, avatarDef, sizeAvatar)) {
-		writeOkMessage(soc);
-	} else {
-		writeErrMessage(soc);
+	if (!readChunck(soc, avatarDef, sizeAvatar)) {
+		return false;
 	}
 
 	qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
@@ -294,8 +293,7 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
 std::shared_ptr<Thread> Server::addThread(QString fileName) {
 	std::lock_guard<std::mutex> lg(mutexThread);
 	CRDT *crdt = new CRDT();
-	std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName,
-															  this);                        /* create new thread */
+	std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
 	threads[fileName] = thread;
 	return thread;
 }

@@ -45,6 +45,7 @@ public:
     bool readRemoveUser();
     bool readFile();
     bool despatchMessage();
+    bool readError();
 
 public slots:
     void onReadyRead();
