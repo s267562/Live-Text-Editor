@@ -364,7 +364,6 @@ void Editor::changeStyle(Pos pos, const CharFormat &format) {
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    // TODO il cursore dovrebbe essere settato nella posizione dove c'è il carattere
     QTextCharFormat textCharFormat = getTextCharFormat(format);
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
@@ -525,19 +524,25 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     bool validSignal = true;
     isRedoAvailable = textDocument->isRedoAvailable();
 
+    if(charsAdded == charsRemoved && position+charsAdded > textDocument->characterCount()-1) {
+        // wrong signal when apply style in editor 1 (line 2) and then write something in editor2
+        //qDebug() << "WRONG SIGNAL 1";
+        validSignal = false;
+    }
+
     int currentDocumentSize = textDocument->characterCount()-1;
     undo();
     int undoDocumentSize = textDocument->characterCount()-1;
     redo();
     //qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
-    if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
+    if(validSignal && charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
-        //qDebug() << "WRONG SIGNAL 1";
+        //qDebug() << "WRONG SIGNAL 2";
         validSignal = false;
     }
 
     /*if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
-        //qDebug() << "WRONG SIGNAL 2";
+        //qDebug() << "WRONG SIGNAL";
         // wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
         validSignal = false;
     }*/

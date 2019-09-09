@@ -395,8 +395,12 @@ bool Messanger::writeStyleChanged(Character character){
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (!writeMessage(socket, message)){
-            return false;
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            if (!writeMessage(socket, message)){
+                return false;
+            }
+            messages.pop();
         }
     }
     return true;

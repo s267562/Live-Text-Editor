@@ -71,6 +71,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         if (!readStyleChanged(soc)) {
             writeErrMessage(soc);
         }
+        writeOkMessage(soc);
         readyRead(soc, c, d);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
