@@ -52,7 +52,8 @@ void Server::connection() {
 			}
 		} else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
 			if (registration(soc)) {
-				socketsState[soc->socketDescriptor()] = LOGGED;
+				sendFileNames(soc);
+				socketsState[socketDescriptor] = LOGGED;
 			} else {
 				writeErrMessage(soc);
 				return;

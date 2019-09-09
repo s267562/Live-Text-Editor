@@ -17,6 +17,7 @@ public:
     explicit Registration(QWidget *parent = nullptr);
     void setDefaultProfileIcon();
     void setClient(Messanger *messanger);
+    QString getUsername();
     void reset();
     ~Registration();
 

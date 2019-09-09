@@ -90,6 +90,7 @@ void Controller::showLogin(){
 void Controller::showRegistration(){
     now->close();
     this->registration->reset();
+    now = registration;
     this->registration->show();
 }
 
@@ -99,7 +100,12 @@ void Controller::showFileFinder(QStringList fileList){
     now->close();
     this->finder->addFiles(fileList);
     if (user == nullptr){
-        user = new User(login->getUsername());
+        if (now == login){
+            user = new User(login->getUsername());
+        }else{
+            user = new User(registration->getUsername());
+        }
+
         user->setFileLis(fileList);
         user->setIsLogged(true);
     }
@@ -109,14 +115,6 @@ void Controller::showFileFinder(QStringList fileList){
 
 void Controller::showFileFinderOtherView(){
     now->close();
-    /*delete finder;
-    finder = new ShowFiles(this);
-    this->finder->addFiles(user->getFileList());
-    this->editor->close();*/
-    /*connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
-    connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);*/
-    /*connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-    connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));*/
     now = finder;
     this->finder->show();
 }

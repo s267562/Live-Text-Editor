@@ -85,6 +85,10 @@ void Registration::reset() {
     ui->password->clear();
 }
 
+QString Registration::getUsername() {
+    return ui->username->text();
+}
+
 void Registration::resizeEvent(QResizeEvent *event) {
     int centralWidgetX = 0;
     int centralWidgetY = 0;
