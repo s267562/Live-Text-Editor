@@ -343,7 +343,11 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
-
+    QTextCharFormat textCharFormat = getTextCharFormat(charFormat);
+    textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(textCharFormat);
+    textEdit->mergeCurrentCharFormat(textCharFormat);
+    
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
