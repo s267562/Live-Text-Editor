@@ -141,9 +141,7 @@ text-decoration: none;
 
 QPushButton:hover
 {
-	background-color: white;
-	border: 1px solid #008CBA;
-	color : #008CBA;
+	margin: 2px 1px;
 }</string>
       </property>
       <property name="text">

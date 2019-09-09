@@ -143,9 +143,8 @@ opacity: 0.6;
 text-decoration: none;
 }
 QPushButton:hover{
-background-color: white;
-border: 1px solid black;
-color : black;}</string>
+margin: 2px 1px;
+}</string>
       </property>
       <property name="text">
        <string>Login</string>
@@ -201,6 +200,8 @@ color : black;}</string>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

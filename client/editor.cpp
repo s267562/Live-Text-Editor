@@ -330,7 +330,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 }
 
 void Editor::resizeEvent(QResizeEvent *event) {
-    ui->userListWidget->resize(textEdit->geometry().width(), textEdit->geometry().height() - 18 -100);
+    ui->userListWidget->resize(149, textEdit->geometry().height() - 18 -100);
 
     ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 -100, ui->userWidget->width(), ui->userWidget->height());
 }

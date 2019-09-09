@@ -159,9 +159,8 @@ opacity: 0.6;
 text-decoration: none;
 }
 QPushButton:hover{
-background-color: white;
-border: 1px solid red;
-color : red;}</string>
+margin: 2px 1px;
+}</string>
       </property>
       <property name="text">
        <string>Registrati</string>

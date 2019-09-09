@@ -116,7 +116,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>16777215</width>
+       <width>150</width>
        <height>400</height>
       </rect>
      </property>
@@ -200,7 +200,7 @@ border-radius: 10px;
        <rect>
         <x>0</x>
         <y>60</y>
-        <width>151</width>
+        <width>150</width>
         <height>32</height>
        </rect>
       </property>
@@ -215,9 +215,8 @@ opacity: 0.6;
 text-decoration: none;
 }
 QPushButton:hover{
-background-color: white;
-border: 1px solid black;
-color : black;}</string>
+margin: 2px 1px;
+}</string>
       </property>
       <property name="text">
        <string>Edit your account</string>
