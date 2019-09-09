@@ -54,6 +54,7 @@ public slots:
 signals:
     void errorConnection();
     void loginFailed();
+    void registrationFailed();
     void newMessage(Message message);
     void userVerified();
     void fileNames(QStringList fileList);

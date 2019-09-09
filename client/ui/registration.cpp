@@ -3,18 +3,23 @@
 
 #include <QFileDialog>
 #include <iostream>
+#include <QMessageBox>
 
 Registration::Registration(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Registration)
 {
     this->ui->setupUi(this);
-
+    ui->error->setVisible(false);
 }
 
 Registration::~Registration()
 {
     delete ui;
+}
+
+void Registration::setClient(Messanger *messanger) {  //TODO: da rimuovere...
+    this->messanger = messanger;
 }
 
 
@@ -52,11 +57,27 @@ void Registration::on_pushButton_registration_clicked(){
 	QString username = ui->username->text();
 	QString password = ui->password->text();
 	QPixmap avatar = ui->label->pixmap()->copy(); // TODO controllare se giusto. Togliendo il copy abbiamo un QPixmap*
+    QPixmap pix(":/icons/user_icon.jpg");
+
+	if (username == "" || password == ""){
+        ui->error->setVisible(true);
+	    ui->error->setText("Compile form!");
+        return;
+	}
+
+	if (messanger != nullptr && username != "" && password != ""){
+        ui->error->setVisible(false);
+	    messanger->registration(username, password, avatar);
+	}
 }
 
 void Registration::on_pushButton_login_clicked(){
     this->hide();
     emit this->showLogin();
+}
+
+void Registration::registrationFailed(){
+    QMessageBox::warning(this,"Registration", "Username and/or password is not correct, try again!");
 }
 
 void Registration::reset() {

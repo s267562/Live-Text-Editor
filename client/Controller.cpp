@@ -62,6 +62,8 @@ void Controller::connectClient(QString address, QString port) {
 
         /* creation registration object */
         registration = new Registration(this);
+        registration->setClient(messanger);
+        connect(this->messanger, &Messanger::registrationFailed, this->registration, &Registration::registrationFailed);
         connect(this->registration, SIGNAL(showLogin()), this, SLOT(showLogin()));
 
         /* creation showfiles object */

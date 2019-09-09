@@ -56,6 +56,7 @@ void Messanger::onReadyRead(){
         reciveOkMessage = true;
     }else if (!clientIsLogged && datas.toStdString() == ERR_MESSAGE){
         emit loginFailed();
+        emit registrationFailed();
         return;
     }
 
@@ -140,16 +141,18 @@ bool Messanger::logIn(QString username, QString password) {
 bool Messanger::registration(QString username, QString password, QPixmap avatar){
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
 
-    QByteArray image;
-    QBuffer buffer(&image);
+    //QByteArray image;
+    /*QBuffer buffer(&image);
     buffer.open(QIODevice::WriteOnly);
-    avatar.save(&buffer,"PNG");
+    avatar.save(&buffer,"PNG");*/
+    QByteArray image = QByteArray::fromRawData((const char*)avatar.toImage().bits(), avatar.toImage().sizeInBytes());
 
     QDataStream out(socket);
     QByteArray message(REGISTRATION_MESSAGE);
 
     QByteArray usernameSize = convertionNumber(username.size());
     QByteArray passwordSize = convertionNumber(password.size());
+
     message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " ");
     if (!writeMessage(socket, message)){
         return false;
