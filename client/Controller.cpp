@@ -69,6 +69,7 @@ void Controller::connectClient(QString address, QString port) {
         /* creation showfiles object */
         finder = new ShowFiles(this);
         connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+        connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
         connect(this->messanger, SIGNAL(fileNames(QStringList)), this, SLOT(showFileFinder(QStringList)));
         connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 
@@ -132,6 +133,8 @@ void Controller::requestForFile(QString filename){
             /* connecting */
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
             connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, &Messanger::insertFailed, editor, &Editor::showError);
+            connect(messanger, &Messanger::deleteFailed, editor, &Editor::showError);
             connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
             connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);

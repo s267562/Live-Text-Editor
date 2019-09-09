@@ -39,6 +39,7 @@ public slots:
     void on_actionLogout_triggered();
     void removeUser(QString user);
     void setUsers(QStringList user);
+    void showError();
 
 signals:
     void logout();

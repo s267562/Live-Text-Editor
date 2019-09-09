@@ -194,7 +194,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 
 	QByteArray fileName;
 	if (!readChunck(soc, fileName, fileNameSize)) {
-		writeErrMessage(soc);
 		return false;
 	}
 
@@ -221,7 +220,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		thread->start();
 	}
 
-	//writeOkMessage(soc);
 	return true;
 }
 

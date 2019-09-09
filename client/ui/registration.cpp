@@ -59,16 +59,14 @@ void Registration::on_pushButton_registration_clicked(){
 	QPixmap avatar = ui->label->pixmap()->copy(); // TODO controllare se giusto. Togliendo il copy abbiamo un QPixmap*
     QPixmap pix(":/icons/user_icon.jpg");
 
-	if (username == "" || password == ""){
+	if (username == "" || password == "" || avatar.toImage().sizeInBytes() == 0 || avatar.toImage() == pix.toImage()){
         ui->error->setVisible(true);
 	    ui->error->setText("Compile form!");
         return;
 	}
 
-	if (messanger != nullptr && username != "" && password != ""){
-        ui->error->setVisible(false);
-	    messanger->registration(username, password, avatar);
-	}
+	ui->error->setVisible(false);
+	messanger->registration(username, password, avatar);
 }
 
 void Registration::on_pushButton_login_clicked(){

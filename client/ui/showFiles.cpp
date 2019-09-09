@@ -56,3 +56,7 @@ void ShowFiles::on_actionLogout_triggered(){
     QMessageBox::information(this, "Logout", "Logout!");
     emit logout();
 }
+
+void ShowFiles::showError(){
+    QMessageBox::information(this, "Error", "Error for this request!");
+}
