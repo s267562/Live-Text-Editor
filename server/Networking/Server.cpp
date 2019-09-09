@@ -117,7 +117,8 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	//******************************** test in attesa della registration funzionante lato client **************
-	if((QString(username)=="test1" && QString(password)=="test1") || (QString(username)=="test2" && QString(password)=="test2")) {
+	if ((QString(username) == "test1" && QString(password) == "test1") ||
+		(QString(username) == "test2" && QString(password) == "test2")) {
 		usernames[soc->socketDescriptor()] = username;
 		return true;
 	}
@@ -253,7 +254,7 @@ bool Server::registration(QTcpSocket *soc) {
 	/*QDataStream in(soc);
 	qsizetype sizeAvatar;
 	in >> sizeAvatar;*/
-	int sizeAvatar = readNumberFromSocket(soc); 
+	int sizeAvatar = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	qDebug() << "                                username: " << username << " size: " << sizeUsername;
@@ -273,8 +274,11 @@ bool Server::registration(QTcpSocket *soc) {
 
 	bool registeredSuccessfully = DB.registerUser(QString(username), QString(password));
 	if (registeredSuccessfully) {
+		bool avatarChanged = DB.changeAvatar(QString(username), avatarDef);
+
 		usernames[soc->socketDescriptor()] = username;
 		return true;
+
 	} else
 		return false;
 }
@@ -293,7 +297,8 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
 std::shared_ptr<Thread> Server::addThread(QString fileName) {
 	std::lock_guard<std::mutex> lg(mutexThread);
 	CRDT *crdt = new CRDT();
-	std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
+	std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName,
+															  this);                        /* create new thread */
 	threads[fileName] = thread;
 	return thread;
 }
