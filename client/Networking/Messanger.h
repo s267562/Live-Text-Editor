@@ -63,6 +63,9 @@ signals:
     void setUsers(QStringList);
     void removeUser(QString);
     void fileRecive(std::vector<std::vector<Character>> file);
+    void requestForFileFailed();
+    void insertFailed();
+    void deleteFailed();
 };
 
 #endif // MESSANGER_H

@@ -17,12 +17,12 @@ public:
     ~ShowFiles();
     void addFiles(QStringList l);
 
-private slots:
+public slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
-
     void on_pushButton_newFile_clicked();
     void on_actionNew_File_triggered();
     void on_actionLogout_triggered();
+    void showError();
 
 signals:
     void newFile(QString filename);

@@ -108,6 +108,12 @@ bool Messanger::readError(){
         emit loginFailed();
     }else if (type.toStdString() == REGISTRATION_MESSAGE){
         emit registrationFailed();
+    }else if (type.toStdString() == REQUEST_FILE_MESSAGE) {
+        emit requestForFileFailed();
+    }else if (type.toStdString() == INSERT_MESSAGE){
+        emit insertFailed();
+    }else if (type.toStdString() == DELETE_MESSAGE){
+        emit deleteFailed();
     }
 
     return true;

@@ -193,7 +193,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 
 	QByteArray fileName;
 	if (!readChunck(soc, fileName, fileNameSize)) {
-		writeErrMessage(soc);
 		return false;
 	}
 
@@ -220,7 +219,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		thread->start();
 	}
 
-	//writeOkMessage(soc);
 	return true;
 }
 
@@ -253,7 +251,7 @@ bool Server::registration(QTcpSocket *soc) {
 	/*QDataStream in(soc);
 	qsizetype sizeAvatar;
 	in >> sizeAvatar;*/
-	int sizeAvatar = readNumberFromSocket(soc); 
+	int sizeAvatar = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	qDebug() << "                                username: " << username << " size: " << sizeUsername;
