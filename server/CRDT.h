@@ -18,6 +18,7 @@ public:
     CRDT();
 
     Pos handleInsert(Character character);
+    Pos handleStyleChanged(const Character &character);
     void handleDelete(const Character &character);
 	bool loadCRDT(QString filename);
 	bool saveCRDT(QString filename);

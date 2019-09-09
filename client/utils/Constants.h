@@ -13,6 +13,7 @@
 #define LIST_OF_FILE "LSF\r\n"
 #define LIST_OF_USERS "USR\r\n"
 #define INSERT_MESSAGE "INS\r\n"
+#define STYLE_CAHNGED_MESSAGE "STY\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 #define REMOVE_USER "RUS\n\r"
 #define SENDING_FILE "FIL\n\r"

@@ -21,11 +21,14 @@ public:
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
     const QString &getSiteId() const;
+    const Character getCharacter(Pos pos);
     Character handleLocalInsert(char val, CharFormat charFormat, Pos pos);
     Pos handleRemoteInsert(Character character);
     std::vector<Character> handleLocalDelete(Pos startPos, Pos endPos);
     Pos handleRemoteDelete(const Character &character);
     const QString toText();
+    bool styleChanged(CharFormat format, Pos pos);
+    Pos handleRemoteStyleChanged(const Character &character);
 
 private:
     QString siteId;
@@ -46,7 +49,7 @@ private:
 
 
     // delete
-    Pos findDeletePosition(Character character);
+    Pos findPosition(Character character);
     int findIndexInLine(Character character, std::vector<Character> line);
 
     std::vector<Character> deleteMultipleLines(Pos startPos, Pos endPos);

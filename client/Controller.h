@@ -65,6 +65,7 @@ public:
     void localDelete(Pos startPos, Pos endPos);
     void resetModel();
     User* getUser();
+    void styleChange(CharFormat format, Pos pos);
 };
 
 

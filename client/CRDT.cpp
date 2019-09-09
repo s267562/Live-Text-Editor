@@ -28,6 +28,9 @@ void CRDT::setSiteId(const QString &siteId) {
     CRDT::siteId = siteId;
 }
 
+const Character CRDT::getCharacter(Pos pos) {
+    return this->structure[pos.getLine()][pos.getCh()];
+}
 
 // remote insert
 
@@ -385,7 +388,7 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
 // remote delete
 
 Pos CRDT::handleRemoteDelete(const Character &character) {
-    Pos pos = this->findDeletePosition(character);
+    Pos pos = this->findPosition(character);
 
     if (!pos) return pos;
 
@@ -418,7 +421,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     return pos;
 }
 
-Pos CRDT::findDeletePosition(Character character) {
+Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char
     if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
         return Pos {-1, -1}; // false obj
@@ -528,4 +531,23 @@ const QString CRDT::toText() {
         }
     }
     return text;
+}
+
+// local style changed
+bool CRDT::styleChanged(CharFormat format, Pos pos) {
+    if(structure[pos.getLine()][pos.getCh()].getCharFormat() == format) {
+        return false;
+    } else {
+        structure[pos.getLine()][pos.getCh()].setCharFormat(format);
+        return true;
+    }
+}
+
+// remote style changed
+Pos CRDT::handleRemoteStyleChanged(const Character &character) {
+    Pos pos = findPosition(character);
+
+    this->structure[pos.getLine()][pos.getCh()].setCharFormat(character.getCharFormat());
+
+    return pos;
 }

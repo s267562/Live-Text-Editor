@@ -21,11 +21,13 @@ namespace Ui {
 
 class Editor : public QMainWindow {
 Q_OBJECT
+
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
     void insertChar(char character, CharFormat charFormat, Pos pos);
+    void changeStyle(Pos pos, const CharFormat &format);
     void deleteChar(Pos pos);
     void reset();
     void replaceText(const QString initialText);

@@ -5,6 +5,7 @@
 #include <QtCore/QJsonArray>
 #include <iostream>
 #include "Character.h"
+#include <QDebug>
 
 Character::Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
 		: value(value), charFormat(charFormat), counter(counter), siteId(siteId), position(position) {}

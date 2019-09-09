@@ -158,6 +158,18 @@ void Controller::localInsert(QString val, CharFormat charFormat, Pos pos) {
     this->messanger->writeInsert(character);
 }
 
+void Controller::styleChange(CharFormat format, Pos pos) {
+    // check if style change
+    if(crdt->styleChanged(format, pos)) {
+        Character character = crdt->getCharacter(pos);
+        // send insert at the server.
+        this->messanger->writeStyleChanged(character);
+    } else {
+        // do nothing...
+    }
+}
+
+
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleLocalDelete(startPos, endPos);
 
@@ -179,6 +191,13 @@ void Controller::newMessage(Message message) {
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             this->editor->insertChar(character.getValue(), character.getCharFormat(), pos);
+        }
+    } else if(message.getType() == STYLE_CHANGED) {
+        Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
+
+        if(pos) {
+            // delete from the editor.
+            this->editor->changeStyle(pos, message.getCharacter().getCharFormat());
         }
     } else if(message.getType() == DELETE) {
         Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());

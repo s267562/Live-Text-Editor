@@ -207,8 +207,21 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
-            qDebug() << "text doesn't change (maybe style changed)";
-            // TODO use this to capture when style changed
+            // qDebug() << "text doesn't change (maybe style changed)";
+            QTextCursor cursor = textEdit->textCursor();
+
+            for(int i=0; i<charsAdded; i++) {
+                // for each char added
+                cursor.setPosition(position + i);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                // select char
+                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                CharFormat charFormat = getSelectedCharFormat(cursor);
+                qDebug() << "Char to check style:" << textAdded.at(i);
+                this->controller->styleChange(charFormat, pos);
+            }
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
                 // correction when paste something in first position.
@@ -326,6 +339,29 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+    textCursor.setPosition(oldCursorPos);
+}
+
+void Editor::changeStyle(Pos pos, const CharFormat &format) {
+    //qDebug() << "bold" << format.isBold();
+    //qDebug() << "underline" << format.isUnderline();
+    //qDebug() << "italic" << format.isItalic();
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
+    // TODO il cursore dovrebbe essere settato nella posizione dove c'è il carattere
+
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -570,3 +606,5 @@ void Editor::replaceText(const QString initialText) {
 void Editor::reset() {
     ui->userListWidget->clear();
 }
+
+

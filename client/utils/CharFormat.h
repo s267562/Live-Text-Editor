@@ -37,6 +37,13 @@ public:
         //TODO: color...
     }
 
+    bool operator==(const CharFormat& otherCharFormat) const {
+        if(this->isUnderline() == otherCharFormat.isUnderline() &&
+            this->isItalic() == otherCharFormat.isItalic() &&
+            this->isBold() == otherCharFormat.isBold()) { return true;
+        } else { return false; }
+    }
+
 private:
     bool bold;
     bool italic;
