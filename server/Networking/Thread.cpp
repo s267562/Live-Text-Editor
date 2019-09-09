@@ -139,10 +139,6 @@ bool Thread::readInsert(QTcpSocket *soc){
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
     Character character = Character::toCharacter(jsonDocument);
 
-    qDebug() << "bold:" << character.getCharFormat().isBold();
-
-    //qDebug() << "char: "<< character.getValue();
-
     crdt->handleInsert(character);
 
     // broadcast
@@ -169,7 +165,7 @@ bool Thread::readStyleChanged(QTcpSocket *soc){
 
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
     Character character = Character::toCharacter(jsonDocument);
-
+    
     crdt->handleStyleChanged(character);
 
     // broadcast

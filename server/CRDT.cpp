@@ -149,7 +149,7 @@ void CRDT::insertChar(Character character, Pos pos) {
 Pos CRDT::handleStyleChanged(const Character &character) {
     Pos pos = this->findPosition(character);
 
-    this->structure[pos.getLine()][pos.getCh()].setCharFormat(character.getCharFormat());
+    this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
     return pos;
 }

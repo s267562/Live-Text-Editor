@@ -150,17 +150,17 @@ void Controller::showEditor(){
     editor->show();
 }
 
-void Controller::localInsert(QString val, CharFormat charFormat, Pos pos) {
+void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     // insert into the model
-    Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), charFormat, pos);
+    Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
     // send insert at the server.
     this->messanger->writeInsert(character);
 }
 
-void Controller::styleChange(CharFormat format, Pos pos) {
+void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
     // check if style change
-    if(crdt->styleChanged(format, pos)) {
+    if(crdt->styleChanged(textCharFormat, pos)) {
         Character character = crdt->getCharacter(pos);
         // send insert at the server.
         this->messanger->writeStyleChanged(character);
@@ -190,14 +190,14 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            this->editor->insertChar(character.getValue(), character.getCharFormat(), pos);
+            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos);
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
 
         if(pos) {
             // delete from the editor.
-            this->editor->changeStyle(pos, message.getCharacter().getCharFormat());
+            this->editor->changeStyle(pos, message.getCharacter().getTextCharFormat());
         }
     } else if(message.getType() == DELETE) {
         Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());

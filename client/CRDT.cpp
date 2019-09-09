@@ -125,11 +125,11 @@ Pos CRDT::findEndPosition(Character lastChar, std::vector<Character> lastLine, i
 
 // local insert
 
-Character CRDT::handleLocalInsert(char val, CharFormat charFormat, Pos pos) {
+Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormatt, Pos pos) {
     //increment version vector
     this->versionsVector[siteId]++;
 
-    const Character character = generateChar(val, charFormat, pos, siteId);
+    const Character character = generateChar(val, textCharFormatt, pos, siteId);
     insertChar(character, pos);
     //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
@@ -158,12 +158,12 @@ Character CRDT::handleLocalInsert(char val, CharFormat charFormat, Pos pos) {
     return character;
 }
 
-const Character CRDT::generateChar(char val, CharFormat charFormat, Pos pos, QString siteId) {
+const Character CRDT::generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
     const std::vector<Identifier> posBefore = findPosBefore(pos);
     const std::vector<Identifier> posAfter = findPosAfter(pos);
     const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter, siteId);
 
-    Character character(val, charFormat, this->versionsVector[siteId], siteId, newPos);
+    Character character(val, textCharFormat, this->versionsVector[siteId], siteId, newPos);
 
     return character;
 }
@@ -534,11 +534,11 @@ const QString CRDT::toText() {
 }
 
 // local style changed
-bool CRDT::styleChanged(CharFormat format, Pos pos) {
-    if(structure[pos.getLine()][pos.getCh()].getCharFormat() == format) {
+bool CRDT::styleChanged(QTextCharFormat textCharFormat, Pos pos) {
+    if(structure[pos.getLine()][pos.getCh()].getTextCharFormat() == textCharFormat) {
         return false;
     } else {
-        structure[pos.getLine()][pos.getCh()].setCharFormat(format);
+        structure[pos.getLine()][pos.getCh()].setTextCharFormat(textCharFormat);
         return true;
     }
 }
@@ -547,7 +547,7 @@ bool CRDT::styleChanged(CharFormat format, Pos pos) {
 Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     Pos pos = findPosition(character);
 
-    this->structure[pos.getLine()][pos.getCh()].setCharFormat(character.getCharFormat());
+    this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
     return pos;
 }

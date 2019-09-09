@@ -22,12 +22,12 @@ public:
     void setSiteId(const QString &siteId);
     const QString &getSiteId() const;
     const Character getCharacter(Pos pos);
-    Character handleLocalInsert(char val, CharFormat charFormat, Pos pos);
+    Character handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteInsert(Character character);
     std::vector<Character> handleLocalDelete(Pos startPos, Pos endPos);
     Pos handleRemoteDelete(const Character &character);
     const QString toText();
-    bool styleChanged(CharFormat format, Pos pos);
+    bool styleChanged(QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteStyleChanged(const Character &character);
 
 private:
@@ -38,7 +38,7 @@ private:
 
 
     // insert
-    const Character generateChar(char val, CharFormat charFormat, Pos pos, QString siteId);
+    const Character generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId);
     const std::vector<Identifier> findPosBefore(Pos pos);
     const std::vector<Identifier> findPosAfter(Pos pos);
     std::vector<Identifier> generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> pos2, QString siteId, std::vector<Identifier> newPos = {}, int level = 0);

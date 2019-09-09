@@ -206,12 +206,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
+            // qDebug() << "text doesn't change (maybe style changed)";
             if(position == 0 && textDocument->characterCount()-1 != charsAdded) {
                 // correction when paste something in first position.
-                qDebug() << "HERE";
                 charsAdded--;
             }
-            // qDebug() << "text doesn't change (maybe style changed)";
             QTextCursor cursor = textEdit->textCursor();
 
             for(int i=0; i<charsAdded; i++) {
@@ -222,9 +221,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
                 // select char
                 cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-                CharFormat charFormat = getSelectedCharFormat(cursor);
-                qDebug() << "Char to check style:" << textAdded.at(i);
-                this->controller->styleChange(charFormat, pos);
+                QTextCharFormat textCharFormat = cursor.charFormat();
+                this->controller->styleChange(textCharFormat, pos);
             }
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
@@ -286,8 +284,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
                     // select char
                     cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                    CharFormat charFormat = getSelectedCharFormat(cursor);
+                    QTextCharFormat charFormat = cursor.charFormat();
 
                     this->controller->localInsert(chars.at(i), charFormat, startPos);
                 }
@@ -331,7 +328,7 @@ CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
     return charFormat;
 }
 
-void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
+void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos) {
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
@@ -343,18 +340,17 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
-    QTextCharFormat textCharFormat = getTextCharFormat(charFormat);
     textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
-    
+
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
 }
 
-void Editor::changeStyle(Pos pos, const CharFormat &format) {
+void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
     //qDebug() << "bold" << format.isBold();
     //qDebug() << "underline" << format.isUnderline();
     //qDebug() << "italic" << format.isItalic();
@@ -368,7 +364,6 @@ void Editor::changeStyle(Pos pos, const CharFormat &format) {
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    QTextCharFormat textCharFormat = getTextCharFormat(format);
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
@@ -528,9 +523,13 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     bool validSignal = true;
     isRedoAvailable = textDocument->isRedoAvailable();
 
-    if(charsAdded == charsRemoved && position+charsAdded > textDocument->characterCount()-1) {
+    QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+    undo();
+    QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
+    redo();
+    if(charsAdded == charsRemoved && position+charsAdded > textDocument->characterCount()-1 && textAdded == textRemoved) {
         // wrong signal when apply style in editor 1 (line 2) and then write something in editor2
-        //qDebug() << "WRONG SIGNAL 1";
+        qDebug() << "WRONG SIGNAL 1";
         validSignal = false;
     }
 

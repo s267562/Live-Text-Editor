@@ -7,8 +7,8 @@
 #include "Character.h"
 #include <QDebug>
 
-Character::Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
-		: value(value), charFormat(charFormat), counter(counter), siteId(siteId), position(position) {}
+Character::Character(char value, QTextCharFormat textCharFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
+		: value(value), textCharFormat(textCharFormat), counter(counter), siteId(siteId), position(position) {}
 
 Character::Character() {
     value = '*';
@@ -64,8 +64,11 @@ void Character::read(const QJsonObject &json) {
 	if (json.contains("value") && json["value"].isDouble())
 		value = static_cast<char>(json["value"].toInt());
 
-	if (json.contains("charFormat"))
-		charFormat.read(json["charFormat"].toObject());
+	if (json.contains("charFormat")){
+	    CharFormat format;
+	    format.read(json["charFormat"].toObject());
+	    textCharFormat = generateTextCharFormat(format);
+	}
 
 	if (json.contains("counter") && json["counter"].isDouble())
 		counter = json["counter"].toInt();
@@ -94,6 +97,7 @@ void Character::write(QJsonObject &json) const {
 	json["value"] = value;
 
 	QJsonObject charFormatObject;
+	CharFormat charFormat = generateCharFormat(textCharFormat);
 	charFormat.write(charFormatObject);
 	json["charFormat"] = charFormatObject;
 
@@ -109,20 +113,15 @@ void Character::write(QJsonObject &json) const {
 	json["position"] = identifierArray;
 }
 
-const CharFormat &Character::getCharFormat() const {
-    return charFormat;
-}
-
-void Character::setCharFormat(const CharFormat &charFormat) {
-    Character::charFormat = charFormat;
-}
-
 QByteArray Character::toQByteArray(){
 	QJsonObject json;
 	json["value"] = value;
-    QJsonObject charFormatObject;
+
+	QJsonObject charFormatObject;
+    CharFormat charFormat = generateCharFormat(textCharFormat);
     charFormat.write(charFormatObject);
     json["charFormat"] = charFormatObject;
+
 	json["counter"] = counter;
 	json["siteId"] = siteId;
 
@@ -144,8 +143,11 @@ Character Character::toCharacter(QJsonDocument jsonDocument){
 	if (json.contains("value") && json["value"].isDouble())
 		character.value = static_cast<char>(json["value"].toInt());
 
-	if (json.contains("charFormat"))
-	    character.charFormat.read(json["charFormat"].toObject());
+	if (json.contains("charFormat")){
+        CharFormat format;
+        format.read(json["charFormat"].toObject());
+        character.textCharFormat = generateTextCharFormat(format);
+	}
 
 	if (json.contains("counter") && json["counter"].isDouble())
 		character.counter = json["counter"].toInt();
@@ -166,4 +168,42 @@ Character Character::toCharacter(QJsonDocument jsonDocument){
 	}
 
 	return character;
+}
+
+const QTextCharFormat &Character::getTextCharFormat() const {
+    return textCharFormat;
+}
+
+void Character::setTextCharFormat(const QTextCharFormat &textCharFormat) {
+    Character::textCharFormat = textCharFormat;
+}
+
+QTextCharFormat Character::generateTextCharFormat(const CharFormat format) {
+    QTextCharFormat fmt;
+    if(format.isBold()) {
+        fmt.setFontWeight(QFont::Bold);
+    } else {
+        fmt.setFontWeight(QFont::Normal);
+    }
+    if(format.isItalic()) {
+        fmt.setFontItalic(true);
+    } else {
+        fmt.setFontItalic(false);
+    }
+    if(format.isUnderline()) {
+        fmt.setFontUnderline(true);
+    } else {
+        fmt.setFontUnderline(false);
+    }
+
+    return fmt;
+}
+
+CharFormat Character::generateCharFormat(const QTextCharFormat textCharFormat) {
+    CharFormat format;
+    format.setBold(textCharFormat.fontWeight() == QFont::Bold);
+    format.setItalic(textCharFormat.fontItalic());
+    format.setUnderline(textCharFormat.fontUnderline());
+
+    return format;
 }

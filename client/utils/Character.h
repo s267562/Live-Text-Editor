@@ -11,14 +11,15 @@
 #include "Identifier.h"
 #include "CharFormat.h"
 #include <QJsonDocument>
+#include <QtGui/QTextCharFormat>
 
 class Character {
 public:
-    Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
+    Character(char value, QTextCharFormat textCharFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
 	Character();
     char getValue() const;
-    const CharFormat &getCharFormat() const;
-    void setCharFormat(const CharFormat &charFormat);
+    const QTextCharFormat &getTextCharFormat() const;
+    void setTextCharFormat(const QTextCharFormat &textCharFormat);
     int getCounter() const;
     const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
@@ -28,10 +29,12 @@ public:
 	void write( QJsonObject &json) const;
 	QByteArray toQByteArray();
 	static Character toCharacter(QJsonDocument jsonDocument);
+	static QTextCharFormat generateTextCharFormat(const CharFormat format);
+	static CharFormat generateCharFormat(const QTextCharFormat textCharFormat);
 
 private:
     char value;
-    CharFormat charFormat;
+    QTextCharFormat textCharFormat;
     int counter;
     QString siteId;
     std::vector<Identifier> position;
