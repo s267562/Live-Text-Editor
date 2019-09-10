@@ -265,14 +265,12 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
-        blocks.push_back(QTextBlockFormat{});
     }
 
     // if inserting a newline, split line into two lines.
     if (character.getValue() == '\n') {
         qDebug() << "Splitting line into two lines";
         std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
-        QTextBlockFormat textBlockFormatAfter(blocks.at(pos.getLine()));
 
         if (lineAfter.size() != 0) {
             qDebug().noquote() << "There is something after the newLine inserted";
@@ -289,9 +287,7 @@ void CRDT::insertChar(Character character, Pos pos) {
                 structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
             }
              */
-
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-            blocks.insert(blocks.begin()+pos.getLine()+1, textBlockFormatAfter);
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
         }

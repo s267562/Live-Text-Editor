@@ -12,6 +12,9 @@
 #include <QTextEdit>
 #include <iostream>
 #include <QMovie>
+#include <QComboBox>
+#include <QFontComboBox>
+
 
 class Controller;
 
@@ -53,6 +56,14 @@ private slots:
     void textUnderline();
     void textItalic();
     void textAlign(QAction *a);
+    void textColor();
+
+    void textFamily(const QString &f);
+    void textSize(const QString &p);
+
+
+    void colorChanged(const QColor &c);
+
 
 
 private:
@@ -90,6 +101,12 @@ private:
     QAction *actionAlignCenter;
     QAction *actionAlignRight;
     QAction *actionAlignJustify;
+
+    QAction *actionTextColor;
+
+    QFontComboBox *comboFont;
+    QComboBox *comboSize;
+
 };
 
 #endif //TEXTEDITOR_EDITOR_H

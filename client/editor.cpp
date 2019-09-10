@@ -15,6 +15,7 @@
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QColorDialog>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
@@ -145,6 +146,28 @@ void Editor::setupTextActions() {
 
     menu->addSeparator();
 
+
+    QPixmap pix(16, 16);
+    pix.fill(Qt::black);
+    actionTextColor = menu->addAction(pix, tr("&Color..."), this, &Editor::textColor);
+    tb->addAction(actionTextColor);
+
+    comboFont = new QFontComboBox(tb);
+    tb->addWidget(comboFont);
+    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
+
+    comboSize = new QComboBox(tb);
+    comboSize->setObjectName("comboSize");
+    tb->addWidget(comboSize);
+    comboSize->setEditable(true);
+
+    const QList<int> standardSizes = QFontDatabase::standardSizes();
+            foreach (int size, standardSizes)
+            comboSize->addItem(QString::number(size));
+    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
+
+    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+
 }
 
 void Editor::textBold() {
@@ -164,6 +187,43 @@ void Editor::textItalic() {
     fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
 }
+
+void Editor::textFamily(const QString &f)
+{
+    QTextCharFormat fmt;
+    fmt.setFontFamily(f);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::textSize(const QString &p)
+{
+    qreal pointSize = p.toFloat();
+    if (p.toFloat() > 0) {
+        QTextCharFormat fmt;
+        fmt.setFontPointSize(pointSize);
+        mergeFormatOnWordOrSelection(fmt);
+    }
+}
+
+void Editor::textColor()
+{
+    QColor col = QColorDialog::getColor(textEdit->textColor(), this);
+    if (!col.isValid())
+        return;
+    QTextCharFormat fmt;
+    fmt.setForeground(col);
+    mergeFormatOnWordOrSelection(fmt);
+    colorChanged(col);
+}
+
+void Editor::colorChanged(const QColor &c)
+{
+    QPixmap pix(16, 16);
+    pix.fill(c);
+    actionTextColor->setIcon(pix);
+}
+
+
 
 void Editor::textAlign(QAction *a)
 {
