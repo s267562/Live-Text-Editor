@@ -70,7 +70,7 @@ void Controller::connectClient(QString address, QString port) {
         finder = new ShowFiles(this);
         connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
         connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
-        connect(this->messanger, SIGNAL(fileNames(QStringList)), this, SLOT(showFileFinder(QStringList)));
+        connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
         connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 
         this->login->show();
@@ -97,7 +97,7 @@ void Controller::showRegistration(){
 
 /* SHOW FILE */
 
-void Controller::showFileFinder(QStringList fileList){
+void Controller::showFileFinder(std::map<QString, bool> fileList){
     now->close();
     this->finder->addFiles(fileList);
     if (user == nullptr){

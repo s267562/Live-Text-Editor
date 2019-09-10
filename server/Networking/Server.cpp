@@ -161,17 +161,20 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 
 	//******************************************* Versione dtest senza DB***********************************
 	int nFiles = 2;
-	QString fileName[2];
-	fileName[0] = "file1";                                     /* file fantoccio: da rimuovere in seguito */
-	fileName[1] = "file2";
+	std::list<std::pair<QString, bool>> files;								/* files fantoccio */
+	files.push_back(std::make_pair("file1", true));
+	files.push_back(std::make_pair("file2", false));
+
 	QByteArray message(LIST_OF_FILE);
 
 	QByteArray numFiles = convertionNumber(nFiles);
 	message.append(" " + numFiles);
 
-	for (int i = 0; i < nFiles; i++) {
-		QByteArray fileNameSize = convertionNumber(fileName[i].size());
-		message.append(" " + fileNameSize + " " + fileName[i].toUtf8());
+	for (std::pair<QString, bool> file : files) {
+		QByteArray fileNameSize = convertionNumber(file.first.size());
+		QByteArray shared;
+		shared.setNum(file.second ? 1 : 0);
+		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
 	}
 
 	qDebug() << "                                " << message;

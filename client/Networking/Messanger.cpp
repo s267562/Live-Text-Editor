@@ -191,6 +191,7 @@ bool Messanger::registration(QString username, QString password, QPixmap avatar)
 bool Messanger::readFileNames(){
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";
     QStringList fileList;
+    std::map<QString, bool> files;
 
     readSpace(socket);
     int numFiles = readNumberFromSocket(socket);
@@ -205,14 +206,21 @@ bool Messanger::readFileNames(){
         if (!readChunck(socket, fileName, fileNameSize)){
             return false;
         }
-        fileList.append(fileName);
+        readSpace(socket);
+        QByteArray flag;
+        if (!readChunck(socket, flag, 1)){
+            return false;
+        }
+
+        bool flagBool = flag.toInt() == 1;
+        files[fileName] = flagBool;
 
         qDebug() << "                               " << i + 1 << "." << fileName;
     }
 
     qDebug() << ""; // newLine
 
-    emit fileNames(fileList);
+    emit fileNames(files);
 
     return true;
 }

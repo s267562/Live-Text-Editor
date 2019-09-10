@@ -58,7 +58,7 @@ signals:
     void registrationFailed();
     void newMessage(Message message);
     void userVerified();
-    void fileNames(QStringList fileList);
+    void fileNames(std::map<QString, bool> fileList);
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);

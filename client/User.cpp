@@ -6,11 +6,11 @@
 
 User::User(QString username): username(username){}
 
-void User::setFileLis(QStringList fileList) {
+void User::setFileLis(std::map<QString, bool> fileList) {
     this->fileList = fileList;
 }
 
-QStringList User::getFileList() const{
+std::map<QString, bool> User::getFileList() const{
     return fileList;
 }
 

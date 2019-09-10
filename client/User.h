@@ -7,6 +7,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <map>
 
 class User {
     QString username;
@@ -14,13 +15,13 @@ public:
     void setUsername(const QString &username);
 
 private:
-    QStringList fileList;
+    std::map<QString, bool> fileList;
     bool isLogged;
 
 public:
     User(QString username);
-    void setFileLis(QStringList fileList);
-    QStringList getFileList() const;
+    void setFileLis(std::map<QString, bool> fileList);
+    std::map<QString, bool> getFileList() const;
     void setIsLogged(bool isLogged);
     bool isIsLogged() const;
     const QString &getUsername() const;

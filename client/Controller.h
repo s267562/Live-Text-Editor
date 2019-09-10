@@ -49,7 +49,7 @@ public slots:
     void showRegistration();
 
     /* SHOW FILES */
-    void showFileFinder(QStringList);
+    void showFileFinder(std::map<QString, bool>);
     void showFileFinderOtherView();
     void requestForFile(QString filename);
 

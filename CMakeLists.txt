@@ -47,6 +47,7 @@ add_executable(client
         client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
         client/ui/showFiles.cpp client/ui/showFiles.ui
+        client/ui/customwidget.cpp client/ui/customwidget.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h)
