@@ -5,11 +5,19 @@
 #ifndef TEXTEDITOR_CHARFORMAT_H
 #define TEXTEDITOR_CHARFORMAT_H
 
-#include <QtGui/QColor>
+#include <QDebug>
+#include <QFontComboBox>
+#include <QColorDialog>
+#include <QtGui/QTextCharFormat>
 
 class CharFormat {
 public:
-    CharFormat(bool bold = false, bool italic = false, bool underline = false, QColor color = QColor("black")) : bold(bold), italic(italic), underline(underline), color(color) { };
+    CharFormat(bool bold = false,
+                bool italic = false,
+                bool underline = false,
+                QColor color = QColor("black"),
+                QFont font = QFont("Ubuntu"),
+                qreal fontSize = 11) : bold(bold), italic(italic), underline(underline), color(color), font(font), fontSize(fontSize) { };
 
     bool isBold() const { return bold; }
     void setBold(bool bold) { CharFormat::bold = bold; }
@@ -23,25 +31,69 @@ public:
     const QColor &getColor() const { return color; }
     void setColor(const QColor &color) { CharFormat::color = color; }
 
+    const QFont &getFont() const {
+        return font;
+    }
+
+    void setFont(const QFont &font) {
+        CharFormat::font = font;
+    }
+
+    qreal getFontSize() const {
+        return fontSize;
+    }
+
+    void setFontSize(qreal fontSize) {
+        CharFormat::fontSize = fontSize;
+    }
+
     void write(QJsonObject &json) const {
         json["bold"] = bold;
         json["italic"] = italic;
         json["underline"] = underline;
-        // TODO: color...
+        json["color"] = color.name();
+        json["font"] = font.family();
+        json["fontSize"] = fontSize;
     }
 
     void read(QJsonObject json) {
         bold = json["bold"].toBool();
         italic = json["italic"].toBool();
         underline = json["underline"].toBool();
-        //TODO: color...
+
+        QString colorString = json["color"].toString();
+        color = QColor(colorString);
+
+        QString fontString = json["font"].toString();
+        font = QFont(fontString);
+
+        fontSize = json["fontSize"].toDouble();
+    }
+
+    QTextCharFormat toTextCharFormat() {
+        QTextCharFormat fmt;
+        if(isBold()) {
+            fmt.setFontWeight(QFont::Bold);
+        } else {
+            fmt.setFontWeight(QFont::Normal);
+        }
+        fmt.setFontItalic(isItalic());
+        fmt.setFontUnderline(isUnderline());
+        fmt.setForeground(getColor());
+        fmt.setFontFamily(getFont().family());
+        if(getFontSize() > 0) {
+            fmt.setFontPointSize(getFontSize());
+        }
+        return fmt;
     }
 
     bool operator==(const CharFormat& otherCharFormat) const {
-        if(this->isUnderline() == otherCharFormat.isUnderline() &&
-            this->isItalic() == otherCharFormat.isItalic() &&
-            this->isBold() == otherCharFormat.isBold()) { return true;
-        } else { return false; }
+        return this->isUnderline() == otherCharFormat.isUnderline() &&
+               this->isItalic() == otherCharFormat.isItalic() &&
+               this->isBold() == otherCharFormat.isBold() &&
+               this->getColor() == otherCharFormat.getColor() &&
+               this->getFont() == otherCharFormat.getFont() &&
+               this->getFontSize() == otherCharFormat.getFontSize();
     }
 
 private:
@@ -49,6 +101,9 @@ private:
     bool italic;
     bool underline;
     QColor color;
+    QFont font;
+    qreal fontSize;
+
 };
 
 #endif //TEXTEDITOR_CHARFORMAT_H

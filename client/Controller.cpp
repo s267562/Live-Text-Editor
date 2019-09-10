@@ -162,6 +162,7 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
     // check if style change
     if(crdt->styleChanged(textCharFormat, pos)) {
         Character character = crdt->getCharacter(pos);
+
         // send insert at the server.
         this->messanger->writeStyleChanged(character);
     } else {

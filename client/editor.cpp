@@ -242,6 +242,17 @@ void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();
     cursor.mergeCharFormat(format);
     textEdit->mergeCurrentCharFormat(format);
+
+    // updateUI
+    actionTextBold->setChecked(format.fontWeight() == QFont::Bold);
+    actionTextItalic->setChecked(format.fontItalic());
+    actionTextUnderline->setChecked(format.fontUnderline());
+    colorChanged(format.foreground().color());
+    comboFont->setCurrentFont(format.font());
+    int index = comboSize->findText(QString::number(format.fontPointSize()));
+    if(index != -1) {
+        comboSize->setCurrentIndex(index);
+    }
 }
 
 void Editor::setController(Controller *controller) {
@@ -281,7 +292,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
                 // select char
                 cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
                 QTextCharFormat textCharFormat = cursor.charFormat();
+
                 this->controller->styleChange(textCharFormat, pos);
             }
         } else {
@@ -354,6 +367,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         restoreCursor();
         onCursorPositionChanged();
     } else {
+        qDebug() << " "; // new Line
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
         if(this->startSelection != this->endSelection) {
@@ -406,6 +420,7 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
+    mergeFormatOnWordOrSelection(textCharFormat);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -433,28 +448,7 @@ void Editor::deleteChar(Pos pos) {
 }
 
 void Editor::setFormat(CharFormat charFormat) {
-    QTextCharFormat fmt;
-    if(charFormat.isBold()) {
-        actionTextBold->setChecked(true);
-        fmt.setFontWeight(QFont::Bold);
-    } else {
-        actionTextBold->setChecked(false);
-        fmt.setFontWeight(QFont::Normal);
-    }
-    if(charFormat.isItalic()) {
-        actionTextItalic->setChecked(true);
-        fmt.setFontItalic(true);
-    } else {
-        actionTextItalic->setChecked(false);
-        fmt.setFontItalic(false);
-    }
-    if(charFormat.isUnderline()) {
-        actionTextUnderline->setChecked(true);
-        fmt.setFontUnderline(true);
-    } else {
-        actionTextUnderline->setChecked(false);
-        fmt.setFontUnderline(false);
-    }
+    QTextCharFormat fmt = charFormat.toTextCharFormat();
 
     mergeFormatOnWordOrSelection(fmt);
 }
@@ -464,13 +458,16 @@ void Editor::onCursorPositionChanged() {
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
-            setFormat(CharFormat(false, false, false));
+            setFormat(CharFormat()); // defaul character
         } else if(cursorPos > 0) {
             cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
             QTextCharFormat textCharFormat = cursor.charFormat();
             setFormat(CharFormat(textCharFormat.fontWeight() == QFont::Bold,
                                  textCharFormat.fontItalic(),
-                                 textCharFormat.fontUnderline()));
+                                 textCharFormat.fontUnderline(),
+                                 textCharFormat.foreground().color(),
+                                 textCharFormat.font().family(),
+                                 textCharFormat.fontPointSize()));
         }
     }
 }

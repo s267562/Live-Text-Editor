@@ -125,11 +125,11 @@ Pos CRDT::findEndPosition(Character lastChar, std::vector<Character> lastLine, i
 
 // local insert
 
-Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormatt, Pos pos) {
+Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos pos) {
     //increment version vector
     this->versionsVector[siteId]++;
 
-    const Character character = generateChar(val, textCharFormatt, pos, siteId);
+    const Character character = generateChar(val, textCharFormat, pos, siteId);
     insertChar(character, pos);
     //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 

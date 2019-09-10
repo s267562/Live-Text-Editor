@@ -29,8 +29,7 @@ public:
 	void write( QJsonObject &json) const;
 	QByteArray toQByteArray();
 	static Character toCharacter(QJsonDocument jsonDocument);
-	static QTextCharFormat generateTextCharFormat(const CharFormat format);
-	static CharFormat generateCharFormat(const QTextCharFormat textCharFormat);
+	static CharFormat generateCharFormat(QTextCharFormat textCharFormat);
 
 private:
     char value;

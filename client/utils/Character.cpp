@@ -67,7 +67,7 @@ void Character::read(const QJsonObject &json) {
 	if (json.contains("charFormat")){
 	    CharFormat format;
 	    format.read(json["charFormat"].toObject());
-	    textCharFormat = generateTextCharFormat(format);
+	    textCharFormat = format.toTextCharFormat();
 	}
 
 	if (json.contains("counter") && json["counter"].isDouble())
@@ -101,7 +101,7 @@ void Character::write(QJsonObject &json) const {
 	charFormat.write(charFormatObject);
 	json["charFormat"] = charFormatObject;
 
-	json["counter"] = counter;
+    json["counter"] = counter;
 	json["siteId"] = siteId;
 
 	QJsonArray identifierArray;
@@ -146,7 +146,7 @@ Character Character::toCharacter(QJsonDocument jsonDocument){
 	if (json.contains("charFormat")){
         CharFormat format;
         format.read(json["charFormat"].toObject());
-        character.textCharFormat = generateTextCharFormat(format);
+        character.textCharFormat = format.toTextCharFormat();
 	}
 
 	if (json.contains("counter") && json["counter"].isDouble())
@@ -178,32 +178,14 @@ void Character::setTextCharFormat(const QTextCharFormat &textCharFormat) {
     Character::textCharFormat = textCharFormat;
 }
 
-QTextCharFormat Character::generateTextCharFormat(const CharFormat format) {
-    QTextCharFormat fmt;
-    if(format.isBold()) {
-        fmt.setFontWeight(QFont::Bold);
-    } else {
-        fmt.setFontWeight(QFont::Normal);
-    }
-    if(format.isItalic()) {
-        fmt.setFontItalic(true);
-    } else {
-        fmt.setFontItalic(false);
-    }
-    if(format.isUnderline()) {
-        fmt.setFontUnderline(true);
-    } else {
-        fmt.setFontUnderline(false);
-    }
-
-    return fmt;
-}
-
-CharFormat Character::generateCharFormat(const QTextCharFormat textCharFormat) {
+CharFormat Character::generateCharFormat(QTextCharFormat textCharFormat) {
     CharFormat format;
     format.setBold(textCharFormat.fontWeight() == QFont::Bold);
     format.setItalic(textCharFormat.fontItalic());
     format.setUnderline(textCharFormat.fontUnderline());
+    format.setColor(textCharFormat.foreground().color());
+    format.setFont(textCharFormat.font().family());
+    format.setFontSize(textCharFormat.fontPointSize());
 
     return format;
 }
