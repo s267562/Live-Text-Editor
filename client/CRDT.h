@@ -36,7 +36,8 @@ private:
     std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
 
-
+    std::vector<QTextBlockFormat> blocks;
+    
     // insert
     const Character generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId);
     const std::vector<Identifier> findPosBefore(Pos pos);
