@@ -31,6 +31,8 @@ signals:
 private:
     Ui::ShowFiles *ui;
     bool newFileShown = false;
+
+    void resizeEvent(QResizeEvent *event);
 };
 
 #endif // SHOWFILES_H
