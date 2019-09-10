@@ -45,11 +45,13 @@ public:
 
 	bool isOwner(QString fileID, QString username);
 
-	bool addPermission(QString fileID, QString username,Permission permission);
+	bool addPermission(QString fileID, QString username, Permission permission);
 
-	QList<Permission>  getPermissions(QString fileID, QString username);
+	QList<Permission> getPermissions(QString fileID, QString username);
 
-	QList<QString> getFiles(QString username);
+	//QList<QString> getFiles(QString username);
+
+	QList<std::pair<QString, bool>> getFiles(QString username);
 };
 
 

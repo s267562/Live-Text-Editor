@@ -12,7 +12,7 @@ bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size);
 bool readSpace(QTcpSocket *soc);
 bool writeMessage(QTcpSocket *soc, QByteArray& message);
 bool writeOkMessage(QTcpSocket *soc);
-bool writeErrMessage(QTcpSocket *soc);
+bool writeErrMessage(QTcpSocket *soc, QString type = "");
 QByteArray convertionNumber(int number);
 int readNumberFromSocket(QTcpSocket *socket);
 

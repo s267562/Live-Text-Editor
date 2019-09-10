@@ -45,6 +45,7 @@ public:
     bool readRemoveUser();
     bool readFile();
     bool despatchMessage();
+    bool readError();
 
 public slots:
     void onReadyRead();
@@ -54,13 +55,17 @@ public slots:
 signals:
     void errorConnection();
     void loginFailed();
+    void registrationFailed();
     void newMessage(Message message);
     void userVerified();
-    void fileNames(QStringList fileList);
+    void fileNames(std::map<QString, bool> fileList);
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
     void fileRecive(std::vector<std::vector<Character>> file);
+    void requestForFileFailed();
+    void insertFailed();
+    void deleteFailed();
 };
 
 #endif // MESSANGER_H

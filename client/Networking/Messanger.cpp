@@ -54,8 +54,9 @@ void Messanger::onReadyRead(){
     if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
         clientIsLogged = true;
         reciveOkMessage = true;
-    }else if (!clientIsLogged && datas.toStdString() == ERR_MESSAGE){
-        emit loginFailed();
+    }else if (datas.toStdString() == ERR_MESSAGE){
+        readError();
+        socket->flush();
         return;
     }
 
@@ -95,6 +96,29 @@ void Messanger::onReadyRead(){
     }
 }
 
+bool Messanger::readError(){
+    qDebug() << "Messanger.cpp - readError()     ---------- READ ERROR ----------";
+    QByteArray type;
+    readSpace(socket);
+    if (!readChunck(socket, type, 5)){
+        return false;
+    }
+
+    if (type.toStdString() == LOGIN_MESSAGE){
+        emit loginFailed();
+    }else if (type.toStdString() == REGISTRATION_MESSAGE){
+        emit registrationFailed();
+    }else if (type.toStdString() == REQUEST_FILE_MESSAGE) {
+        emit requestForFileFailed();
+    }else if (type.toStdString() == INSERT_MESSAGE){
+        emit insertFailed();
+    }else if (type.toStdString() == DELETE_MESSAGE){
+        emit deleteFailed();
+    }
+
+    return true;
+}
+
 bool Messanger::despatchMessage(){
     if (!messages.empty()){
         QByteArray message = messages.front();
@@ -112,10 +136,6 @@ bool Messanger::despatchMessage(){
 
 bool Messanger::logIn(QString username, QString password) {
     qDebug() << "Messanger.cpp - logIn()     ---------- LOGIN ----------";
-    //TODO: Connessione al server, verifica di credenziali...
-    /*if( username=="test" && password=="test" ){                 //only for testing...
-        return true;
-    }*/
 
     if (!clientIsLogged) {
         QByteArray message(LOGIN_MESSAGE);
@@ -140,31 +160,27 @@ bool Messanger::logIn(QString username, QString password) {
 bool Messanger::registration(QString username, QString password, QPixmap avatar){
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
 
-    QByteArray image;
-    QBuffer buffer(&image);
+    //QByteArray image;
+    /*QBuffer buffer(&image);
     buffer.open(QIODevice::WriteOnly);
-    avatar.save(&buffer,"PNG");
+    avatar.save(&buffer,"PNG");*/
+    QByteArray image = QByteArray::fromRawData((const char*)avatar.toImage().bits(), avatar.toImage().sizeInBytes());
 
     QDataStream out(socket);
     QByteArray message(REGISTRATION_MESSAGE);
 
     QByteArray usernameSize = convertionNumber(username.size());
     QByteArray passwordSize = convertionNumber(password.size());
-    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " ");
-    if (!writeMessage(socket, message)){
-        return false;
-    }
+    QByteArray imageSize = convertionNumber(avatar.toImage().sizeInBytes());
 
-    //avatar
-    out << avatar.toImage().sizeInBytes();
-    socket->write(" ");
-
-    if (!writeMessage(socket, image)){
-        return false;
-    }
+    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " " + imageSize + " " + image);
 
     qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.toImage().sizeInBytes();
     qDebug() << ""; // newLine
+
+    if (!writeMessage(socket, message)){
+        return false;
+    }
 
     this->crdt->setSiteId(username);
     this->siteId = username;
@@ -172,42 +188,10 @@ bool Messanger::registration(QString username, QString password, QPixmap avatar)
     return true;
 }
 
-//bool Messanger::registration(QString username, QString password, QString pathAvatar){
-//	qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
-//	QPixmap pix;
-//	pix.load(pathAvatar);
-//	QByteArray image = QByteArray::fromRawData((const char*)pix.toImage().bits(), pix.toImage().sizeInBytes());
-//
-//	QDataStream out(socket);
-//	QByteArray message(REGISTRATION_MESSAGE);
-//
-//	QByteArray usernameSize = convertionNumber(username.size());
-//	QByteArray passwordSize = convertionNumber(password.size());
-//	message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " ");
-//	if (!writeMessage(socket, message)){
-//		return false;
-//	}
-//
-//	//avatar
-//	out << pix.toImage().sizeInBytes();
-//	socket->write(" ");
-//
-//	if (!writeMessage(socket, image)){
-//		return false;
-//	}
-//
-//	qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << pix.toImage().sizeInBytes();
-//	qDebug() << ""; // newLine
-//
-//	this->crdt->setSiteId(username);
-//	this->siteId = username;
-//
-//	return true;
-//}
-
 bool Messanger::readFileNames(){
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";
     QStringList fileList;
+    std::map<QString, bool> files;
 
     readSpace(socket);
     int numFiles = readNumberFromSocket(socket);
@@ -222,14 +206,21 @@ bool Messanger::readFileNames(){
         if (!readChunck(socket, fileName, fileNameSize)){
             return false;
         }
-        fileList.append(fileName);
+        readSpace(socket);
+        QByteArray flag;
+        if (!readChunck(socket, flag, 1)){
+            return false;
+        }
+
+        bool flagBool = flag.toInt() == 1;
+        files[fileName] = flagBool;
 
         qDebug() << "                               " << i + 1 << "." << fileName;
     }
 
     qDebug() << ""; // newLine
 
-    emit fileNames(fileList);
+    emit fileNames(files);
 
     return true;
 }

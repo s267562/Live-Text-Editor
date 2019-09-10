@@ -515,3 +515,7 @@ void Editor::replaceText(const QString initialText) {
 void Editor::reset() {
     ui->userListWidget->clear();
 }
+
+void Editor::showError(){
+    QMessageBox::information(this, "Error", "Error!");
+}

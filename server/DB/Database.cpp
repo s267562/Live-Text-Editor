@@ -459,36 +459,90 @@ QList<Database::Permission> Database::getPermissions(QString fileID, QString use
 	return permissions;
 }
 
+///**
+// * Retrieve all filenames owned by the given user
+// * @param username : username to get files owned
+// * @return : list of filenames (QString) --------- return list with single object "DBERROR" in case of error
+// */
+//QList<QString> Database::getFiles(QString username) {
+//	QString hashedUsername = hashUsername(username);
+//	QList<QString> userFiles;
+//
+//	// DB opening
+//	if (!db.open()) {
+//		qDebug() << "Error opening DB";
+//		userFiles.append("DBERROR");
+//		return userFiles;
+//	}
+//
+//	QSqlQuery getUserFiles;
+//	getUserFiles.prepare("SELECT fileID FROM files WHERE username=:username AND owner=:owner");
+//	getUserFiles.bindValue(":username", hashedUsername);
+//	getUserFiles.bindValue(":owner", true);
+//
+//	if (!getUserFiles.exec()) {
+//		qDebug() << "Error getting files for the user: " << username << "\n" << getUserFiles.lastError();
+//		db.close();
+//		userFiles.append("DBERROR");
+//		return userFiles;
+//	}
+//
+//	while(getUserFiles.next()){
+//		userFiles.push_back(getUserFiles.value(0).toString());
+//	}
+//	return userFiles;
+//}
+
 /**
  * Retrieve all filenames owned by the given user
  * @param username : username to get files owned
- * @return : list of filenames (QString) --------- return list with single object "DBERROR" in case of error
+ * @return : list of filenames (QString,bool) --------- return list with single object "DBERROR,false" in case of error
+ *  boolean value indicates the ownership for a file
  */
-QList<QString> Database::getFiles(QString username) {
+QList<std::pair<QString, bool>> Database::getFiles(QString username) {
 	QString hashedUsername = hashUsername(username);
-	QList<QString> userFiles;
+	QList<std::pair<QString, bool>> userFiles;
 
 	// DB opening
 	if (!db.open()) {
 		qDebug() << "Error opening DB";
-		userFiles.append("DBERROR");
+		userFiles.append(std::make_pair("DBERROR", false));
 		return userFiles;
 	}
 
-	QSqlQuery getUserFiles;
-	getUserFiles.prepare("SELECT fileID FROM files WHERE username=:username AND owner=:owner");
-	getUserFiles.bindValue(":username", hashedUsername);
-	getUserFiles.bindValue(":owner", true);
+	QSqlQuery getUserOwnedFiles;
+	getUserOwnedFiles.prepare("SELECT fileID FROM files WHERE username=:username AND owner=:owner");
+	getUserOwnedFiles.bindValue(":username", hashedUsername);
+	getUserOwnedFiles.bindValue(":owner", true);
 
-	if (!getUserFiles.exec()) {
-		qDebug() << "Error getting files for the user: " << username << "\n" << getUserFiles.lastError();
+	if (!getUserOwnedFiles.exec()) {
+		qDebug() << "Error getting files for the user: " << username << "\n" << getUserOwnedFiles.lastError();
 		db.close();
-		userFiles.append("DBERROR");
+		userFiles.append(std::make_pair("DBERROR", false));
 		return userFiles;
 	}
 
-	while(getUserFiles.next()){
-		userFiles.push_back(getUserFiles.value(0).toString());
+	while(getUserOwnedFiles.next()){
+		userFiles.push_back(std::make_pair(getUserOwnedFiles.value(0).toString(),true));
 	}
+
+	QSqlQuery getUserWriteFiles;
+	getUserWriteFiles.prepare("SELECT fileID FROM files WHERE username=:username AND owner=:owner AND write=:write");
+	getUserWriteFiles.bindValue(":username", hashedUsername);
+	getUserWriteFiles.bindValue(":owner", false);
+	getUserWriteFiles.bindValue(":write", true);
+
+	if (!getUserWriteFiles.exec()) {
+		qDebug() << "Error getting files for the user: " << username << "\n" << getUserWriteFiles.lastError();
+		db.close();
+		userFiles.clear();
+		userFiles.append(std::make_pair("DBERROR", false));
+		return userFiles;
+	}
+
+	while(getUserWriteFiles.next()){
+		userFiles.push_back(std::make_pair(getUserWriteFiles.value(0).toString(),false));
+	}
+
 	return userFiles;
 }

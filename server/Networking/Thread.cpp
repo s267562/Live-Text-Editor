@@ -63,13 +63,13 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
 
     if (data.toStdString() == INSERT_MESSAGE) {
         if (!readInsert(soc)) {
-            writeErrMessage(soc);
+            writeErrMessage(soc, INSERT_MESSAGE);
         }
         writeOkMessage(soc);
         readyRead(soc, c, d);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
-            writeErrMessage(soc);
+            writeErrMessage(soc, DELETE_MESSAGE);
         }
         readyRead(soc, c, d);
     } else if (data.toStdString() == REQUEST_FILE_MESSAGE){
@@ -80,7 +80,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         QByteArray fileName;
 
         if (!readChunck(soc, fileName, fileNameSize)){
-            writeErrMessage(soc);
+            writeErrMessage(soc, REQUEST_FILE_MESSAGE);
             return;
         }
 

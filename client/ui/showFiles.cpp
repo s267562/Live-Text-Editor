@@ -3,6 +3,7 @@
 #include "showFiles.h"
 #include "ui_showFiles.h"
 #include "../Networking/Messanger.h"
+#include "customwidget.h"
 
 ShowFiles::ShowFiles(QWidget *parent) :
     QMainWindow(parent),
@@ -41,9 +42,16 @@ void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
     emit newFile(filename);
 }
 
-void ShowFiles::addFiles(QStringList l){
+void ShowFiles::addFiles(std::map<QString, bool> l){
     this->ui->listWidget->clear();
-    this->ui->listWidget->addItems(l);
+
+    for (std::pair<QString, bool> filename : l){
+        CustomWidget *myItem = new CustomWidget(this,filename.first, filename.second);
+        QListWidgetItem *item = new QListWidgetItem(filename.first);
+        item->setSizeHint(QSize(0,40));
+        this->ui->listWidget->addItem(item);
+        this->ui->listWidget->setItemWidget(item,myItem);
+    }
 }
 
 void ShowFiles::on_pushButton_newFile_clicked()
@@ -75,4 +83,9 @@ void ShowFiles::on_actionLogout_triggered(){
 
 void ShowFiles::resizeEvent(QResizeEvent *event) {
     ui->customToolbar->setGeometry(0, 0, width(), 60);
+  }
+}
+
+void ShowFiles::showError(){
+    QMessageBox::information(this, "Error", "Error for this request!");
 }

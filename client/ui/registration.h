@@ -2,6 +2,8 @@
 #define REGISTRATION_H
 
 #include <QMainWindow>
+#include <QObject>
+#include "../Networking/Messanger.h"
 
 namespace Ui {
 class Registration;
@@ -14,24 +16,25 @@ class Registration : public QMainWindow
 public:
     explicit Registration(QWidget *parent = nullptr);
     void setDefaultProfileIcon();
+    void setClient(Messanger *messanger);
+    QString getUsername();
     void reset();
     ~Registration();
 
-private slots:
-
+public slots:
     void on_label_clicked();
-
     void on_toolButton_clicked();
-
     void on_pushButton_registration_clicked();
-
     void on_pushButton_login_clicked();
 
-    signals:
+    void registrationFailed();
+
+signals:
     void showLogin();
 
 private:
     Ui::Registration *ui;
+    Messanger *messanger;
     void resizeEvent(QResizeEvent *event);
 
 };

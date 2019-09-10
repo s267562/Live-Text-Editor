@@ -8,5 +8,6 @@
         <file>img/avatar.png</file>
         <file>img/loading.gif</file>
         <file>img/user.png</file>
+        <file>img/network.png</file>
     </qresource>
 </RCC>

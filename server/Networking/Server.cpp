@@ -47,14 +47,15 @@ void Server::connection() {
 				//error in login phase
 				qDebug() << "                              error login";
 				qDebug() << ""; // newLine
-				writeErrMessage(soc);
+				writeErrMessage(soc, LOGIN_MESSAGE);
 				return;
 			}
 		} else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
 			if (registration(soc)) {
-				socketsState[soc->socketDescriptor()] = LOGGED;
+				sendFileNames(soc);
+				socketsState[socketDescriptor] = LOGGED;
 			} else {
-				writeErrMessage(soc);
+				writeErrMessage(soc, REGISTRATION_MESSAGE);
 				return;
 			}
 		} else if (data.toStdString() == REQUEST_FILE_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
@@ -68,7 +69,7 @@ void Server::connection() {
 			qDebug() << ""; // newLine
 
 			if (!readFileName(soc->socketDescriptor(), soc)) {
-				writeErrMessage(soc);
+				writeErrMessage(soc, REQUEST_FILE_MESSAGE);
 			}
 		} else {
 			qDebug() << "                              error message";
@@ -116,7 +117,8 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	//******************************** test in attesa della registration funzionante lato client **************
-	if((QString(username)=="test1" && QString(password)=="test1") || (QString(username)=="test2" && QString(password)=="test2")) {
+	if ((QString(username) == "test1" && QString(password) == "test1") ||
+		(QString(username) == "test2" && QString(password) == "test2")) {
 		usernames[soc->socketDescriptor()] = username;
 		return true;
 	}
@@ -159,17 +161,20 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 
 	//******************************************* Versione dtest senza DB***********************************
 	int nFiles = 2;
-	QString fileName[2];
-	fileName[0] = "file1";                                     /* file fantoccio: da rimuovere in seguito */
-	fileName[1] = "file2";
+	std::list<std::pair<QString, bool>> files;								/* files fantoccio */
+	files.push_back(std::make_pair("file1", true));
+	files.push_back(std::make_pair("file2", false));
+
 	QByteArray message(LIST_OF_FILE);
 
 	QByteArray numFiles = convertionNumber(nFiles);
 	message.append(" " + numFiles);
 
-	for (int i = 0; i < nFiles; i++) {
-		QByteArray fileNameSize = convertionNumber(fileName[i].size());
-		message.append(" " + fileNameSize + " " + fileName[i].toUtf8());
+	for (std::pair<QString, bool> file : files) {
+		QByteArray fileNameSize = convertionNumber(file.first.size());
+		QByteArray shared;
+		shared.setNum(file.second ? 1 : 0);
+		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
 	}
 
 	qDebug() << "                                " << message;
@@ -192,7 +197,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 
 	QByteArray fileName;
 	if (!readChunck(soc, fileName, fileNameSize)) {
-		writeErrMessage(soc);
 		return false;
 	}
 
@@ -219,7 +223,6 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		thread->start();
 	}
 
-	//writeOkMessage(soc);
 	return true;
 }
 
@@ -235,7 +238,7 @@ bool Server::registration(QTcpSocket *soc) {
 	//username
 	QByteArray username;
 	if (!readChunck(soc, username, sizeUsername)) {
-		writeErrMessage(soc);
+		return false;
 	}
 	readSpace(soc);
 
@@ -245,13 +248,14 @@ bool Server::registration(QTcpSocket *soc) {
 	//password
 	QByteArray password;
 	if (!readChunck(soc, password, sizePassword)) {
-		writeErrMessage(soc);
+		return false;
 	}
 	readSpace(soc);
 
-	QDataStream in(soc);
+	/*QDataStream in(soc);
 	qsizetype sizeAvatar;
-	in >> sizeAvatar;
+	in >> sizeAvatar;*/
+	int sizeAvatar = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	qDebug() << "                                username: " << username << " size: " << sizeUsername;
@@ -261,10 +265,8 @@ bool Server::registration(QTcpSocket *soc) {
 	//avatar
 	QByteArray avatarDef;
 
-	if (readChunck(soc, avatarDef, sizeAvatar)) {
-		writeOkMessage(soc);
-	} else {
-		writeErrMessage(soc);
+	if (!readChunck(soc, avatarDef, sizeAvatar)) {
+		return false;
 	}
 
 	qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
@@ -273,8 +275,16 @@ bool Server::registration(QTcpSocket *soc) {
 
 	bool registeredSuccessfully = DB.registerUser(QString(username), QString(password));
 	if (registeredSuccessfully) {
+		bool avatarChanged = DB.changeAvatar(QString(username), avatarDef);
+
+		//qDebug() << "Registered succesfully";
+		//if(avatarChanged)
+		//	qDebug() << "Avatar changed";
+
+
 		usernames[soc->socketDescriptor()] = username;
 		return true;
+
 	} else
 		return false;
 }

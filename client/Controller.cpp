@@ -62,12 +62,15 @@ void Controller::connectClient(QString address, QString port) {
 
         /* creation registration object */
         registration = new Registration(this);
+        registration->setClient(messanger);
+        connect(this->messanger, &Messanger::registrationFailed, this->registration, &Registration::registrationFailed);
         connect(this->registration, SIGNAL(showLogin()), this, SLOT(showLogin()));
 
         /* creation showfiles object */
         finder = new ShowFiles(this);
         connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
-        connect(this->messanger, SIGNAL(fileNames(QStringList)), this, SLOT(showFileFinder(QStringList)));
+        connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
+        connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
         connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 
         this->login->show();
@@ -88,16 +91,22 @@ void Controller::showLogin(){
 void Controller::showRegistration(){
     now->close();
     this->registration->reset();
+    now = registration;
     this->registration->show();
 }
 
 /* SHOW FILE */
 
-void Controller::showFileFinder(QStringList fileList){
+void Controller::showFileFinder(std::map<QString, bool> fileList){
     now->close();
     this->finder->addFiles(fileList);
     if (user == nullptr){
-        user = new User(login->getUsername());
+        if (now == login){
+            user = new User(login->getUsername());
+        }else{
+            user = new User(registration->getUsername());
+        }
+
         user->setFileLis(fileList);
         user->setIsLogged(true);
     }
@@ -107,14 +116,6 @@ void Controller::showFileFinder(QStringList fileList){
 
 void Controller::showFileFinderOtherView(){
     now->close();
-    /*delete finder;
-    finder = new ShowFiles(this);
-    this->finder->addFiles(user->getFileList());
-    this->editor->close();*/
-    /*connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
-    connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);*/
-    /*connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-    connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));*/
     now = finder;
     this->finder->show();
 }
@@ -132,6 +133,8 @@ void Controller::requestForFile(QString filename){
             /* connecting */
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
             connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, &Messanger::insertFailed, editor, &Editor::showError);
+            connect(messanger, &Messanger::deleteFailed, editor, &Editor::showError);
             connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
             connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
