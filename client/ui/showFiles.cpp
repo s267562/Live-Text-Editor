@@ -83,8 +83,8 @@ void ShowFiles::on_actionLogout_triggered(){
 
 void ShowFiles::resizeEvent(QResizeEvent *event) {
     ui->customToolbar->setGeometry(0, 0, width(), 60);
-  }
 }
+
 
 void ShowFiles::showError(){
     QMessageBox::information(this, "Error", "Error for this request!");

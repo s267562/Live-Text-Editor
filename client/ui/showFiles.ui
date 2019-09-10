@@ -14,7 +14,17 @@
    <string>Your Files</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">QListWidget::item
+{
+    background: rgb(255,255,255); 
+	color : rgb(255,255,255); 
+}
+QListWidget::item:selected
+{
+	
+	background-color: rgb(189, 187, 191);
+	color: rgb(189, 187, 191);
+}</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="styleSheet">
@@ -26,10 +36,23 @@
       <x>10</x>
       <y>70</y>
       <width>580</width>
+      <height>501</height>
      </rect>
     </property>
     <property name="autoFillBackground">
      <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QListWidget::item
+{
+    background: rgb(255,255,255); 
+	color : rgb(255,255,255); 
+}
+QListWidget::item:selected
+{
+	background-color: rgb(189, 187, 191);
+	color: rgb(189, 187, 191);
+}</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="filename">
