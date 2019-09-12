@@ -1,9 +1,10 @@
 #include <QMessageBox>
 #include "customwidget.h"
 #include "ui_customwidget.h"
+#include "sharefile.h"
 
 CustomWidget::CustomWidget(QWidget *parent, QString filename, bool isShared) :
-        QWidget(parent),
+        QWidget(parent), filename(filename),
     ui(new Ui::CustomWidget)
 {
     ui->setupUi(this);
@@ -22,5 +23,6 @@ CustomWidget::~CustomWidget()
 }
 
 void CustomWidget::pushSharedButton(){
-    QMessageBox::information(this, "Share", "Share");
+    ShareFile *shareFile = new ShareFile(this, filename);
+    shareFile->show();
 }

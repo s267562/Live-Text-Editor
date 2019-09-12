@@ -48,6 +48,7 @@ add_executable(client
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
+        client/ui/shareFile.cpp client/ui/shareFile.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h)
@@ -74,6 +75,7 @@ add_executable(client2
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
+        client/ui/shareFile.cpp client/ui/shareFile.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h)

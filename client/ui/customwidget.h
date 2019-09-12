@@ -20,6 +20,7 @@ public slots:
 
 private:
     Ui::CustomWidget *ui;
+    QString filename;
 };
 
 #endif // CUSTOMWIDGET_H

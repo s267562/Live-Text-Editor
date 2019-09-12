@@ -9,5 +9,6 @@
         <file>img/loading.gif</file>
         <file>img/user.png</file>
         <file>img/network.png</file>
+        <file>img/copy.png</file>
     </qresource>
 </RCC>

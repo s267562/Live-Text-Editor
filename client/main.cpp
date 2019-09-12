@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         CRDT crdt{}; // model
         messanger.setCRDT( &crdt);
 
-        messanger.connectTo("127.0.0.1");
+        messanger.connectTo("127.0.0.1", "1234");
         QString username = "test1";
         messanger.logIn(username, "test1");
 

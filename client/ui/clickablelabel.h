@@ -23,13 +23,13 @@ protected:
     void enterEvent(QEvent *ev){
         int height = geometry().height();
         int width = geometry().width();
-        resize(height + 1,width + 1);
+        resize(width + 1, height + 1);
     }
 
     void leaveEvent(QEvent *ev){
         int height = geometry().height();
         int width = geometry().width();
-        resize(height - 1,width - 1);
+        resize(width - 1, height - 1);
     }
 
 };
