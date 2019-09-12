@@ -4,9 +4,9 @@
 
 #include "User.h"
 
-User::User(QString username): username(username){}
+User::User(QString username, QPixmap avatar): username(username), avatar(avatar){}
 
-void User::setFileLis(std::map<QString, bool> fileList) {
+void User::setFileList(std::map<QString, bool> fileList) {
     this->fileList = fileList;
 }
 
@@ -28,4 +28,8 @@ const QString &User::getUsername() const {
 
 void User::setUsername(const QString &username) {
     User::username = username;
+}
+
+const QPixmap &User::getAvatar() const {
+    return avatar;
 }

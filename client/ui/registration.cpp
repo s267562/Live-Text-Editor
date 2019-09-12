@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <iostream>
 #include <QMessageBox>
+#include <QBuffer>
 
 Registration::Registration(QWidget *parent) :
 		QMainWindow(parent),
@@ -28,7 +29,6 @@ void Registration::on_label_clicked() {
 		bool valid = image.load(filename);
 
 		if (valid) {
-
 			QPixmap pix(QPixmap::fromImage(image));
 			int w = ui->label->width();
 			int h = ui->label->height();
@@ -62,7 +62,11 @@ void Registration::on_pushButton_registration_clicked() {
 	}
 
 	ui->error->setVisible(false);
-	messanger->registration(username, password, avatar);
+	QImage avatarImage = avatar.toImage();
+	QByteArray byteArray;
+	QBuffer buffer(&byteArray);
+	avatarImage.save(&buffer, "PNG");
+	messanger->registration(username, password, byteArray);
 }
 
 void Registration::on_pushButton_login_clicked() {

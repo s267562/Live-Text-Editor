@@ -30,8 +30,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     // TODO: from QByteArray to QPixMap
 
     #if UI
-        QPixmap pix;
-        pix.load(":/icons/user_icon.jpg");
+        QPixmap pix = controller->getUser()->getAvatar();
         int w=ui->avatar->width();
         int h=ui->avatar->height();
         ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
@@ -514,6 +513,12 @@ void Editor::replaceText(const QString initialText) {
 
 void Editor::reset() {
     ui->userListWidget->clear();
+    QPixmap pix = controller->getUser()->getAvatar();
+    int w = ui->avatar->width();
+    int h = ui->avatar->height();
+    ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->username->setText(controller->getUser()->getUsername());
+    ui->loading->show();
 }
 
 void Editor::showError(){

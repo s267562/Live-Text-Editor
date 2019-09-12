@@ -58,6 +58,8 @@ public slots:
     void newMessage(Message message);
     void openFile(std::vector<std::vector<Character>> initialStructure);
 
+    void reciveUser(User *user);
+
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();

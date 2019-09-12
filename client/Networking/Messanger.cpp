@@ -58,6 +58,9 @@ void Messanger::onReadyRead(){
         readError();
         socket->flush();
         return;
+    }else if (datas.toStdString() == AVATAR_MESSAGE){
+        readUser();
+        onReadyRead();
     }
 
     if (clientIsLogged){
@@ -157,25 +160,18 @@ bool Messanger::logIn(QString username, QString password) {
     return true;
 }
 
-bool Messanger::registration(QString username, QString password, QPixmap avatar){
+bool Messanger::registration(QString username, QString password, QByteArray avatar){
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
 
-    //QByteArray image;
-    /*QBuffer buffer(&image);
-    buffer.open(QIODevice::WriteOnly);
-    avatar.save(&buffer,"PNG");*/
-    QByteArray image = QByteArray::fromRawData((const char*)avatar.toImage().bits(), avatar.toImage().sizeInBytes());
-
-    QDataStream out(socket);
     QByteArray message(REGISTRATION_MESSAGE);
 
     QByteArray usernameSize = convertionNumber(username.size());
     QByteArray passwordSize = convertionNumber(password.size());
-    QByteArray imageSize = convertionNumber(avatar.toImage().sizeInBytes());
+    QByteArray imageSize = convertionNumber(avatar.size());
 
-    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " " + imageSize + " " + image);
+    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " " + imageSize + " " + avatar);
 
-    qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.toImage().sizeInBytes();
+    qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.size();
     qDebug() << ""; // newLine
 
     if (!writeMessage(socket, message)){
@@ -185,6 +181,39 @@ bool Messanger::registration(QString username, QString password, QPixmap avatar)
     this->crdt->setSiteId(username);
     this->siteId = username;
 
+    return true;
+}
+
+bool Messanger::readUser(){
+    qDebug() << "Messanger.cpp - readUser()     ---------- READUSER ----------";
+    readSpace(socket);
+    int usernameSize = readNumberFromSocket(socket);
+
+    readSpace(socket);
+    QByteArray username;
+
+    if (!readChunck(socket, username, usernameSize)){
+        return false;
+    }
+
+    readSpace(socket);
+    int imageSize = readNumberFromSocket(socket);
+
+    qDebug() << imageSize;
+
+    readSpace(socket);
+    QByteArray avatar;
+
+    if (!readChunck(socket, avatar, imageSize)){
+        return false;
+    }
+
+    QImage image1 = QImage::fromData(avatar,"PNG");
+    QPixmap pixmap = QPixmap::fromImage(image1);
+    User *user1 = new User(username, pixmap);
+    user = user1;
+
+    emit reciveUser(user);
     return true;
 }
 

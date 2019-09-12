@@ -39,6 +39,7 @@ void Server::connection() {
 
 		if (data.toStdString() == LOGIN_MESSAGE) {
 			if (logIn(soc)) {
+				sendUser(soc);
 				sendFileNames(soc);
 				socketsState[socketDescriptor] = LOGGED;
 				qDebug() << "                              socketsSize: " << socketsState.size();
@@ -52,6 +53,7 @@ void Server::connection() {
 			}
 		} else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
 			if (registration(soc)) {
+			    sendUser(soc);
 				sendFileNames(soc);
 				socketsState[socketDescriptor] = LOGGED;
 			} else {
@@ -83,6 +85,7 @@ void Server::connection() {
 		qDebug() << ""; // newLine
 		soc->deleteLater();
 		socketsState.erase(socketDescriptor);
+		usernames.erase(socketDescriptor);
 	});
 }
 
@@ -116,14 +119,6 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << "                         username: " << username << " password: " << password;
 	qDebug() << ""; // newLine
 
-	//******************************** test in attesa della registration funzionante lato client **************
-	if ((QString(username) == "test1" && QString(password) == "test1") ||
-		(QString(username) == "test2" && QString(password) == "test2")) {
-		usernames[soc->socketDescriptor()] = username;
-		return true;
-	}
-	//*********************************************************************************************************
-
 	// Check if user is already logged in
 	for (std::pair<quintptr, QString> pair : usernames) {
 		if (pair.second == QString(username))
@@ -137,6 +132,28 @@ bool Server::logIn(QTcpSocket *soc) {
 		return true;
 	} else
 		return false;
+}
+
+bool Server::sendUser(QTcpSocket *soc){
+	qDebug() << "Server.cpp - sendUser()     ---------- SEND USER ----------";
+	QByteArray message(AVATAR_MESSAGE);
+	QByteArray image;
+	//image = "image";
+	QString username;
+	username = usernames[soc->socketDescriptor()];
+	image = DB.getAvatar(username);
+	QByteArray imageSize = convertionNumber(image.size());
+	QByteArray usernameSize = convertionNumber(username.size());
+
+	message.append(" " + usernameSize + " " + username.toUtf8() + " " + imageSize + " " + image);
+
+	qDebug() << message;
+
+	if (!writeMessage(soc, message)){
+		return false;
+	}
+
+	return true;
 }
 
 bool Server::sendFileNames(QTcpSocket *soc) {
@@ -222,6 +239,8 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 						  usernames[socketDescriptor]);                            /* socket transition to secondary thread */
 		thread->start();
 	}
+
+	usernames.erase(socketDescriptor);
 
 	return true;
 }

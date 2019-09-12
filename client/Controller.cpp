@@ -18,6 +18,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
+    connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
     now = connection;
     connection->show();
 }
@@ -34,6 +35,13 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
     connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
+}
+
+/* USER */
+
+void Controller::reciveUser(User *user){
+    this->user = user;
 }
 
 /* NETWORKING */
@@ -100,18 +108,13 @@ void Controller::showRegistration(){
 void Controller::showFileFinder(std::map<QString, bool> fileList){
     now->close();
     this->finder->addFiles(fileList);
-    if (user == nullptr){
-        if (now == login){
-            user = new User(login->getUsername());
-        }else{
-            user = new User(registration->getUsername());
-        }
 
-        user->setFileLis(fileList);
+    if (user != nullptr){
+        user->setFileList(fileList);
         user->setIsLogged(true);
+        now = finder;
+        this->finder->show();
     }
-    now = finder;
-    this->finder->show();
 }
 
 void Controller::showFileFinderOtherView(){
@@ -199,9 +202,6 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure) 
 }
 
 User* Controller::getUser(){
-    if (user == nullptr){
-        user = new User(login->getUsername());
-        user->setIsLogged(true);
-    }
+    user = messanger->user;
     return user;
 }

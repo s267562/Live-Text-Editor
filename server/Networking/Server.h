@@ -30,6 +30,7 @@ public:
 
 private:
     bool logIn(QTcpSocket *soc);
+    bool sendUser(QTcpSocket *soc);
     bool sendFileNames(QTcpSocket *soc);
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);

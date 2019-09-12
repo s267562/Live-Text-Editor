@@ -11,6 +11,7 @@
 #include "../utils/Pos.h"
 #include "message/Message.h"
 #include "../CRDT.h"
+#include "../User.h"
 
 class Messanger: public QObject{
     Q_OBJECT
@@ -37,7 +38,7 @@ public:
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
-    bool registration(QString username, QString password, QPixmap avatar);
+    bool registration(QString username, QString password, QByteArray avatar);
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readDelete();
@@ -46,6 +47,9 @@ public:
     bool readFile();
     bool despatchMessage();
     bool readError();
+    bool readUser();
+
+    User *user = nullptr;
 
 public slots:
     void onReadyRead();
@@ -66,6 +70,7 @@ signals:
     void requestForFileFailed();
     void insertFailed();
     void deleteFailed();
+    void reciveUser(User *user);
 };
 
 #endif // MESSANGER_H

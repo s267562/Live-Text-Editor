@@ -6,6 +6,7 @@
 #define ERR_MESSAGE "ERR\r\n"
 #define LOGIN_MESSAGE "LIN\r\n"
 #define LOGOUT_MESSAGE "LOG\r\n"
+#define AVATAR_MESSAGE "AVT\r\n"
 #define REGISTRATION_MESSAGE "REG\r\n"
 #define REQUEST_FILE_MESSAGE "RFL\r\n"
 #define LIST_OF_USERS "USR\r\n"
