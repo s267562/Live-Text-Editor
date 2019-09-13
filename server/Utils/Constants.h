@@ -15,6 +15,7 @@
 #define INSERT_MESSAGE "INS\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 #define SENDING_FILE "FIL\n\r"
+#define EDIT_ACCOUNT "EDT\n\r"
 
 enum SocketState{
     UNLOGGED,

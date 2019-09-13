@@ -34,6 +34,7 @@ private:
     bool sendFileNames(QTcpSocket *soc);
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
+    bool readEditAccount(QTcpSocket *soc);
 
 signals:
 

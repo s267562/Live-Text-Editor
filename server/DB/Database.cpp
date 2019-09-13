@@ -546,3 +546,74 @@ QList<std::pair<QString, bool>> Database::getFiles(QString username) {
 
 	return userFiles;
 }
+
+bool Database::changeUsername(QString oldUsername, QString newUsername) {
+	bool result = false;
+	QString hashedOldUsername = hashUsername(std::move(oldUsername));
+	QString hashedNewUsername = hashUsername(std::move(newUsername));
+
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
+
+	QSqlQuery query;
+	query.prepare("UPDATE users SET username=:newUsername WHERE username=:oldUsername");
+	query.bindValue(":oldUsername", hashedOldUsername);
+	query.bindValue(":newUsername", hashedNewUsername);
+
+	if (!query.exec()) {
+		qDebug() << "Error inserting image into table:\n" << query.lastError();
+	} else
+		result = true;
+
+	db.close();
+	return result;
+}
+
+bool Database::changePassword(QString username, QString newPassword) {
+	qDebug () << username << newPassword;
+	bool result = false;
+	QString hashedUsername = hashUsername(std::move(username));
+	qDebug () << username << newPassword;
+
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
+
+	QSqlQuery saltQuery;
+	saltQuery.prepare("SELECT salt FROM users WHERE username=:username");
+
+	saltQuery.bindValue(":username", hashedUsername);
+
+	QString salt = "";
+	if (saltQuery.exec()) {
+		if (saltQuery.isActive()) {
+			if (saltQuery.first()) {
+				salt = saltQuery.value(0).toString();
+			}else{
+				return false;
+			}
+		}
+	}
+
+	QString hashedNewPassword = hashPassword(std::move(newPassword), salt);
+
+	QSqlQuery query;
+	query.prepare("UPDATE users SET password=:newPassword WHERE username=:username");
+	query.bindValue(":username", hashedUsername);
+	query.bindValue(":newPassword", hashedNewPassword);
+
+	if (!query.exec()) {
+		qDebug() << "Error inserting image into table:\n" << query.lastError();
+	} else
+		result = true;
+
+	qDebug () << username << newPassword;
+
+	db.close();
+	return result;
+}

@@ -48,6 +48,7 @@ public:
     bool despatchMessage();
     bool readError();
     bool readUser();
+    bool sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
 
     User *user = nullptr;
 
@@ -71,6 +72,8 @@ signals:
     void insertFailed();
     void deleteFailed();
     void reciveUser(User *user);
+    void editAccountFailed();
+    void okEditAccount();
 };
 
 #endif // MESSANGER_H

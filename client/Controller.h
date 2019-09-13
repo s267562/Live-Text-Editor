@@ -12,9 +12,11 @@
 #include "ui/connection.h"
 #include "ui/showFiles.h"
 #include "Networking/Messanger.h"
+#include "ui/loading.h"
 #include <iostream>
 
 class Editor;
+class ShowFiles;
 
 class Controller : public QMainWindow {
     Q_OBJECT
@@ -34,6 +36,7 @@ private:
 
     /* networking */
     Messanger *messanger;
+    Loading *loading;
 
 public slots:
     /* NETWORKING */
@@ -59,6 +62,9 @@ public slots:
     void openFile(std::vector<std::vector<Character>> initialStructure);
 
     void reciveUser(User *user);
+    void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
+    void errorEditAccount();
+    void okEditAccount();
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);

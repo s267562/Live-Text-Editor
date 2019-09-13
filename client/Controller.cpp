@@ -19,6 +19,8 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
+    connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
+    connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     now = connection;
     connection->show();
 }
@@ -47,7 +49,7 @@ void Controller::reciveUser(User *user){
 /* NETWORKING */
 
 void Controller::errorConnection(){
-    QMessageBox::information(this, "Connection", "Try again, connection not established!");
+    QMessageBox::information(now, "Connection", "Try again, connection not established!");
     // TODO: retry...
 }
 
@@ -75,7 +77,7 @@ void Controller::connectClient(QString address, QString port) {
         connect(this->registration, SIGNAL(showLogin()), this, SLOT(showLogin()));
 
         /* creation showfiles object */
-        finder = new ShowFiles(this);
+        finder = new ShowFiles(this, this);
         connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
         connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
         connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
@@ -204,4 +206,19 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure) 
 User* Controller::getUser(){
     user = messanger->user;
     return user;
+}
+
+void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
+    messanger->sendEditAccount(username, newPassword, oldPassword, avatar);
+    loading = new Loading(now);
+    loading->show();
+}
+
+void Controller::errorEditAccount() {
+    QMessageBox::warning(now, "Edit account", "Try again, Edit account!");
+    loading->close();
+}
+
+void Controller::okEditAccount(){
+    loading->close();
 }

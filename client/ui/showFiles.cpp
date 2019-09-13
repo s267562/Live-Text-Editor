@@ -4,9 +4,11 @@
 #include "ui_showFiles.h"
 #include "../Networking/Messanger.h"
 #include "customwidget.h"
+#include "editaccount.h"
 
-ShowFiles::ShowFiles(QWidget *parent) :
+ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
     QMainWindow(parent),
+    controller(controller),
     ui(new Ui::ShowFiles)
 {
     ui->setupUi(this);
@@ -19,6 +21,7 @@ ShowFiles::ShowFiles(QWidget *parent) :
     ui->avatar->setPixmap(QPixmap(":/rec/img/user.png"));
     connect(ui->newFile, SIGNAL(clicked()), this, SLOT(on_actionNew_File_triggered()));
     connect(ui->logout, SIGNAL(clicked()), this, SLOT(on_actionLogout_triggered()));
+    connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
 
     QGraphicsDropShadowEffect *m_shadowEffect = new QGraphicsDropShadowEffect(this);
     m_shadowEffect->setColor(QColor(0, 0, 0, 255 * 0.1));
@@ -88,4 +91,10 @@ void ShowFiles::resizeEvent(QResizeEvent *event) {
 
 void ShowFiles::showError(){
     QMessageBox::information(this, "Error", "Error for this request!");
+}
+
+void ShowFiles::editAccount(){
+    EditAccount *editAccount = new EditAccount(this, controller->getUser());
+    connect(editAccount, SIGNAL(edit(QString, QString, QString, QByteArray)), controller, SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
+    editAccount->show();
 }

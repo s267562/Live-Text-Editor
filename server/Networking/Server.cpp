@@ -73,7 +73,14 @@ void Server::connection() {
 			if (!readFileName(soc->socketDescriptor(), soc)) {
 				writeErrMessage(soc, REQUEST_FILE_MESSAGE);
 			}
-		} else {
+		}else if (data.toStdString() == EDIT_ACCOUNT && socketsState[socketDescriptor] == LOGGED){
+			if (readEditAccount(soc)){
+				//writeOkMessage(soc);
+				sendUser(soc);
+			}else{
+				writeErrMessage(soc, EDIT_ACCOUNT);
+			}
+		}else {
 			qDebug() << "                              error message";
 			qDebug() << ""; // newLine
 			writeErrMessage(soc);
@@ -306,6 +313,93 @@ bool Server::registration(QTcpSocket *soc) {
 
 	} else
 		return false;
+}
+
+bool Server::readEditAccount(QTcpSocket *soc) {
+	qDebug() << "Server.cpp - readEditAccount()     ---------- READ EDIT ACCOUNT ----------";
+	if (soc == nullptr) {
+		return false;
+	}
+	readSpace(soc);
+	int sizeUsername = readNumberFromSocket(soc);
+	readSpace(soc);
+
+	//username
+	QByteArray username;
+	if (!readChunck(soc, username, sizeUsername)) {
+		return false;
+	}
+	readSpace(soc);
+
+	int newPasswordSize = readNumberFromSocket(soc);
+	readSpace(soc);
+
+	//password
+	QByteArray newPassword;
+	if (!readChunck(soc, newPassword, newPasswordSize)) {
+		return false;
+	}
+	readSpace(soc);
+
+	int oldPasswordSize = readNumberFromSocket(soc);
+	readSpace(soc);
+
+	//password
+	QByteArray oldPassword;
+	if (!readChunck(soc, oldPassword, oldPasswordSize)) {
+		return false;
+	}
+	readSpace(soc);
+
+
+	int sizeAvatar = readNumberFromSocket(soc);
+	readSpace(soc);
+
+	qDebug() << "                                username: " << username << " size: " << sizeUsername;
+	qDebug() << "                                password: " << newPassword << " size: " << newPasswordSize;
+	qDebug() << "                                password: " << oldPassword << " size: " << oldPasswordSize;
+	qDebug() << "                                avatar size: " << sizeAvatar;
+
+	//avatar
+	QByteArray avatarDef;
+
+	if (!readChunck(soc, avatarDef, sizeAvatar)) {
+		return false;
+	}
+
+	qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
+
+	qDebug() << ""; // newLine
+
+	if (DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+		if (sizeUsername != 0) {
+			if (DB.changeUsername(usernames[soc->socketDescriptor()], username)) {
+				usernames[soc->socketDescriptor()] = username;
+			}else{
+				qDebug() << "Err1";
+				return false;
+			}
+		}
+
+		if (newPasswordSize != 0) {
+			if (!DB.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+				qDebug() << "Err2";
+				return false;
+			}
+		}
+
+		if (sizeAvatar != 0) {
+			if (!DB.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+				qDebug() << "Err3";
+				return false;
+			}
+		}
+	}else{
+		qDebug() << "Err4";
+		return false;
+	}
+
+	return true;
 }
 
 std::shared_ptr<Thread> Server::getThread(QString fileName) {

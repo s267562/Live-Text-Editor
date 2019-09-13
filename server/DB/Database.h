@@ -52,6 +52,10 @@ public:
 	//QList<QString> getFiles(QString username);
 
 	QList<std::pair<QString, bool>> getFiles(QString username);
+
+	bool changeUsername(QString oldUsername, QString newUsername);
+
+	bool changePassword(QString username, QString newPassword);
 };
 
 

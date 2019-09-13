@@ -52,7 +52,7 @@ void Messanger::onReadyRead(){
     qDebug() << ""; // newLine
 
     if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
-        clientIsLogged = true;
+        //clientIsLogged = true;
         reciveOkMessage = true;
     }else if (datas.toStdString() == ERR_MESSAGE){
         readError();
@@ -61,6 +61,11 @@ void Messanger::onReadyRead(){
     }else if (datas.toStdString() == AVATAR_MESSAGE){
         readUser();
         onReadyRead();
+
+        if (clientIsLogged){
+            emit okEditAccount();
+        }
+        clientIsLogged = true;
     }
 
     if (clientIsLogged){
@@ -117,6 +122,8 @@ bool Messanger::readError(){
         emit insertFailed();
     }else if (type.toStdString() == DELETE_MESSAGE){
         emit deleteFailed();
+    }else if (type.toStdString() == EDIT_ACCOUNT){
+        emit editAccountFailed();
     }
 
     return true;
@@ -172,6 +179,32 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
     message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " " + imageSize + " " + avatar);
 
     qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.size();
+    qDebug() << ""; // newLine
+
+    if (!writeMessage(socket, message)){
+        return false;
+    }
+
+    this->crdt->setSiteId(username);
+    this->siteId = username;
+
+    return true;
+}
+
+bool Messanger::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
+    qDebug() << "Messanger.cpp - sendEditAccount()     ---------- SEND EDIT ACCOUNT ----------";
+
+    QByteArray message(EDIT_ACCOUNT);
+
+    QByteArray usernameSize = convertionNumber(username.size());
+    QByteArray newPasswordSize = convertionNumber(newPassword.size());
+    QByteArray oldPasswordSize = convertionNumber(oldPassword.size());
+    QByteArray imageSize = convertionNumber(avatar.size());
+
+    message.append(" " + usernameSize + " " + username.toUtf8() + " " + newPasswordSize + " " + newPassword.toUtf8() + " "
+    + oldPasswordSize + " " + oldPassword.toUtf8() + " " + imageSize + " " + avatar);
+
+    qDebug() << "                                " << message;
     qDebug() << ""; // newLine
 
     if (!writeMessage(socket, message)){
