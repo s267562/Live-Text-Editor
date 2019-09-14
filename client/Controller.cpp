@@ -5,7 +5,6 @@
 #include "Controller.h"
 #include <QMessageBox>
 
-
 Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
@@ -210,15 +209,15 @@ User* Controller::getUser(){
 
 void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
     messanger->sendEditAccount(username, newPassword, oldPassword, avatar);
-    loading = new Loading(now);
-    loading->show();
+    /*loading = new Loading(now);
+    loading->show();*/
 }
 
 void Controller::errorEditAccount() {
     QMessageBox::warning(now, "Edit account", "Try again, Edit account!");
-    loading->close();
+    //loading->close();
 }
 
 void Controller::okEditAccount(){
-    loading->close();
+    //loading->close();
 }

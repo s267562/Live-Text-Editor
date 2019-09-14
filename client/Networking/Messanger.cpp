@@ -60,12 +60,11 @@ void Messanger::onReadyRead(){
         return;
     }else if (datas.toStdString() == AVATAR_MESSAGE){
         readUser();
-        onReadyRead();
-
         if (clientIsLogged){
             emit okEditAccount();
         }
         clientIsLogged = true;
+        onReadyRead();
     }
 
     if (clientIsLogged){
