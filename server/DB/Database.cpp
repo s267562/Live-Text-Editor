@@ -547,6 +547,12 @@ QList<std::pair<QString, bool>> Database::getFiles(QString username) {
 	return userFiles;
 }
 
+/**
+ * Change the username of a given user
+ * @param oldUsername : username to be changed
+ * @param newUsername : new username to insert in DB
+ * @return true in case of success.
+ */
 bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	bool result = false;
 	QString hashedOldUsername = hashUsername(std::move(oldUsername));
@@ -564,7 +570,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	query.bindValue(":newUsername", hashedNewUsername);
 
 	if (!query.exec()) {
-		qDebug() << "Error inserting image into table:\n" << query.lastError();
+		qDebug() << "Error change username:\n" << query.lastError();
 	} else
 		result = true;
 
@@ -572,11 +578,16 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	return result;
 }
 
+/**
+ * Change the password for a given user
+ * @param username : user who request the change
+ * @param newPassword : new password for the user
+ * @return true in case of success
+ */
 bool Database::changePassword(QString username, QString newPassword) {
 	qDebug () << username << newPassword;
 	bool result = false;
 	QString hashedUsername = hashUsername(std::move(username));
-	qDebug () << username << newPassword;
 
 	// DB opening
 	if (!db.open()) {
@@ -586,7 +597,6 @@ bool Database::changePassword(QString username, QString newPassword) {
 
 	QSqlQuery saltQuery;
 	saltQuery.prepare("SELECT salt FROM users WHERE username=:username");
-
 	saltQuery.bindValue(":username", hashedUsername);
 
 	QString salt = "";
@@ -608,11 +618,9 @@ bool Database::changePassword(QString username, QString newPassword) {
 	query.bindValue(":newPassword", hashedNewPassword);
 
 	if (!query.exec()) {
-		qDebug() << "Error inserting image into table:\n" << query.lastError();
+		qDebug() << "Error change password:\n" << query.lastError();
 	} else
 		result = true;
-
-	qDebug () << username << newPassword;
 
 	db.close();
 	return result;
