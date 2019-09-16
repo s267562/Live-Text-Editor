@@ -67,6 +67,12 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         }
         writeOkMessage(soc);
         readyRead(soc, c, d);
+    } else if (data.toStdString() == STYLE_CAHNGED_MESSAGE) {
+        if (!readStyleChanged(soc)) {
+            writeErrMessage(soc);
+        }
+        writeOkMessage(soc);
+        readyRead(soc, c, d);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
             writeErrMessage(soc, DELETE_MESSAGE);
@@ -133,10 +139,6 @@ bool Thread::readInsert(QTcpSocket *soc){
     QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
     Character character = Character::toCharacter(jsonDocument);
 
-    qDebug() << "bold:" << character.getCharFormat().isBold();
-
-    //qDebug() << "char: "<< character.getValue();
-
     crdt->handleInsert(character);
 
     // broadcast
@@ -148,6 +150,33 @@ bool Thread::readInsert(QTcpSocket *soc){
 		timerStarted = true;
 	}
 	return true;
+}
+bool Thread::readStyleChanged(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
+
+    readSpace(soc);
+    int messageSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    QByteArray characterByteFormat;
+    if (!readChunck(soc, characterByteFormat, messageSize)){
+        return false;
+    }
+
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character character = Character::toCharacter(jsonDocument);
+
+    crdt->handleStyleChanged(character);
+
+    // broadcast
+    this->writeStyleChanged(soc, character);
+
+    needToSaveFile = true;
+    if (!timerStarted) {
+        saveTimer->start(saveInterval);
+        timerStarted = true;
+    }
+    return true;
 }
 
 bool Thread::readDelete(QTcpSocket *soc){
@@ -192,6 +221,28 @@ void Thread::writeInsert(QTcpSocket *soc, Character character){
 
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
+    }
+}
+
+void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
+    qDebug() << "Thread.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
+
+    QByteArray message(STYLE_CAHNGED_MESSAGE);
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
         if(socket.first != soc->socketDescriptor()) {
             //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);

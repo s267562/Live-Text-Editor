@@ -144,6 +144,15 @@ void CRDT::insertChar(Character character, Pos pos) {
     structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
 }
 
+// handle style changed
+
+Pos CRDT::handleStyleChanged(const Character &character) {
+    Pos pos = this->findPosition(character);
+
+    this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
+
+    return pos;
+}
 
 // handle delete
 

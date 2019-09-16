@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define UI 1
+#define UI 0
 #define REGISTRATION_TEST 0
 
 #define OK_MESSAGE "OKY\r\n"
@@ -14,6 +14,7 @@
 #define LIST_OF_FILE "LSF\r\n"
 #define LIST_OF_USERS "USR\r\n"
 #define INSERT_MESSAGE "INS\r\n"
+#define STYLE_CAHNGED_MESSAGE "STY\r\n"
 #define DELETE_MESSAGE "DEL\r\n"
 #define REMOVE_USER "RUS\n\r"
 #define SENDING_FILE "FIL\n\r"

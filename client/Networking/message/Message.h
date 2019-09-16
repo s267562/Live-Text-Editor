@@ -8,7 +8,7 @@
 #include <QtGlobal>
 #include "../../../client/utils/Character.h"
 
-enum TypeMessage {INSERT,DELETE};
+enum TypeMessage {INSERT,DELETE,STYLE_CHANGED};
 
 class Message {
     Character character;

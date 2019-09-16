@@ -28,6 +28,9 @@ void CRDT::setSiteId(const QString &siteId) {
     CRDT::siteId = siteId;
 }
 
+const Character CRDT::getCharacter(Pos pos) {
+    return this->structure[pos.getLine()][pos.getCh()];
+}
 
 // remote insert
 
@@ -122,11 +125,11 @@ Pos CRDT::findEndPosition(Character lastChar, std::vector<Character> lastLine, i
 
 // local insert
 
-Character CRDT::handleLocalInsert(char val, CharFormat charFormat, Pos pos) {
+Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos pos) {
     //increment version vector
     this->versionsVector[siteId]++;
 
-    const Character character = generateChar(val, charFormat, pos, siteId);
+    const Character character = generateChar(val, textCharFormat, pos, siteId);
     insertChar(character, pos);
     //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
@@ -155,12 +158,12 @@ Character CRDT::handleLocalInsert(char val, CharFormat charFormat, Pos pos) {
     return character;
 }
 
-const Character CRDT::generateChar(char val, CharFormat charFormat, Pos pos, QString siteId) {
+const Character CRDT::generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
     const std::vector<Identifier> posBefore = findPosBefore(pos);
     const std::vector<Identifier> posAfter = findPosAfter(pos);
     const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter, siteId);
 
-    Character character(val, charFormat, this->versionsVector[siteId], siteId, newPos);
+    Character character(val, textCharFormat, this->versionsVector[siteId], siteId, newPos);
 
     return character;
 }
@@ -268,9 +271,11 @@ void CRDT::insertChar(Character character, Pos pos) {
     if (character.getValue() == '\n') {
         qDebug() << "Splitting line into two lines";
         std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
+
         if (lineAfter.size() != 0) {
             qDebug().noquote() << "There is something after the newLine inserted";
             structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
+
             /*
             if(structure.size() <= pos.getLine()+1) {
                 // the line + 1 does not exist.
@@ -282,7 +287,6 @@ void CRDT::insertChar(Character character, Pos pos) {
                 structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
             }
              */
-
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
@@ -385,7 +389,7 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
 // remote delete
 
 Pos CRDT::handleRemoteDelete(const Character &character) {
-    Pos pos = this->findDeletePosition(character);
+    Pos pos = this->findPosition(character);
 
     if (!pos) return pos;
 
@@ -418,7 +422,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     return pos;
 }
 
-Pos CRDT::findDeletePosition(Character character) {
+Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char
     if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
         return Pos {-1, -1}; // false obj
@@ -528,4 +532,23 @@ const QString CRDT::toText() {
         }
     }
     return text;
+}
+
+// local style changed
+bool CRDT::styleChanged(QTextCharFormat textCharFormat, Pos pos) {
+    if(structure[pos.getLine()][pos.getCh()].getTextCharFormat() == textCharFormat) {
+        return false;
+    } else {
+        structure[pos.getLine()][pos.getCh()].setTextCharFormat(textCharFormat);
+        return true;
+    }
+}
+
+// remote style changed
+Pos CRDT::handleRemoteStyleChanged(const Character &character) {
+    Pos pos = findPosition(character);
+
+    this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
+
+    return pos;
 }

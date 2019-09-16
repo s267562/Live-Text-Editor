@@ -34,6 +34,7 @@ public:
     Messanger(QObject *parent = nullptr);
     void setCRDT(CRDT *crdt);
     bool writeInsert(Character character);
+    bool writeStyleChanged(Character character);
     bool writeDelete(Character character);
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
@@ -41,6 +42,7 @@ public:
     bool registration(QString username, QString password, QByteArray avatar);
     bool requestForFile(QString fileName);
     bool readInsert();
+    bool readStyleChanged();
     bool readDelete();
     bool readUsernames();
     bool readRemoveUser();

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     #if REGISTRATION_TEST
         /* TEST: REGISTRATION FEATURE */
         Messanger messanger;
-        messanger.connectTo("127.0.0.1");
+        messanger.connectTo("127.0.0.1", "1234");
         messanger.registration("ciao","ciao","/Users/andrea/Documents/sfondi/preview.jpeg");
     #else
         /* TEST: TEXT EDITOR */

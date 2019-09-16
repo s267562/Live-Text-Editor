@@ -69,10 +69,10 @@ public slots:
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
-    void localInsert(QString val, CharFormat charFormat, Pos pos);
+    void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
-    void resetModel();
     User* getUser();
+    void styleChange(QTextCharFormat textCharFormat, Pos pos);
 };
 
 

@@ -40,8 +40,10 @@ public:
     void sendListOfUsers(QTcpSocket *soc);
 private:
     bool readInsert(QTcpSocket *soc);
+    bool readStyleChanged(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
     void writeInsert(QTcpSocket *soc, Character character);
+    void writeStyleChanged(QTcpSocket *soc, Character character);
     void writeDelete(QTcpSocket *soc, Character character);
     void sendNewUser(QTcpSocket *soc);
     void sendRemoveUser(qintptr socketDescriptor, QString username);

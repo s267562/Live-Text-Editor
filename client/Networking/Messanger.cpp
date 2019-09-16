@@ -75,6 +75,11 @@ void Messanger::onReadyRead(){
                 despatchMessage();
                 onReadyRead();
             }
+        }else if (datas.toStdString() == STYLE_CAHNGED_MESSAGE){
+            if (readStyleChanged()){
+                despatchMessage();
+                onReadyRead();
+            }
         }else if (datas.toStdString() == DELETE_MESSAGE){
             if (readDelete()){
                 despatchMessage();
@@ -428,6 +433,31 @@ bool Messanger::writeInsert(Character character){
     return true;
 }
 
+bool Messanger::writeStyleChanged(Character character){
+    qDebug() << "Messanger.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
+
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(STYLE_CAHNGED_MESSAGE);
+        QByteArray characterByteFormat = character.toQByteArray();
+        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+        message.append(" " + sizeOfMessage + " " + characterByteFormat);
+        messages.push(message);
+
+        qDebug() << "                         " << message;
+        qDebug() << ""; // newLine
+
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            if (!writeMessage(socket, message)){
+                return false;
+            }
+            messages.pop();
+        }
+    }
+    return true;
+}
+
 bool Messanger::writeDelete(Character character){
     qDebug() << "Messanger.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
@@ -461,6 +491,27 @@ bool Messanger::readInsert(){
     Character character = Character::toCharacter(jsonDocument);
 
     Message message(character, socket->socketDescriptor(), INSERT);
+
+    emit newMessage(message);
+    return true;
+}
+
+bool Messanger::readStyleChanged(){
+    qDebug() << "Messanger.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
+
+    readSpace(socket);
+    int messageSize = readNumberFromSocket(socket);
+    readSpace(socket);
+
+    QByteArray characterByteFormat;
+    if (!readChunck(socket, characterByteFormat, messageSize)){
+        return false;
+    }
+
+    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character character = Character::toCharacter(jsonDocument);
+
+    Message message(character, socket->socketDescriptor(), STYLE_CHANGED);
 
     emit newMessage(message);
     return true;

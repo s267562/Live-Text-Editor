@@ -15,6 +15,7 @@
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QColorDialog>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
@@ -102,6 +103,70 @@ void Editor::setupTextActions() {
     actionTextUnderline->setCheckable(true);
 
     menu->addSeparator();
+
+    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":/images/win/textleft.png"));
+    actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
+    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
+    actionAlignLeft->setCheckable(true);
+    actionAlignLeft->setPriority(QAction::LowPriority);
+    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":/images/win/textcenter.png"));
+    actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
+    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionAlignCenter->setCheckable(true);
+    actionAlignCenter->setPriority(QAction::LowPriority);
+    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":/images/win/textright.png"));
+    actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
+    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionAlignRight->setCheckable(true);
+    actionAlignRight->setPriority(QAction::LowPriority);
+    const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(":/images/win/textjustify.png"));
+    actionAlignJustify = new QAction(fillIcon, tr("&Justify"), this);
+    actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
+    actionAlignJustify->setCheckable(true);
+    actionAlignJustify->setPriority(QAction::LowPriority);
+
+    // Make sure the alignLeft  is always left of the alignRight
+    QActionGroup *alignGroup = new QActionGroup(this);
+    connect(alignGroup, &QActionGroup::triggered, this, &Editor::textAlign);
+
+    if (QApplication::isLeftToRight()) {
+        alignGroup->addAction(actionAlignLeft);
+        alignGroup->addAction(actionAlignCenter);
+        alignGroup->addAction(actionAlignRight);
+    } else {
+        alignGroup->addAction(actionAlignRight);
+        alignGroup->addAction(actionAlignCenter);
+        alignGroup->addAction(actionAlignLeft);
+    }
+    alignGroup->addAction(actionAlignJustify);
+
+    tb->addActions(alignGroup->actions());
+    menu->addActions(alignGroup->actions());
+
+    menu->addSeparator();
+
+
+    QPixmap pix(16, 16);
+    pix.fill(Qt::black);
+    actionTextColor = menu->addAction(pix, tr("&Color..."), this, &Editor::textColor);
+    tb->addAction(actionTextColor);
+
+    comboFont = new QFontComboBox(tb);
+    tb->addWidget(comboFont);
+    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
+
+    comboSize = new QComboBox(tb);
+    comboSize->setObjectName("comboSize");
+    tb->addWidget(comboSize);
+    comboSize->setEditable(true);
+
+    const QList<int> standardSizes = QFontDatabase::standardSizes();
+            foreach (int size, standardSizes)
+            comboSize->addItem(QString::number(size));
+    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
+
+    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+
 }
 
 void Editor::textBold() {
@@ -122,10 +187,71 @@ void Editor::textItalic() {
     mergeFormatOnWordOrSelection(fmt);
 }
 
+void Editor::textFamily(const QString &f)
+{
+    QTextCharFormat fmt;
+    fmt.setFontFamily(f);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void Editor::textSize(const QString &p)
+{
+    qreal pointSize = p.toFloat();
+    if (p.toFloat() > 0) {
+        QTextCharFormat fmt;
+        fmt.setFontPointSize(pointSize);
+        mergeFormatOnWordOrSelection(fmt);
+    }
+}
+
+void Editor::textColor()
+{
+    QColor col = QColorDialog::getColor(textEdit->textColor(), this);
+    if (!col.isValid())
+        return;
+    QTextCharFormat fmt;
+    fmt.setForeground(col);
+    mergeFormatOnWordOrSelection(fmt);
+    colorChanged(col);
+}
+
+void Editor::colorChanged(const QColor &c)
+{
+    QPixmap pix(16, 16);
+    pix.fill(c);
+    actionTextColor->setIcon(pix);
+}
+
+
+
+void Editor::textAlign(QAction *a)
+{
+    if (a == actionAlignLeft)
+        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+    else if (a == actionAlignCenter)
+        textEdit->setAlignment(Qt::AlignHCenter);
+    else if (a == actionAlignRight)
+        textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+    else if (a == actionAlignJustify)
+        textEdit->setAlignment(Qt::AlignJustify);
+}
+
+
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();
     cursor.mergeCharFormat(format);
     textEdit->mergeCurrentCharFormat(format);
+
+    // updateUI
+    actionTextBold->setChecked(format.fontWeight() == QFont::Bold);
+    actionTextItalic->setChecked(format.fontItalic());
+    actionTextUnderline->setChecked(format.fontUnderline());
+    colorChanged(format.foreground().color());
+    comboFont->setCurrentFont(format.font());
+    int index = comboSize->findText(QString::number(format.fontPointSize()));
+    if(index != -1) {
+        comboSize->setCurrentIndex(index);
+    }
 }
 
 void Editor::setController(Controller *controller) {
@@ -150,8 +276,26 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
         redo();
         if(charsAdded == charsRemoved && textAdded == textRemoved) {
-            qDebug() << "text doesn't change (maybe style changed)";
-            // TODO style changed
+            // qDebug() << "text doesn't change (maybe style changed)";
+            if(position == 0 && textDocument->characterCount()-1 != charsAdded) {
+                // correction when paste something in first position.
+                charsAdded--;
+            }
+            QTextCursor cursor = textEdit->textCursor();
+
+            for(int i=0; i<charsAdded; i++) {
+                // for each char added
+                cursor.setPosition(position + i);
+                int line = cursor.blockNumber();
+                int ch = cursor.positionInBlock();
+                Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                // select char
+                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                QTextCharFormat textCharFormat = cursor.charFormat();
+
+                this->controller->styleChange(textCharFormat, pos);
+            }
         } else {
             if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
                 // correction when paste something in first position.
@@ -164,7 +308,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     // chars removed due to undo operation.
 
                     // get endPos
-                    qDebug() << "position" << position;
                     textCursor.setPosition(position);
                     int line = textCursor.blockNumber();
                     int ch = textCursor.positionInBlock();
@@ -172,7 +315,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
                     // get startPos
                     redo();
-                    textCursor.setPosition(position + charsRemoved - 1);
+                    textCursor.setPosition(position + charsRemoved);
                     line = textCursor.blockNumber();
                     ch = textCursor.positionInBlock();
                     Pos endPos{ch, line}; // Pos(int ch, int line);
@@ -213,8 +356,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
                     // select char
                     cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                    CharFormat charFormat = getSelectedCharFormat(cursor);
+                    QTextCharFormat charFormat = cursor.charFormat();
 
                     this->controller->localInsert(chars.at(i), charFormat, startPos);
                 }
@@ -224,6 +366,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         restoreCursor();
         onCursorPositionChanged();
     } else {
+        qDebug() << " "; // new Line
         //qDebug() << "INVALID SIGNAL";
         //std::cout << "INVALID SIGNAL" << std::endl;
         if(this->startSelection != this->endSelection) {
@@ -237,28 +380,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             this, &Editor::onCursorPositionChanged);
 }
 
-CharFormat Editor::getSelectedCharFormat(QTextCursor cursor) {
-    bool    bold = cursor.charFormat().fontWeight() == QFont::Bold,
-            italic = cursor.charFormat().fontItalic(),
-            underline = cursor.charFormat().fontUnderline();
-    QColor color{ cursor.charFormat().foreground().color() };
-
-    //qDebug() << "italic:" << italic;
-    //qDebug() << "bold:" << bold;
-    //qDebug() << "underline:" << underline;
-    //qDebug() << "color:" << color.name();
-
-    CharFormat charFormat{
-            bold,
-            italic,
-            underline,
-            color
-    };
-
-    return charFormat;
-}
-
-void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
+void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos) {
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
@@ -270,6 +392,34 @@ void Editor::insertChar(char character, CharFormat charFormat, Pos pos) {
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+    textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(textCharFormat);
+    textEdit->mergeCurrentCharFormat(textCharFormat);
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+    textCursor.setPosition(oldCursorPos);
+}
+
+void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
+    //qDebug() << "bold" << format.isBold();
+    //qDebug() << "underline" << format.isUnderline();
+    //qDebug() << "italic" << format.isItalic();
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    QTextDocument *doc = textEdit->document();
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
+    textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(textCharFormat);
+    textEdit->mergeCurrentCharFormat(textCharFormat);
+    mergeFormatOnWordOrSelection(textCharFormat);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -297,28 +447,7 @@ void Editor::deleteChar(Pos pos) {
 }
 
 void Editor::setFormat(CharFormat charFormat) {
-    QTextCharFormat fmt;
-    if(charFormat.isBold()) {
-        actionTextBold->setChecked(true);
-        fmt.setFontWeight(QFont::Bold);
-    } else {
-        actionTextBold->setChecked(false);
-        fmt.setFontWeight(QFont::Normal);
-    }
-    if(charFormat.isItalic()) {
-        actionTextItalic->setChecked(true);
-        fmt.setFontItalic(true);
-    } else {
-        actionTextItalic->setChecked(false);
-        fmt.setFontItalic(false);
-    }
-    if(charFormat.isUnderline()) {
-        actionTextUnderline->setChecked(true);
-        fmt.setFontUnderline(true);
-    } else {
-        actionTextUnderline->setChecked(false);
-        fmt.setFontUnderline(false);
-    }
+    QTextCharFormat fmt = charFormat.toTextCharFormat();
 
     mergeFormatOnWordOrSelection(fmt);
 }
@@ -328,13 +457,16 @@ void Editor::onCursorPositionChanged() {
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
-            setFormat(CharFormat(false, false, false));
+            setFormat(CharFormat()); // defaul character
         } else if(cursorPos > 0) {
             cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
             QTextCharFormat textCharFormat = cursor.charFormat();
             setFormat(CharFormat(textCharFormat.fontWeight() == QFont::Bold,
                                  textCharFormat.fontItalic(),
-                                 textCharFormat.fontUnderline()));
+                                 textCharFormat.fontUnderline(),
+                                 textCharFormat.foreground().color(),
+                                 textCharFormat.font().family(),
+                                 textCharFormat.fontPointSize()));
         }
     }
 }
@@ -399,19 +531,29 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
     bool validSignal = true;
     isRedoAvailable = textDocument->isRedoAvailable();
 
+    QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+    undo();
+    QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
+    redo();
+    if(charsAdded == charsRemoved && position+charsAdded > textDocument->characterCount()-1 && textAdded == textRemoved) {
+        // wrong signal when apply style in editor 1 (line 2) and then write something in editor2
+        qDebug() << "WRONG SIGNAL 1";
+        validSignal = false;
+    }
+
     int currentDocumentSize = textDocument->characterCount()-1;
     undo();
     int undoDocumentSize = textDocument->characterCount()-1;
     redo();
     //qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
-    if(charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
+    if(validSignal && charsAdded == charsRemoved && currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
         // wrong signal when editor gets focus and something happen.
-        //qDebug() << "WRONG SIGNAL 1";
+        //qDebug() << "WRONG SIGNAL 2";
         validSignal = false;
     }
 
     /*if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
-        //qDebug() << "WRONG SIGNAL 2";
+        //qDebug() << "WRONG SIGNAL";
         // wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
         validSignal = false;
     }*/

@@ -12,6 +12,9 @@
 #include <QTextEdit>
 #include <iostream>
 #include <QMovie>
+#include <QComboBox>
+#include <QFontComboBox>
+
 
 class Controller;
 
@@ -21,11 +24,13 @@ namespace Ui {
 
 class Editor : public QMainWindow {
 Q_OBJECT
+
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-    void insertChar(char character, CharFormat charFormat, Pos pos);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    void changeStyle(Pos pos, const QTextCharFormat&format);
     void deleteChar(Pos pos);
     void reset();
     void replaceText(const QString initialText);
@@ -51,6 +56,16 @@ private slots:
     void textBold();
     void textUnderline();
     void textItalic();
+    void textAlign(QAction *a);
+    void textColor();
+
+    void textFamily(const QString &f);
+    void textSize(const QString &p);
+
+
+    void colorChanged(const QColor &c);
+
+
 
 private:
     Ui::Editor *ui;
@@ -76,7 +91,6 @@ private:
     void restoreCursorSelection();
     void saveCursor();
 
-    CharFormat getSelectedCharFormat(QTextCursor cursor);
     void setupTextActions();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
 
@@ -84,6 +98,16 @@ private:
     QAction *actionTextBold;
     QAction *actionTextUnderline;
     QAction *actionTextItalic;
+    QAction *actionAlignLeft;
+    QAction *actionAlignCenter;
+    QAction *actionAlignRight;
+    QAction *actionAlignJustify;
+
+    QAction *actionTextColor;
+
+    QFontComboBox *comboFont;
+    QComboBox *comboSize;
+
 };
 
 #endif //TEXTEDITOR_EDITOR_H
