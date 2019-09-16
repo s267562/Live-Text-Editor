@@ -135,7 +135,7 @@ QPushButton:hover
     <widget class="ClickableLabel" name="newFile">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>5</x>
        <y>10</y>
        <width>40</width>
        <height>40</height>

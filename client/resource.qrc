@@ -3,12 +3,20 @@
         <file>img/share.png</file>
         <file>img/logout.png</file>
         <file>img/new-file.png</file>
-        <file>img/open-archive.png</file>
+        <file>img/folder.png</file>
         <file>img/pdf.png</file>
         <file>img/avatar.png</file>
         <file>img/loading.gif</file>
         <file>img/user.png</file>
         <file>img/network.png</file>
         <file>img/copy.png</file>
+        <file>img/bold.png</file>
+        <file>img/italic.png</file>
+        <file>img/underline.png</file>
+        <file>img/bold.png</file>
+        <file>img/align.png</file>
+        <file>img/align-right.png</file>
+        <file>img/align-left.png</file>
+        <file>img/align-center.png</file>
     </qresource>
 </RCC>

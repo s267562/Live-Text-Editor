@@ -146,6 +146,7 @@ void Controller::requestForFile(QString filename){
         }else{
             editor->reset();
         }
+        editor->setFilename(&filename);
         now->close();
         now = editor;
         editor->show();

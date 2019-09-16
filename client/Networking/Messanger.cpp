@@ -10,6 +10,7 @@
 Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
     reciveOkMessage = false;
+    state = UNLOGGED;
 
     /* define connection */
     c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
@@ -20,14 +21,27 @@ void Messanger::setCRDT(CRDT *crdt) {
     this->crdt = crdt;
 }
 
+/**
+ * Method for connecting with server
+ * @param host
+ * @param port
+ * @return result of connection
+ */
 bool Messanger::connectTo(QString host, QString port){
     serverIP = host;
     serverPort = port;
     socket->connectToHost(host, port.toInt());
+    int i = 0;
 
-    if (!socket->waitForConnected(TIMEOUT)){
-        emit errorConnection();
-        return false;
+    while (i < 5) {                                     /* retry for 5 times */
+        if (socket->waitForConnected(TIMEOUT)) {
+            break;
+        }
+        if (i == 4){
+            emit errorConnection();
+            return false;
+        }
+        i++;
     }
 
     socketDescriptor = socket->socketDescriptor();
@@ -38,6 +52,10 @@ bool Messanger::connectTo(QString host, QString port){
     return true;
 }
 
+/**
+ * this method allows to start reading from socket and calls different methods
+ * that handles different type of message.
+ */
 void Messanger::onReadyRead(){
     if (socket->bytesAvailable() == 0){
         return;
@@ -69,45 +87,49 @@ void Messanger::onReadyRead(){
 
     if (clientIsLogged){
         if (datas.toStdString() == OK_MESSAGE){
-            despatchMessage();
+            // capire quale messaggio di ok è stato ricevuto...
         }else if (datas.toStdString() == INSERT_MESSAGE){
-            if (readInsert()){
-                despatchMessage();
-                onReadyRead();
+            if (!readInsert()){
+                return;
             }
         }else if (datas.toStdString() == STYLE_CAHNGED_MESSAGE){
-            if (readStyleChanged()){
-                despatchMessage();
-                onReadyRead();
+            if (!readStyleChanged()){
+                return;
             }
         }else if (datas.toStdString() == DELETE_MESSAGE){
-            if (readDelete()){
-                despatchMessage();
-                onReadyRead();
+            if (!readDelete()){
+                return;
             }
         }else if (datas.toStdString() == LIST_OF_FILE){
-            readFileNames();
+            if (!readFileNames()){
+                return;
+            }
             reciveOkMessage = true;
             #if !UI
                     requestForFile("prova");        /* TEST: TEXT EDITOR */
             #endif
         } else if (datas.toStdString() == LIST_OF_USERS){
-            if (readUsernames()){
-                despatchMessage();
+            if (!readUsernames()){
+                return;
             }
         } else if (datas.toStdString() == REMOVE_USER){
-            if (readRemoveUser()){
-                despatchMessage();
+            if (!readRemoveUser()){
+                return;
             }
         }else if (datas.toStdString() == SENDING_FILE){
-            if (readFile()){
-                despatchMessage();
-                onReadyRead();
+            if (!readFile()){
+                return;
             }
         }
+        despatchMessage();
+        onReadyRead();
     }
 }
 
+/**
+ * This method handles different error's cases
+ * @return result of reading from socket
+ */
 bool Messanger::readError(){
     qDebug() << "Messanger.cpp - readError()     ---------- READ ERROR ----------";
     QByteArray type;
@@ -148,6 +170,12 @@ bool Messanger::despatchMessage(){
     return true;
 }
 
+/**
+ * This method sands username and password to the server for login
+ * @param username
+ * @param password
+ * @return result of writing on socket
+ */
 bool Messanger::logIn(QString username, QString password) {
     qDebug() << "Messanger.cpp - logIn()     ---------- LOGIN ----------";
 
@@ -171,6 +199,12 @@ bool Messanger::logIn(QString username, QString password) {
     return true;
 }
 
+/**
+ * This method sands username and password to the server for registration
+ * @param username
+ * @param password
+ * @return result of writing on socket
+ */
 bool Messanger::registration(QString username, QString password, QByteArray avatar){
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
 
@@ -195,6 +229,14 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
     return true;
 }
 
+/**
+ * This methods sends user's changes to server
+ * @param username
+ * @param newPassword
+ * @param oldPassword
+ * @param avatar
+ * @return result of writing on socket
+ */
 bool Messanger::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
     qDebug() << "Messanger.cpp - sendEditAccount()     ---------- SEND EDIT ACCOUNT ----------";
 
@@ -221,6 +263,10 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
     return true;
 }
 
+/**
+ * This methods recives user's features
+ * @return  result of reading from socket
+ */
 bool Messanger::readUser(){
     qDebug() << "Messanger.cpp - readUser()     ---------- READUSER ----------";
     readSpace(socket);
@@ -254,6 +300,10 @@ bool Messanger::readUser(){
     return true;
 }
 
+/**
+ * This method reads the list of file name.
+ * @return result of reading from socket
+ */
 bool Messanger::readFileNames(){
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";
     QStringList fileList;
@@ -291,7 +341,11 @@ bool Messanger::readFileNames(){
     return true;
 }
 
-void Messanger::logOut(){
+/**
+ * This method allows logout feature
+ * @return result of connectTo
+ */
+bool Messanger::logOut(){
     if (clientIsLogged){
         disconnect(c);
         disconnect(d);
@@ -300,15 +354,21 @@ void Messanger::logOut(){
         socket = new QTcpSocket();
         if (!connectTo(serverIP, serverPort)){
             qDebug() << "Connesione fallita";
-            return;
+            return false;
         }
         clientIsLogged = false;
         c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
         d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
         emit logout();
     }
+    return true;
 }
 
+/**
+ * This method sends a request for specific file
+ * @param fileName
+ * @return result of writing on socket
+ */
 bool Messanger::requestForFile(QString fileName){
     qDebug() << "Messanger.cpp - requestForFile()     ---------- REQUEST FOR FILE ----------";
 
@@ -334,6 +394,10 @@ bool Messanger::requestForFile(QString fileName){
     }
 }
 
+/**
+ * This method reads the list of online users
+ * @return result of reading from socket
+ */
 bool Messanger::readUsernames(){
     qDebug() << "Messanger.cpp - readUsernames()     ---------- READ USERNAMES ----------";
     QStringList usernames;
@@ -361,6 +425,10 @@ bool Messanger::readUsernames(){
     return true;
 }
 
+/**
+ * This method reads the username that is not online
+ * @return result of reading from socket
+ */
 bool Messanger::readRemoveUser(){
     qDebug() << "Messanger.cpp - readRemoveUser()     ---------- READ REMOVE USER ----------";
     readSpace(socket);
@@ -375,6 +443,10 @@ bool Messanger::readRemoveUser(){
     return true;
 }
 
+/**
+ * This method receives the complite file, that was requested
+ * @return result of reading from socket
+ */
 bool Messanger::readFile(){
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
@@ -408,6 +480,11 @@ bool Messanger::readFile(){
     return true;
 }
 
+/**
+ * This method sends the character/characters, that was/were added
+ * @param character
+ * @return result of writing on socket
+ */
 bool Messanger::writeInsert(Character character){
     qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
 
@@ -458,6 +535,11 @@ bool Messanger::writeStyleChanged(Character character){
     return true;
 }
 
+/**
+ * This method sends the character/characters, that was/were removed
+ * @param character
+ * @return result of writing on socket
+ */
 bool Messanger::writeDelete(Character character){
     qDebug() << "Messanger.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
@@ -475,6 +557,10 @@ bool Messanger::writeDelete(Character character){
     return true;
 }
 
+/**
+ * This method reads the character, that was added from other users
+ * @return result of reading from socket
+ */
 bool Messanger::readInsert(){
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
 
@@ -517,6 +603,10 @@ bool Messanger::readStyleChanged(){
     return true;
 }
 
+/**
+ * This method reads the character, that was removed from other users
+ * @return result of reading from socket
+ */
 bool Messanger::readDelete(){
     qDebug() << "Messanger.cpp - readDelete()     ---------- READ DELETE ----------";
 
