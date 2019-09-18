@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
         messanger.connectTo("127.0.0.1", "1234");
         QString username = "test2";
-        messanger.logIn(username, "test2");
+        messanger.logIn(username, "test2");                         /* NOTA: occorre registrare l'utente!! */
 
         QString siteId = username;
         crdt.setSiteId(siteId);

@@ -68,7 +68,7 @@ void Messanger::onReadyRead(){
 
     qDebug() << "Messanger.cpp - onReadyRead()     msg received:" << datas;
     qDebug() << ""; // newLine
-
+    /*
     if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
         //clientIsLogged = true;
         reciveOkMessage = true;
@@ -83,9 +83,74 @@ void Messanger::onReadyRead(){
         }
         clientIsLogged = true;
         onReadyRead();
+    }*/
+
+    if (!clientIsLogged){
+        if (state == UNLOGGED && datas.toStdString() == AVATAR_MESSAGE){
+            if (!readUser()){
+                return;
+            }
+            state = WAITING_LIST_OF_FILE;
+        }else if (state == WAITING_LIST_OF_FILE && datas.toStdString() == LIST_OF_FILE){
+            if (!readFileNames()){
+                return;
+            }
+            clientIsLogged = true;
+            state = LIST_OF_FILE_RECIVED;
+        }else if (datas.toStdString() == ERR_MESSAGE){
+            if (!readError()){
+                return;
+            }
+        }
+    }else{
+        if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == AVATAR_MESSAGE){
+            if (!readUser()){
+                return;
+            }
+        }else if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == SENDING_FILE){
+            if (!readFile()){
+                return;
+            }
+            state = WAITING_LIST_OF_ONLINE_USERS;
+        }else if (state == WAITING_LIST_OF_ONLINE_USERS && datas.toStdString() == LIST_OF_USERS){
+            if (!readUsernames()){
+                return;
+            }
+            state = EDIT_FILE_STATE;
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == INSERT_MESSAGE){
+            if (!readInsert()){
+                return;
+            }
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == DELETE_MESSAGE){
+            if (!readDelete()){
+                return;
+            }
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == REMOVE_USER){
+            if (!readRemoveUser()){
+                return;
+            }
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE){
+            reciveOkMessage = true;
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS){
+            if (!readUsernames()){
+                return;
+            }
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == STYLE_CAHNGED_MESSAGE){
+            if (!readStyleChanged()){
+                return;
+            }
+        }else if (state == EDIT_FILE_STATE && datas.toStdString() == AVATAR_MESSAGE){
+            if (!readUser()){
+                return;
+            }
+        }else if (datas.toStdString() == ERR_MESSAGE){
+            if (!readError()){
+                return;
+            }
+        }
     }
 
-    if (clientIsLogged){
+    /*if (clientIsLogged){
         if (datas.toStdString() == OK_MESSAGE){
             // capire quale messaggio di ok è stato ricevuto...
         }else if (datas.toStdString() == INSERT_MESSAGE){
@@ -106,7 +171,7 @@ void Messanger::onReadyRead(){
             }
             reciveOkMessage = true;
             #if !UI
-                    requestForFile("prova");        /* TEST: TEXT EDITOR */
+                    requestForFile("prova");         TEST: TEXT EDITOR
             #endif
         } else if (datas.toStdString() == LIST_OF_USERS){
             if (!readUsernames()){
@@ -123,7 +188,9 @@ void Messanger::onReadyRead(){
         }
         despatchMessage();
         onReadyRead();
-    }
+    }*/
+    despatchMessage();
+    onReadyRead();
 }
 
 /**
@@ -357,6 +424,7 @@ bool Messanger::logOut(){
             return false;
         }
         clientIsLogged = false;
+        state = UNLOGGED;
         c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
         d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
         emit logout();
@@ -481,7 +549,7 @@ bool Messanger::readFile(){
 }
 
 /**
- * This method sends the character/characters, that was/were added
+ * This method sends the character, that was added
  * @param character
  * @return result of writing on socket
  */
@@ -536,7 +604,7 @@ bool Messanger::writeStyleChanged(Character character){
 }
 
 /**
- * This method sends the character/characters, that was/were removed
+ * This method sends the character, that was removed
  * @param character
  * @return result of writing on socket
  */
