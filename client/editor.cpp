@@ -646,6 +646,7 @@ void Editor::setUsers(QStringList users) {
 #endif
     this->users = users;
     ui->userListWidget->addItems(users);
+    controller->stopLoadingPopup();
 }
 
 void Editor::saveCursor() {
