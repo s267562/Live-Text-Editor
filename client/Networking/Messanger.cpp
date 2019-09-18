@@ -97,6 +97,9 @@ void Messanger::onReadyRead(){
             }
             clientIsLogged = true;
             state = LIST_OF_FILE_RECIVED;
+            #if !UI
+                        requestForFile("prova");         /* TEST: TEXT EDITOR */
+            #endif
         }else if (datas.toStdString() == ERR_MESSAGE){
             if (!readError()){
                 return;
