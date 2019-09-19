@@ -16,6 +16,7 @@
 class Messanger: public QObject{
     Q_OBJECT
 private:
+    SocketState state;
     QString siteId;
     QString serverIP;
     QString serverPort;
@@ -57,7 +58,7 @@ public:
 public slots:
     void onReadyRead();
     void onDisconnect();
-    void logOut();
+    bool logOut();
 
 signals:
     void errorConnection();

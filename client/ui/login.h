@@ -6,17 +6,20 @@
 #include <QLabel>
 #include <QLineEdit>
 #include "../Networking/Messanger.h"
+#include "../Controller.h"
 #include "registration.h"
 
 namespace Ui {
 class Login;
 }
 
+class Controller;
+
 class Login : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit Login(QWidget *parent = nullptr);
+    explicit Login(QWidget *parent = nullptr, Controller *controller = nullptr);
     void setClient(Messanger *client);
     QString getUsername();
     void reset();
@@ -42,6 +45,7 @@ signals:
 private:
     Ui::Login *ui;
     Messanger* messanger;
+    Controller *controller;
 };
 
 #endif // MAINWINDOW_H

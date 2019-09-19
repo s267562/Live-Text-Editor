@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define UI 0
+#define UI 1
 #define REGISTRATION_TEST 0
 
 #define OK_MESSAGE "OKY\r\n"
@@ -21,5 +21,17 @@
 #define EDIT_ACCOUNT "EDT\n\r"
 
 #define TIMEOUT 15000
+
+enum SocketState{
+    UNLOGGED,
+    LOGGED,
+    USER_MESSAGE_RECIVED,
+    WAITING_LIST_OF_FILE,
+    LIST_OF_FILE_RECIVED,
+    WAITING_LIST_OF_ONLINE_USERS,
+    WAITING_COMPLITE_FILE,
+    WAITING_OK,
+    EDIT_FILE_STATE
+};
 
 #endif // CONSTANTS_H

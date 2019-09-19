@@ -9,6 +9,8 @@
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 
 #if UI
     Controller controller;
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]) {
 
         messanger.connectTo("127.0.0.1", "1234");
         QString username = "test1";
-        messanger.logIn(username, "test1");
+        messanger.logIn(username, "test1");                         /* NOTA: occorre registrare l'utente!! */
 
         QString siteId = username;
         crdt.setSiteId(siteId);

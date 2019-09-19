@@ -14,6 +14,7 @@
 #include <QMovie>
 #include <QComboBox>
 #include <QFontComboBox>
+#include <QGraphicsDropShadowEffect>
 
 
 class Controller;
@@ -35,6 +36,8 @@ public:
     void reset();
     void replaceText(const QString initialText);
     ~Editor();
+    void setFilename(QString *filename);
+
 
 public slots:
     void on_actionNew_File_triggered();
@@ -107,6 +110,10 @@ private:
 
     QFontComboBox *comboFont;
     QComboBox *comboSize;
+
+    QGraphicsDropShadowEffect *m_shadowEffect1;
+    QGraphicsDropShadowEffect *m_shadowEffect2;
+    QString *filename;
 
 };
 

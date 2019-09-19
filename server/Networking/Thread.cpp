@@ -17,6 +17,11 @@ void Thread::run() {
 	exec();
 }
 
+/**
+ * this method adds a new socket to the thread
+ * @param soc
+ * @param username
+ */
 void Thread::addSocket(QTcpSocket *soc, QString username) {
     std::lock_guard<std::mutex> lg(mutexSockets);
 	qintptr socketDescriptor = soc->socketDescriptor();
@@ -25,21 +30,20 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 	usernames[socketDescriptor] = username;
     qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
-    QMetaObject::Connection *c = new QMetaObject::Connection();
-    QMetaObject::Connection *d = new QMetaObject::Connection();
+    QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
+    QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
 
 	/* connect socket and signal */
-	*c = connect(soc, &QAbstractSocket::readyRead, this, [this, c, d,soc]() {
+	*connectReadyRead = connect(soc, &QAbstractSocket::readyRead, this, [this, connectReadyRead, connectDisconnected,soc]() {
         qDebug() << "                             " << soc;
-		Thread::readyRead(soc, c, d);
+		Thread::readyRead(soc, connectReadyRead, connectDisconnected);
 	}, Qt::DirectConnection);
 
-	*d = connect(soc, &QAbstractSocket::disconnected, this, [this, c, d, soc, socketDescriptor]() {
+	*connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this, [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
         qDebug() << "                             " << soc;
-		Thread::disconnected(soc, socketDescriptor, c, d);
+		Thread::disconnected(soc, socketDescriptor, connectReadyRead, connectDisconnected);
 	}, Qt::DirectConnection);
 
-    //writeOkMessage(soc);
     sendFile(soc);
     sendListOfUsers(soc);
     sendNewUser(soc);
@@ -48,7 +52,11 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
     qDebug() << ""; // newLine
 }
 
-void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d) {
+/**
+ * This method allows to start reading from socket and calls different methods
+ * that handles different type of message.
+ */
+void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected) {
     if (soc->bytesAvailable() == 0) {
         return;
     }
@@ -66,18 +74,18 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
             writeErrMessage(soc, INSERT_MESSAGE);
         }
         writeOkMessage(soc);
-        readyRead(soc, c, d);
+        readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == STYLE_CAHNGED_MESSAGE) {
         if (!readStyleChanged(soc)) {
             writeErrMessage(soc);
         }
         writeOkMessage(soc);
-        readyRead(soc, c, d);
+        readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
             writeErrMessage(soc, DELETE_MESSAGE);
         }
-        readyRead(soc, c, d);
+        readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == REQUEST_FILE_MESSAGE){
         readSpace(soc);
         int fileNameSize = readNumberFromSocket(soc);
@@ -95,10 +103,10 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
             return;
         }
 
-        disconnect(*c);
-        disconnect(*d);
-        delete c;
-        delete d;
+        disconnect(*connectReadyRead);
+        disconnect(*connectDisconnected);
+        delete connectReadyRead;
+        delete connectDisconnected;
         std::shared_ptr<Thread> thread = server->getThread(fileName);
         if (thread.get() == nullptr){
             /* thread doesn't exist */
@@ -110,10 +118,6 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject:
         thread->addSocket(soc, usernames[soc->socketDescriptor()]);
         usernames.erase(soc->socketDescriptor());
         sockets.erase(soc->socketDescriptor());
-
-
-        //writeOkMessage(soc);
-
     }else{
         writeErrMessage(soc);
     }
@@ -124,6 +128,11 @@ void Thread::saveCRDTToFile() {
         crdt->saveCRDT(filename);
 }
 
+/**
+ * This method reads the character, that was added from clients
+ * @param soc
+ * @return result of reading from socket
+ */
 bool Thread::readInsert(QTcpSocket *soc){
     qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
 
@@ -151,6 +160,7 @@ bool Thread::readInsert(QTcpSocket *soc){
 	}
 	return true;
 }
+
 bool Thread::readStyleChanged(QTcpSocket *soc){
     qDebug() << "Thread.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
 
@@ -179,6 +189,11 @@ bool Thread::readStyleChanged(QTcpSocket *soc){
     return true;
 }
 
+/**
+ * This method reads the character, that was removed from other users
+ * @param soc
+ * @return result of reading from socket
+ */
 bool Thread::readDelete(QTcpSocket *soc){
     qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
 
@@ -207,6 +222,11 @@ bool Thread::readDelete(QTcpSocket *soc){
     return true;
 }
 
+/**
+ * This method sends the character, that was/were added
+ * @param character
+ * @return result of writing on socket
+ */
 void Thread::writeInsert(QTcpSocket *soc, Character character){
     qDebug() << "Thread.cpp - writeInsert()     ---------- WRITE INSERT ----------";
 
@@ -250,6 +270,11 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
     }
 }
 
+/**
+ * This method sends the character, that was removed
+ * @param character
+ * @return result of writing on socket
+ */
 void Thread::writeDelete(QTcpSocket *soc, Character character){
     qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
@@ -272,6 +297,10 @@ void Thread::writeDelete(QTcpSocket *soc, Character character){
     }
 }
 
+/**
+ * This method sends the list of users, that are working on this file
+ * @param soc
+ */
 void Thread::sendListOfUsers(QTcpSocket *soc){
     QByteArray message(LIST_OF_USERS);
     if (usernames.size() - 1 == 0){
@@ -293,6 +322,10 @@ void Thread::sendListOfUsers(QTcpSocket *soc){
     }
 }
 
+/**
+ * This method sends the new username, which has just been added
+ * @param soc
+ */
 void Thread::sendNewUser(QTcpSocket *soc){
     QByteArray message(LIST_OF_USERS);
     QByteArray usernamesSize = convertionNumber(1);
@@ -308,6 +341,11 @@ void Thread::sendNewUser(QTcpSocket *soc){
     }
 }
 
+/**
+ * This method sends the username, which was disconnected
+ * @param socketDescriptor
+ * @param username
+ */
 void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
     QByteArray message(REMOVE_USER);
     QByteArray usernameSize = convertionNumber(username.size());
@@ -322,6 +360,10 @@ void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
     }
 }
 
+/**
+ * This method sends all file to user
+ * @param soc
+ */
 void Thread::sendFile(QTcpSocket *soc){
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
     QByteArray message(SENDING_FILE);
@@ -351,14 +393,14 @@ void Thread::sendFile(QTcpSocket *soc){
     }
 }
 
-void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d){
+void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected){
     std::lock_guard<std::mutex> lg(mutexSockets);
     qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
     qDebug() << ""; // newLine
-    disconnect(*c);
-    disconnect(*d);
-    delete c;
-    delete d;
+    disconnect(*connectReadyRead);
+    disconnect(*connectDisconnected);
+    delete connectReadyRead;
+    delete connectDisconnected;
     QTcpSocket socket;
     socket.setSocketDescriptor(socketDescriptor);
     socket.deleteLater();

@@ -61,7 +61,7 @@ void Controller::connectClient(QString address, QString port) {
         this->connection->close();
 
         /* creation login object */
-        login = new Login(this);
+        login = new Login(this, this);
         now = login;
         login->setClient(messanger);
         connect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
@@ -70,7 +70,7 @@ void Controller::connectClient(QString address, QString port) {
         //connect(this->login, SIGNAL(loginSuccessful()), this, SLOT(showFileFinder()));
 
         /* creation registration object */
-        registration = new Registration(this);
+        registration = new Registration(this, this);
         registration->setClient(messanger);
         connect(this->messanger, &Messanger::registrationFailed, this->registration, &Registration::registrationFailed);
         connect(this->registration, SIGNAL(showLogin()), this, SLOT(showLogin()));
@@ -107,6 +107,7 @@ void Controller::showRegistration(){
 /* SHOW FILE */
 
 void Controller::showFileFinder(std::map<QString, bool> fileList){
+    loading->close();
     now->close();
     this->finder->addFiles(fileList);
 
@@ -116,6 +117,8 @@ void Controller::showFileFinder(std::map<QString, bool> fileList){
         now = finder;
         this->finder->show();
     }
+
+
 }
 
 void Controller::showFileFinderOtherView(){
@@ -146,9 +149,11 @@ void Controller::requestForFile(QString filename){
         }else{
             editor->reset();
         }
+        editor->setFilename(&filename);
         now->close();
         now = editor;
         editor->show();
+        startLoadingPopup();
     }
 }
 
@@ -240,4 +245,15 @@ void Controller::errorEditAccount() {
 
 void Controller::okEditAccount(){
     //loading->close();
+}
+
+void Controller::startLoadingPopup(){
+    loading = new Loading(now);
+    loading->show();
+}
+
+void Controller::stopLoadingPopup(){
+    if (loading != nullptr){
+        loading->close();
+    }
 }

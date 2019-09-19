@@ -16,6 +16,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QColorDialog>
+#include <sharefile.h>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
@@ -58,19 +59,50 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
 
-    //connect(ui->actionNew_File, &QAction::triggered, this, &Editor::on_actionNew_file_triggered);
-    /*connect(ui->actionOpen, &QAction::triggered, this, &Editor::on_actionOpen_triggered);
-    connect(ui->actionShare_file, &QAction::triggered, this, &Editor::on_actionShare_file_triggered);
-    connect(ui->actionSave_as_PDF, &QAction::triggered, this, &Editor::on_actionSave_as_PDF_triggered);
-    connect(ui->actionLogout, &QAction::triggered, this, &Editor::on_actionLogout_triggered);*/
+    m_shadowEffect1 = new QGraphicsDropShadowEffect(this);
+    m_shadowEffect1->setColor(QColor(0, 0, 0, 255 * 0.1));
+    m_shadowEffect1->setXOffset(0);
+    m_shadowEffect1->setYOffset(4);
+    m_shadowEffect1->setBlurRadius(12);
+    m_shadowEffect1->setEnabled(true);
+    ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
 }
 
 void Editor::setupTextActions() {
     QToolBar *tb = addToolBar(tr("Format Actions"));
     QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
 
+    tb->setStyleSheet("QToolBar{\n"
+                      "border: none;\n"
+                      "background: rgb(255, 255, 255);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:after{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:hover{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:focus{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}");
+    tb->setMinimumHeight(60);
+    //tb->setMaximumHeight(60);
+
+    m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
+    m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
+    m_shadowEffect2->setXOffset(0);
+    m_shadowEffect2->setYOffset(4);
+    m_shadowEffect2->setBlurRadius(12);
+    // hide shadow
+    m_shadowEffect2->setEnabled(true);
+    tb->setGraphicsEffect(m_shadowEffect2);
+
+
     // bold
-    const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/images/win/textbold.png"));
+    const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/rec/img/bold.png"));
     actionTextBold = menu->addAction(boldIcon, tr("&Bold"), this, &Editor::textBold);
     actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
     actionTextBold->setPriority(QAction::LowPriority);
@@ -80,8 +112,10 @@ void Editor::setupTextActions() {
     tb->addAction(actionTextBold);
     actionTextBold->setCheckable(true);
 
+    menu->addSeparator();
+
     // italic
-    const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(":/images/win/textitalic.png"));
+    const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(":/rec/img/italic.png"));
     actionTextItalic = menu->addAction(italicIcon, tr("&Italic"), this, &Editor::textItalic);
     actionTextItalic->setPriority(QAction::LowPriority);
     actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
@@ -92,7 +126,7 @@ void Editor::setupTextActions() {
     actionTextItalic->setCheckable(true);
 
     // underline
-    const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(":/images/win/textunder.png"));
+    const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(":/rec/img/underline.png"));
     actionTextUnderline = menu->addAction(underlineIcon, tr("&Underline"), this, &Editor::textUnderline);
     actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
     actionTextUnderline->setPriority(QAction::LowPriority);
@@ -102,24 +136,22 @@ void Editor::setupTextActions() {
     tb->addAction(actionTextUnderline);
     actionTextUnderline->setCheckable(true);
 
-    menu->addSeparator();
-
-    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":/images/win/textleft.png"));
+    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":/rec/img/align-left.png"));
     actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
     actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
     actionAlignLeft->setCheckable(true);
     actionAlignLeft->setPriority(QAction::LowPriority);
-    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":/images/win/textcenter.png"));
+    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":/rec/img/align-center.png"));
     actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
     actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
     actionAlignCenter->setCheckable(true);
     actionAlignCenter->setPriority(QAction::LowPriority);
-    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":/images/win/textright.png"));
+    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":/rec/img/align-right.png"));
     actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
     actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
     actionAlignRight->setCheckable(true);
     actionAlignRight->setPriority(QAction::LowPriority);
-    const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(":/images/win/textjustify.png"));
+    const QIcon fillIcon = QIcon::fromTheme("format-justify-fill", QIcon(":/rec/img/align.png"));
     actionAlignJustify = new QAction(fillIcon, tr("&Justify"), this);
     actionAlignJustify->setShortcut(Qt::CTRL + Qt::Key_J);
     actionAlignJustify->setCheckable(true);
@@ -476,11 +508,11 @@ void Editor::on_actionNew_File_triggered() {
 }
 
 void Editor::on_actionShare_file_triggered() {
-    QMessageBox::information(this, "Share", "Share!");
+    ShareFile *shareFile = new ShareFile(this, *this->filename);
+    shareFile->show();
 }
 
 void Editor::on_actionOpen_triggered() {
-    QMessageBox::information(this, "Open", "Open!");
     emit showFinder();
 }
 
@@ -502,7 +534,6 @@ void Editor::on_actionSave_as_PDF_triggered() {
 }
 
 void Editor::on_actionLogout_triggered() {
-    QMessageBox::information(this, "Logout", "Logout!");
     emit logout();
 }
 
@@ -615,6 +646,7 @@ void Editor::setUsers(QStringList users) {
 #endif
     this->users = users;
     ui->userListWidget->addItems(users);
+    controller->stopLoadingPopup();
 }
 
 void Editor::saveCursor() {
@@ -665,4 +697,8 @@ void Editor::reset() {
 
 void Editor::showError(){
     QMessageBox::information(this, "Error", "Error!");
+}
+
+void Editor::setFilename(QString *filename){
+    this->filename = filename;
 }

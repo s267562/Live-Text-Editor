@@ -3,7 +3,7 @@
 #include <QMessageBox>
 #include <iostream>
 
-Login::Login(QWidget *parent): QMainWindow(parent), ui(new Ui::Login) {
+Login::Login(QWidget *parent, Controller *controller): QMainWindow(parent), controller(controller),ui(new Ui::Login) {
     ui->setupUi(this);
     ui->label_3->setVisible(false);
     //connect(this, SIGNAL(showRegistration()), this->parent(), SLOT(showRegistration()));
@@ -41,6 +41,7 @@ void Login::on_pushButton_clicked()
 
         ui->label_3->setVisible(false);
         if (result) {
+            controller->startLoadingPopup();
             emit loginSuccessful();
         }
     }
@@ -51,6 +52,7 @@ void Login::errorConnection(){
 }
 
 void Login::loginFailed(){
+    controller->stopLoadingPopup();
     QMessageBox::warning(this,"Login", "Username and/or password is not correct, try again!");
 }
 

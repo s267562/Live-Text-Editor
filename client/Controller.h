@@ -17,6 +17,8 @@
 
 class Editor;
 class ShowFiles;
+class Login;
+class Registration;
 
 class Controller : public QMainWindow {
     Q_OBJECT
@@ -36,7 +38,7 @@ private:
 
     /* networking */
     Messanger *messanger;
-    Loading *loading;
+    Loading *loading = nullptr;
 
 public slots:
     /* NETWORKING */
@@ -73,6 +75,8 @@ public:
     void localDelete(Pos startPos, Pos endPos);
     User* getUser();
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
+    void startLoadingPopup();
+    void stopLoadingPopup();
 };
 
 

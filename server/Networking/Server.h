@@ -29,6 +29,8 @@ public:
     std::shared_ptr<Thread> addThread(QString fileName);
 
 private:
+    void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);
+    void disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);
     bool logIn(QTcpSocket *soc);
     bool sendUser(QTcpSocket *soc);
     bool sendFileNames(QTcpSocket *soc);

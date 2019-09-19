@@ -6,8 +6,9 @@
 #include <QMessageBox>
 #include <QBuffer>
 
-Registration::Registration(QWidget *parent) :
+Registration::Registration(QWidget *parent, Controller *controller) :
 		QMainWindow(parent),
+		controller(controller),
 		ui(new Ui::Registration) {
 	this->ui->setupUi(this);
 	ui->error->setVisible(false);
@@ -66,7 +67,12 @@ void Registration::on_pushButton_registration_clicked() {
 	QByteArray byteArray;
 	QBuffer buffer(&byteArray);
 	avatarImage.save(&buffer, "PNG");
-	messanger->registration(username, password, byteArray);
+
+	bool result = messanger->registration(username, password, byteArray);
+
+	if (result){
+		controller->startLoadingPopup();
+	}
 }
 
 void Registration::on_pushButton_login_clicked() {
