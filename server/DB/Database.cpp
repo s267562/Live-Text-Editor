@@ -459,6 +459,7 @@ QList<Database::Permission> Database::getPermissions(QString fileID, QString use
 	return permissions;
 }
 
+// ----------------------------------- DEPRECATED, ONLY LIST OF FILE ---------------------------------------
 ///**
 // * Retrieve all filenames owned by the given user
 // * @param username : username to get files owned

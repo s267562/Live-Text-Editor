@@ -12,7 +12,7 @@ class CustomWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit CustomWidget(QWidget *parent = nullptr, QString filename = "", bool isShared = false);
+    explicit CustomWidget(QWidget *parent = nullptr, QString filename = "", bool owned = false, QString username="");
     ~CustomWidget();
 
 public slots:
@@ -21,6 +21,7 @@ public slots:
 private:
     Ui::CustomWidget *ui;
     QString filename;
+    QString fileShareCode;
 };
 
 #endif // CUSTOMWIDGET_H

@@ -49,7 +49,7 @@ void ShowFiles::addFiles(std::map<QString, bool> l){
     this->ui->listWidget->clear();
 
     for (std::pair<QString, bool> filename : l){
-        CustomWidget *myItem = new CustomWidget(this,filename.first, filename.second);
+        CustomWidget *myItem = new CustomWidget(this,filename.first, filename.second, controller->getUser()->getUsername());
         QListWidgetItem *item = new QListWidgetItem(filename.first);
         item->setSizeHint(QSize(0,40));
         this->ui->listWidget->addItem(item);

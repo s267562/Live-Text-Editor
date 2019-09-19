@@ -12,8 +12,11 @@ class ShareFile : public QDialog
     Q_OBJECT
 
 public:
-    explicit ShareFile(QWidget *parent = nullptr, QString filename = "");
+    explicit ShareFile(QWidget *parent = nullptr, QString filename = "", QString shareCode = "");
     ~ShareFile();
+
+public slots:
+	void copyToClipboard();
 
 private:
     Ui::ShareFile *ui;
