@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(textEditor)
 
 set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_FLAGS "-mwindows") # Uncomment whe project finished. execute application without terminat on windows
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
