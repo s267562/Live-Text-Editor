@@ -5,6 +5,7 @@
 #include "../Networking/Messanger.h"
 #include "customwidget.h"
 #include "editaccount.h"
+#include "../../server/SimpleCrypt/SimpleCrypt.h"
 
 ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
     QMainWindow(parent),
@@ -48,8 +49,18 @@ void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
 void ShowFiles::addFiles(std::map<QString, bool> l){
     this->ui->listWidget->clear();
 
+    SimpleCrypt crypto;
+    crypto.setKey(0xf55f15758b7e0153); // Random generated key, same must be used server side!!!
+
     for (std::pair<QString, bool> filename : l){
-        CustomWidget *myItem = new CustomWidget(this,filename.first, filename.second, controller->getUser()->getUsername());
+		QString shareCode = "ERROR";
+    	// If user is owner for that file create a sharecode
+    	if (filename.second) {
+			QString username = controller->getUser()->getUsername();
+			shareCode = crypto.encryptToString(username + "%_##$$$##_%" + filename.first);
+		}
+
+        CustomWidget *myItem = new CustomWidget(this,filename.first, filename.second, shareCode);
         QListWidgetItem *item = new QListWidgetItem(filename.first);
         item->setSizeHint(QSize(0,40));
         this->ui->listWidget->addItem(item);

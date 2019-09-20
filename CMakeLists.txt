@@ -54,7 +54,7 @@ add_executable(client
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 add_executable(client2
         client/textEditor.qrc
@@ -83,7 +83,7 @@ add_executable(client2
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 add_executable(server
         server/main.cpp
@@ -105,7 +105,7 @@ add_executable(server
         server/Utils/Constants.h
         server/Networking/common/commonFunctions.h
         server/Networking/common/commonFunctions.cpp
-        server/Networking/message/Message.h)
+        server/Networking/message/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 
 target_link_libraries(client ${LIBRARIES})
