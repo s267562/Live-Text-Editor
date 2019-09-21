@@ -38,6 +38,8 @@ private:
     Controller *controller;
 
     void resizeEvent(QResizeEvent *event);
+
+    static QString getShareCode(const QString& username,const QString& filename);
 };
 
 #endif // SHOWFILES_H
