@@ -2,6 +2,7 @@
 #include <QPixmap>
 #include <shared_mutex>
 #include "Server.h"
+#include "../SimpleCrypt/SimpleCrypt.h"
 
 Server::Server(QObject *parent) : QTcpServer(parent) {}
 
@@ -485,4 +486,25 @@ std::shared_ptr<Thread> Server::addThread(QString fileName) {
 															  this);                        /* create new thread */
 	threads[fileName] = thread;
 	return thread;
+}
+
+/**
+ * Retrieve username and filename from a given shareCode <--- username + "%_##$$$##_%" + filename
+ * separator used: "%_##$$$##_%"
+ * crypto key: 0xf55f15758b7e0153
+ * @param shareCode : shareCode to decrypt
+ * @return : pair <Username , Filename>
+ */
+std::pair<QString, QString> Server::getInfoFromShareCode(QString shareCode) {
+	SimpleCrypt crypto;
+	crypto.setKey(0xf55f15758b7e0153);
+
+	QString decrypted = crypto.decryptToString(shareCode);
+
+	QStringList fields = decrypted.split("%_##$$$##_%");
+
+	if(fields.size()!=2)
+		return std::pair<QString, QString>("ERROR","ERROR");
+	else
+		return std::pair<QString, QString>(fields[0],fields[1]);
 }

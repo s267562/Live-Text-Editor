@@ -105,7 +105,7 @@ void ShowFiles::editAccount() {
 }
 
 /**
- * Generate the unique share code for a given file.
+ * Generate the unique share code for a given file. ---> username + "%_##$$$##_%" + filename
  * separator used: "%_##$$$##_%"
  * crypto key: 0xf55f15758b7e0153
  * @param username : owner of the file to share

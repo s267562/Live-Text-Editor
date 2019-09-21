@@ -37,6 +37,7 @@ private:
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
     bool readEditAccount(QTcpSocket *soc);
+    std::pair<QString,QString> getInfoFromShareCode(QString shareCode);
 
 signals:
 
