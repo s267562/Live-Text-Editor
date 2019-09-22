@@ -12,6 +12,7 @@ Registration::Registration(QWidget *parent, Controller *controller) :
 		ui(new Ui::Registration) {
 	this->ui->setupUi(this);
 	ui->error->setVisible(false);
+	setDefaultProfileIcon();
 }
 
 Registration::~Registration() {
@@ -54,9 +55,8 @@ void Registration::on_pushButton_registration_clicked() {
 	QString username = ui->username->text();
 	QString password = ui->password->text();
 	QPixmap avatar = ui->label->pixmap()->copy(); // TODO controllare se giusto. Togliendo il copy abbiamo un QPixmap*
-	QPixmap pix(":/icons/user_icon.jpg");
 
-	if (username == "" || password == "" || avatar.toImage().sizeInBytes() == 0 || avatar.toImage() == pix.toImage()) {
+	if (username == "" || password == "" || avatar.toImage().sizeInBytes() == 0) {
 		ui->error->setVisible(true);
 		ui->error->setText("Compile form!");
 		return;
@@ -87,6 +87,7 @@ void Registration::registrationFailed() {
 void Registration::reset() {
 	ui->username->clear();
 	ui->password->clear();
+	setDefaultProfileIcon();
 }
 
 QString Registration::getUsername() {
