@@ -38,6 +38,7 @@ public:
     void run();
     void addSocket(QTcpSocket *soc, QString username);
     void sendListOfUsers(QTcpSocket *soc);
+
 private:
     bool readInsert(QTcpSocket *soc);
     bool readStyleChanged(QTcpSocket *soc);
@@ -48,6 +49,7 @@ private:
     void sendNewUser(QTcpSocket *soc);
     void sendRemoveUser(qintptr socketDescriptor, QString username);
     void sendFile(QTcpSocket *soc);
+    bool readShareCode(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

@@ -52,6 +52,8 @@ public:
     bool readError();
     bool readUser();
     bool sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
+    bool sendShareCode(QString shareCode);
+    bool readAddFile();
 
     User *user = nullptr;
 
@@ -77,6 +79,8 @@ signals:
     void reciveUser(User *user);
     void editAccountFailed();
     void okEditAccount();
+    void shareCodeFailed();
+    void addFileNames(std::map<QString, bool> fileList);
 };
 
 #endif // MESSANGER_H

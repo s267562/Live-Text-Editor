@@ -6,6 +6,7 @@
 #include "customwidget.h"
 #include "editaccount.h"
 #include "../../server/SimpleCrypt/SimpleCrypt.h"
+#include "addfile.h"
 
 ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 		QMainWindow(parent),
@@ -17,9 +18,12 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 	ui->pushButton_newFile->close();
 
 	ui->newFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
+	ui->addFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
 	ui->logout->setPixmap(QPixmap(":/rec/img/logout.png"));
 	ui->avatar->setPixmap(QPixmap(":/rec/img/user.png"));
 	connect(ui->newFile, SIGNAL(clicked()), this, SLOT(on_actionNew_File_triggered()));
+	connect(ui->addFile, SIGNAL(clicked()), this, SLOT(on_actionAdd_File_triggered()));
+	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
 	connect(ui->logout, SIGNAL(clicked()), this, SLOT(on_actionLogout_triggered()));
 	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
 
@@ -46,6 +50,23 @@ void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
 void ShowFiles::addFiles(std::map<QString, bool> l) {
 	this->ui->listWidget->clear();
 
+	for (std::pair<QString, bool> filename : l) {
+		QString shareCode = "ERROR";
+		// If user is owner for that file create a sharecode
+		if (filename.second) {
+			QString username = controller->getUser()->getUsername();
+			shareCode = getShareCode(username, filename.first);
+		}
+
+		CustomWidget *myItem = new CustomWidget(this, filename.first, filename.second, shareCode);
+		QListWidgetItem *item = new QListWidgetItem(filename.first);
+		item->setSizeHint(QSize(0, 40));
+		this->ui->listWidget->addItem(item);
+		this->ui->listWidget->setItemWidget(item, myItem);
+	}
+}
+
+void ShowFiles::addFile(std::map<QString, bool> l) {
 	for (std::pair<QString, bool> filename : l) {
 		QString shareCode = "ERROR";
 		// If user is owner for that file create a sharecode
@@ -119,4 +140,10 @@ QString ShowFiles::getShareCode(const QString &username, const QString &filename
 
 	QString shareCode = crypto.encryptToString(username + "%_##$$$##_%" + filename);
 	return shareCode;
+}
+
+void ShowFiles::on_actionAdd_File_triggered(){
+	AddFile *addFile = new AddFile(this);
+	connect(addFile, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
+	addFile->show();
 }

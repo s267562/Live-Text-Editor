@@ -146,6 +146,10 @@ void Messanger::onReadyRead(){
             if (!readUser()){
                 return;
             }
+        }else  if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == ADD_FILE){
+            if (!readAddFile()){
+                return;
+            }
         }else if (datas.toStdString() == ERR_MESSAGE){
             if (!readError()){
                 return;
@@ -220,6 +224,8 @@ bool Messanger::readError(){
         emit deleteFailed();
     }else if (type.toStdString() == EDIT_ACCOUNT){
         emit editAccountFailed();
+    }else if (type.toStdString() == SHARE_CODE){
+        emit shareCodeFailed();
     }
 
     return true;
@@ -696,6 +702,48 @@ bool Messanger::readDelete(){
     Message message(character, socket->socketDescriptor(), DELETE);
 
     emit newMessage(message);
+    return true;
+}
+
+bool Messanger::sendShareCode(QString shareCode){
+    qDebug() << "Messanger.cpp - sendShareCode()     ---------- SEND SHARECODE ----------";
+    QByteArray message(SHARE_CODE);
+
+    QByteArray shareCodeSize = convertionNumber(shareCode.size());
+
+    message.append( " " + shareCodeSize + " " + shareCode.toUtf8());
+
+    qDebug() << "                                " << message;
+    qDebug() << ""; // newLine
+
+    if (!writeMessage(socket, message)){
+        return false;
+    }
+
+    return true;
+}
+
+bool Messanger::readAddFile(){
+    qDebug() << "Messanger.cpp - readAddFile()     ---------- READ ADDFILE ----------";
+
+    std::map<QString, bool> files;                      // pair : (filename , ownership)
+    readSpace(socket);
+    int fileNameSize = readNumberFromSocket(socket);
+    readSpace(socket);
+
+    QByteArray fileName;
+    if (!readChunck(socket, fileName, fileNameSize)){
+        return false;
+    }
+    readSpace(socket);
+    QByteArray flag;
+    if (!readChunck(socket, flag, 1)){
+        return false;
+    }
+
+    bool flagBool = flag.toInt() == 1;
+    files[fileName] = flagBool;
+    emit addFileNames(files);
     return true;
 }
 

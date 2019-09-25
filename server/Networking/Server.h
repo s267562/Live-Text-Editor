@@ -38,6 +38,8 @@ private:
     bool registration(QTcpSocket *soc);
     bool readEditAccount(QTcpSocket *soc);
     std::pair<QString,QString> getInfoFromShareCode(QString shareCode);
+    bool readShareCode(QTcpSocket *soc);
+    bool sendAddFile(QTcpSocket *soc, QString filename);
 
 signals:
 

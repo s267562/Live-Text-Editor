@@ -101,7 +101,11 @@ void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::C
         }else{
             writeErrMessage(soc, EDIT_ACCOUNT);
         }
-    }else {
+    }else if (data.toStdString() == SHARE_CODE && socketsState[socketDescriptor] == LOGGED) {
+		if (!readShareCode(soc)) {
+			writeErrMessage(soc, DELETE_MESSAGE);
+		}
+	}else {
         qDebug() << "                              error message";
         qDebug() << ""; // newLine
         writeErrMessage(soc);
@@ -486,6 +490,37 @@ std::shared_ptr<Thread> Server::addThread(QString fileName) {
 															  this);                        /* create new thread */
 	threads[fileName] = thread;
 	return thread;
+}
+
+bool Server::readShareCode(QTcpSocket *soc){
+    qDebug() << "Server.cpp - readShareCode()     ---------- READ SHARECODE ----------";
+    readSpace(soc);
+    int shareCodeSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    QByteArray shareCode;
+    if (!readChunck(soc, shareCode, shareCodeSize)){
+        return false;
+    }
+
+    qDebug() << shareCodeSize << shareCode;
+	sendAddFile(soc, "ciao");
+    return true;
+}
+
+bool Server::sendAddFile(QTcpSocket *soc, QString filename){
+	QByteArray message(ADD_FILE);
+
+	QByteArray fileNameSize = convertionNumber(filename.size());
+	QByteArray shared;
+	shared.setNum(0);
+	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+
+	if (!writeMessage(soc,message)){
+		return false;
+	}
+
+	return true;
 }
 
 /**

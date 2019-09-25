@@ -20,6 +20,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
     connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
+    connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
     now = connection;
     connection->show();
 }
@@ -80,6 +81,7 @@ void Controller::connectClient(QString address, QString port) {
         connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
         connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
         connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
+        connect(this->messanger, SIGNAL(addFileNames(std::map<QString, bool>)), this, SLOT(addFileNames(std::map<QString, bool>)));
         connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 
         this->login->show();
@@ -256,4 +258,19 @@ void Controller::stopLoadingPopup(){
     if (loading != nullptr){
         loading->close();
     }
+}
+
+void Controller::sendShareCode(QString sharecode){
+    messanger->sendShareCode(sharecode);
+    startLoadingPopup();
+}
+
+void Controller::shareCodeFailed(){
+    QMessageBox::warning(now, "Share Code", "Share code is wrong! Try again!");
+    loading->close();
+}
+
+void Controller::addFileNames(std::map<QString, bool> filenames){
+    finder->addFile(filenames);
+    loading->close();
 }
