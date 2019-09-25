@@ -6,12 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>151</height>
+    <width>540</width>
+    <height>150</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>540</width>
+    <height>150</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>540</width>
+    <height>150</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>AddFile</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -33,17 +48,20 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>70</y>
-     <width>381</width>
-     <height>31</height>
+     <y>80</y>
+     <width>380</width>
+     <height>30</height>
     </rect>
+   </property>
+   <property name="placeholderText">
+    <string>Insert your share code</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
      <x>410</x>
-     <y>70</y>
+     <y>80</y>
      <width>113</width>
      <height>31</height>
     </rect>
