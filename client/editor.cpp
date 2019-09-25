@@ -329,7 +329,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 this->controller->styleChange(textCharFormat, pos);
             }
         } else {
-            if(position == 0 && charsAdded > 1 && charsRemoved > 1) {
+            if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
                 // correction when paste something in first position.
                 charsAdded--;
                 charsRemoved--;
