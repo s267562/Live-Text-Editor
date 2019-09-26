@@ -519,7 +519,7 @@ bool Server::readShareCode(QTcpSocket *soc) {
 	QString usernameOwner = pair.first; // TODO check problem in DB structure
 	QString filename = pair.second;
 
-	if (DB.addPermission(filename, username , Database::Permission::WRITE)) {
+	if (DB.addPermission(filename,usernameOwner,username)) {
 		sendAddFile(soc, filename);
 		return true;
 	} else {
