@@ -83,7 +83,7 @@ QPushButton:hover
 }</string>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string> ADD FILE</string>
    </property>
   </widget>
  </widget>

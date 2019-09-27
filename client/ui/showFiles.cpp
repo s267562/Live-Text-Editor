@@ -18,7 +18,7 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 	ui->pushButton_newFile->close();
 
 	ui->newFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
-	ui->addFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
+	ui->addFile->setPixmap(QPixmap(":/rec/img/addfile.png"));
 	ui->logout->setPixmap(QPixmap(":/rec/img/logout.png"));
 	ui->avatar->setPixmap(QPixmap(":/rec/img/user.png"));
 	connect(ui->newFile, SIGNAL(clicked()), this, SLOT(on_actionNew_File_triggered()));
