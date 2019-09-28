@@ -513,19 +513,27 @@ bool Server::readShareCode(QTcpSocket *soc) {
 	}
 
 	qDebug() << shareCodeSize << shareCode;
+	QString filename;
 
-	std::pair<QString, QString> pair = getInfoFromShareCode(QString(shareCode));
-	QString username = usernames[soc->socketDescriptor()];
-	QString usernameOwner = pair.first; // TODO check problem in DB structure
-	QString filename = pair.second;
-
-	if (DB.addPermission(filename,usernameOwner,username)) {
+	if (handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)){
 		sendAddFile(soc, filename);
 		return true;
-	} else {
+	}else{
 		writeErrMessage(soc, SHARE_CODE);
 		return false;
 	}
+}
+
+bool Server::handleShareCode(QString username, QString shareCode, QString &filename){
+    std::pair<QString, QString> pair = getInfoFromShareCode(shareCode);
+    QString usernameOwner = pair.first; 					// TODO check problem in DB structure
+    filename = pair.second;
+
+    if (DB.addPermission(filename,usernameOwner,username)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool Server::sendAddFile(QTcpSocket *soc, QString filename) {

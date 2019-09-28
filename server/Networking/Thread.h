@@ -50,6 +50,7 @@ private:
     void sendRemoveUser(qintptr socketDescriptor, QString username);
     void sendFile(QTcpSocket *soc);
     bool readShareCode(QTcpSocket *soc);
+    bool sendAddFile(QTcpSocket *soc, QString filename);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

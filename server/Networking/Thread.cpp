@@ -410,6 +410,28 @@ bool Thread::readShareCode(QTcpSocket *soc){
     }
 
     qDebug() << shareCodeSize << shareCode;
+    QString filename;
+
+    if (server->handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)){
+        sendAddFile(soc, filename);
+    }else{
+        writeErrMessage(soc, SHARE_CODE);
+    }
+
+    return true;
+}
+
+bool Thread::sendAddFile(QTcpSocket *soc, QString filename) {
+    QByteArray message(ADD_FILE);
+
+    QByteArray fileNameSize = convertionNumber(filename.size());
+    QByteArray shared;
+    shared.setNum(0);
+    message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+
+    if (!writeMessage(soc, message)) {
+        return false;
+    }
 
     return true;
 }
