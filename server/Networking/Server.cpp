@@ -523,7 +523,7 @@ bool Server::readShareCode(QTcpSocket *soc) {
 		sendAddFile(soc, filename);
 		return true;
 	} else {
-		writeErrMessage(soc,shareCode);
+		writeErrMessage(soc, SHARE_CODE);
 		return false;
 	}
 }
