@@ -13,9 +13,6 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 		controller(controller),
 		ui(new Ui::ShowFiles) {
 	ui->setupUi(this);
-	//connect(this,SIGNAL(newFile(QString)),this->parent(), SLOT(requestForFile(QString)));
-	ui->filename->close();
-	ui->pushButton_newFile->close();
 
 	ui->newFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
 	ui->addFile->setPixmap(QPixmap(":/rec/img/addfile.png"));
@@ -83,25 +80,10 @@ void ShowFiles::addFile(std::map<QString, bool> l) {
 	}
 }
 
-void ShowFiles::on_pushButton_newFile_clicked() {
-	QString filename = this->ui->filename->text();
-	emit newFile(filename);
-}
-
 void ShowFiles::on_actionNew_File_triggered() {
-	//QMessageBox::information(this, "File", "File!");
-	if (!newFileShown) {
-		ui->filename->show();
-		ui->pushButton_newFile->show();
-		ui->listWidget->move(10, 102);
-		newFileShown = true;
-	} else {
-		ui->filename->close();
-		ui->pushButton_newFile->close();
-		ui->listWidget->move(10, 70);
-		newFileShown = false;
-	}
-
+	createFile = new CreateFile(this);
+	connect(createFile, SIGNAL(createFile(QString)), controller, SLOT(requestForFile(QString)));
+	createFile->show();
 }
 
 void ShowFiles::on_actionLogout_triggered() {
@@ -146,4 +128,10 @@ void ShowFiles::on_actionAdd_File_triggered(){
 	AddFile *addFile = new AddFile(this);
 	connect(addFile, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
 	addFile->show();
+}
+
+void ShowFiles::closeEvent(QCloseEvent *event){
+	if (createFile != nullptr){
+		createFile->close();
+	}
 }

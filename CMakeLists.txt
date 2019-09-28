@@ -50,6 +50,7 @@ add_executable(client
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
         client/ui/sharefile.cpp client/ui/sharefile.ui
+        client/ui/createfile.cpp  client/ui/createfile.ui
         client/ui/editaccount.cpp client/ui/editaccount.ui
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
@@ -80,6 +81,7 @@ add_executable(client2
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
         client/ui/sharefile.cpp client/ui/sharefile.ui
+        client/ui/createfile.cpp  client/ui/createfile.ui
         client/ui/editaccount.cpp client/ui/editaccount.ui
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
