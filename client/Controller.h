@@ -57,6 +57,7 @@ public slots:
     void showFileFinder(std::map<QString, bool>);
     void showFileFinderOtherView();
     void requestForFile(QString filename);
+    void addFileNames(std::map<QString, bool> filenames);
 
     /* EDITOR */
     void showEditor();
@@ -67,6 +68,8 @@ public slots:
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
     void errorEditAccount();
     void okEditAccount();
+    void sendShareCode(QString sharecode);
+    void shareCodeFailed();
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);

@@ -3,7 +3,7 @@
  * Using CLion
  * Date: 12/08/2019
  * Time: 10.50
- * 
+ *
  * Class: Database
  * Project: textEditor
  */
@@ -17,9 +17,9 @@
 
 class Database {
 public:
-	enum class Permission {
-		READ, WRITE
-	};
+//	enum class Permission {
+//		READ, WRITE
+//	};
 
 private:
 	QSqlDatabase db;
@@ -45,11 +45,7 @@ public:
 
 	bool isOwner(QString fileID, QString username);
 
-	bool addPermission(QString fileID, QString username, Permission permission);
-
-	QList<Permission> getPermissions(QString fileID, QString username);
-
-	//QList<QString> getFiles(QString username);
+	bool addPermission(QString fileID, QString owner, QString username);
 
 	QList<std::pair<QString, bool>> getFiles(QString username);
 

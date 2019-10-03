@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(textEditor)
 
 set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_FLAGS "-mwindows") # Uncomment whe project finished. execute application without terminat on windows
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -49,11 +50,13 @@ add_executable(client
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
         client/ui/sharefile.cpp client/ui/sharefile.ui
+        client/ui/createfile.cpp  client/ui/createfile.ui
         client/ui/editaccount.cpp client/ui/editaccount.ui
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
+        client/ui/addfile.ui client/ui/addfile.cpp)
 
 add_executable(client2
         client/textEditor.qrc
@@ -78,11 +81,12 @@ add_executable(client2
         client/ui/showFiles.cpp client/ui/showFiles.ui
         client/ui/customwidget.cpp client/ui/customwidget.ui
         client/ui/sharefile.cpp client/ui/sharefile.ui
+        client/ui/createfile.cpp  client/ui/createfile.ui
         client/ui/editaccount.cpp client/ui/editaccount.ui
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 add_executable(server
         server/main.cpp
@@ -104,7 +108,7 @@ add_executable(server
         server/Utils/Constants.h
         server/Networking/common/commonFunctions.h
         server/Networking/common/commonFunctions.cpp
-        server/Networking/message/Message.h)
+        server/Networking/message/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 
 target_link_libraries(client ${LIBRARIES})

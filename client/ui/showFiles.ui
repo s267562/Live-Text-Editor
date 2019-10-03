@@ -55,65 +55,6 @@ QListWidget::item:selected
 }</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="filename">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>441</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="statusTip">
-     <string/>
-    </property>
-    <property name="whatsThis">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File name&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
-    <property name="accessibleDescription">
-     <string/>
-    </property>
-    <property name="inputMask">
-     <string/>
-    </property>
-    <property name="placeholderText">
-     <string> File name</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_newFile">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>70</y>
-      <width>131</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-background-color: #008CBA;
-border: none;
-color: white;
-text-align: center;
-margin: 4px 2px;
-opacity: 0.6;
-text-decoration: none;
-}
-
-QPushButton:hover
-{
-	background-color: white;
-	border: 1px solid #008CBA;
-	color : #008CBA;
-}</string>
-    </property>
-    <property name="text">
-     <string>New File</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="customToolbar" native="true">
     <property name="geometry">
      <rect>
@@ -181,6 +122,28 @@ width: 40px;
      <property name="geometry">
       <rect>
        <x>550</x>
+       <y>10</y>
+       <width>40</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="ClickableLabel" name="addFile">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
        <y>10</y>
        <width>40</width>
        <height>40</height>

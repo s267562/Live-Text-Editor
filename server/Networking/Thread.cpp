@@ -118,6 +118,11 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         thread->addSocket(soc, usernames[soc->socketDescriptor()]);
         usernames.erase(soc->socketDescriptor());
         sockets.erase(soc->socketDescriptor());
+    }else if (data.toStdString() == SHARE_CODE) {
+        if (!readShareCode(soc)) {
+            writeErrMessage(soc, DELETE_MESSAGE);
+        }
+        readyRead(soc, connectReadyRead, connectDisconnected);
     }else{
         writeErrMessage(soc);
     }
@@ -391,6 +396,44 @@ void Thread::sendFile(QTcpSocket *soc){
     if (!writeMessage(soc,message)){
         return;
     }
+}
+
+bool Thread::readShareCode(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readShareCode()     ---------- READ SHARECODE ----------";
+    readSpace(soc);
+    int shareCodeSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    QByteArray shareCode;
+    if (!readChunck(soc, shareCode, shareCodeSize)){
+        return false;
+    }
+
+    qDebug() << shareCodeSize << shareCode;
+    QString filename;
+
+    if (server->handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)){
+        sendAddFile(soc, filename);
+    }else{
+        writeErrMessage(soc, SHARE_CODE);
+    }
+
+    return true;
+}
+
+bool Thread::sendAddFile(QTcpSocket *soc, QString filename) {
+    QByteArray message(ADD_FILE);
+
+    QByteArray fileNameSize = convertionNumber(filename.size());
+    QByteArray shared;
+    shared.setNum(0);
+    message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+
+    if (!writeMessage(soc, message)) {
+        return false;
+    }
+
+    return true;
 }
 
 void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected){

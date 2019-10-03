@@ -27,6 +27,7 @@ public:
     bool startServer(quint16 port);
     std::shared_ptr<Thread> getThread(QString fileName);
     std::shared_ptr<Thread> addThread(QString fileName);
+    bool handleShareCode(QString username, QString shareCode, QString &filename);
 
 private:
     void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);
@@ -37,6 +38,9 @@ private:
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);
     bool registration(QTcpSocket *soc);
     bool readEditAccount(QTcpSocket *soc);
+    std::pair<QString,QString> getInfoFromShareCode(QString shareCode);
+    bool readShareCode(QTcpSocket *soc);
+    bool sendAddFile(QTcpSocket *soc, QString filename);
 
 signals:
 

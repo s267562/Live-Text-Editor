@@ -19,6 +19,8 @@
 #define REMOVE_USER "RUS\n\r"
 #define SENDING_FILE "FIL\n\r"
 #define EDIT_ACCOUNT "EDT\n\r"
+#define SHARE_CODE "SHR\n\r"
+#define ADD_FILE "ADD\r\n"
 
 #define TIMEOUT 15000
 
