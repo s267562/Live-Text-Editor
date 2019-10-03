@@ -151,7 +151,7 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	// Check if user is already logged in
-	for (std::pair<quintptr, QString> pair : usernames) {
+	for (const std::pair<quintptr, QString>& pair : usernames) {
 		if (pair.second == QString(username))
 			return false;
 	}
@@ -267,44 +267,47 @@ bool Server::sendUser(QTcpSocket *soc) {
  */
 bool Server::sendFileNames(QTcpSocket *soc) {
 	qDebug() << "Server.cpp - sendFileNames()     ---------- LIST OF FILE ----------";
-	// TODO gestione file dell'utente
+
 
 	//********************************* Versione finale ******************************************************
 	// get username from map of logged in users
-//	QString username = usernames[soc->socketDescriptor()];
-//	QList<QString> files = DB.getFiles("");
-//	int nFiles = files.size();
-//	QByteArray message(LIST_OF_FILE);
-//	QByteArray numFiles = convertionNumber(nFiles);
-//
-//	message.append(" " + numFiles);
-//
-//	for (QString filename : files) {
-//		QByteArray fileNameSize = convertionNumber(filename.size());
-//		message.append(" " + fileNameSize + " " + filename.toUtf8());
-//	}
-	//******************************************************************************************************
-
-	//******************************************* Versione dtest senza DB***********************************
-	int nFiles = 2;
-	std::list<std::pair<QString, bool>> files;                                /* files fantoccio */
-	files.push_back(std::make_pair("file1", true));
-	files.push_back(std::make_pair("file2", false));
-
+	QString username = usernames[soc->socketDescriptor()];
+	QList<std::pair<QString,bool>> files = DB.getFiles(username);
+	int nFiles = files.size();
 	QByteArray message(LIST_OF_FILE);
-
 	QByteArray numFiles = convertionNumber(nFiles);
+
 	message.append(" " + numFiles);
 
 	for (std::pair<QString, bool> file : files) {
 		QByteArray fileNameSize = convertionNumber(file.first.size());
-		QByteArray shared;
-		shared.setNum(file.second ? 1 : 0);
-		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
+		QByteArray owner;
+		owner.setNum(file.second ? 1 : 0);
+		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + owner);
 	}
 
-	qDebug() << "                                " << message;
-	qDebug() << ""; // newLine
+	//******************************************************************************************************
+
+	//******************************************* Versione dtest senza DB***********************************
+//	int nFiles = 2;
+//	std::list<std::pair<QString, bool>> files;                                /* files fantoccio */
+//	files.push_back(std::make_pair("file1", true));
+//	files.push_back(std::make_pair("file2", false));
+//
+//	QByteArray message(LIST_OF_FILE);
+//
+//	QByteArray numFiles = convertionNumber(nFiles);
+//	message.append(" " + numFiles);
+//
+//	for (std::pair<QString, bool> file : files) {
+//		QByteArray fileNameSize = convertionNumber(file.first.size());
+//		QByteArray shared;
+//		shared.setNum(file.second ? 1 : 0);
+//		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
+//	}
+//
+//	qDebug() << "                                " << message;
+//	qDebug() << ""; // newLine
 	//******************************************************************************************************
 
 	writeMessage(soc, message);
@@ -347,6 +350,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		/* file not yet open */
 		qDebug() << "                               New thread for file name: " << fileName;
 		qDebug() << ""; // newLine
+		DB.createFile(fileName,usernames[socketDescriptor]);
 		CRDT *crdt = new CRDT();
 		Thread *thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
@@ -540,9 +544,9 @@ bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 	QByteArray message(ADD_FILE);
 
 	QByteArray fileNameSize = convertionNumber(filename.size());
-	QByteArray shared;
-	shared.setNum(0);
-	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+	QByteArray owner;
+	owner.setNum(0);
+	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + owner);
 
 	if (!writeMessage(soc, message)) {
 		return false;

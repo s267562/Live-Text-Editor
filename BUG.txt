@@ -7,3 +7,5 @@
                              (comunque se C2 cancella "test" il file1 aperto in C1 rimane invariato, come è giusto che sia)
     5. C2 cancella "test"
     6. C2 riapre file1 <-- bug (crash);
+
+- tasto di share all'interno dell editor fa crashare il client

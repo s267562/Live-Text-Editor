@@ -62,7 +62,7 @@ add_executable(client2
         client/textEditor.qrc
         client/ui/login.ui
         client/ui/login.cpp
-        client/main2.cpp
+        client/main.cpp
         client/resource.qrc
         client/editor.ui
         client/editor.cpp client/editor.h
@@ -86,7 +86,8 @@ add_executable(client2
         client/ui/loading.cpp client/ui/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
+        client/ui/addfile.ui client/ui/addfile.cpp)
 
 add_executable(server
         server/main.cpp

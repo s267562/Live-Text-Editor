@@ -125,7 +125,7 @@ QString ShowFiles::getShareCode(const QString &username, const QString &filename
 }
 
 void ShowFiles::on_actionAdd_File_triggered(){
-	AddFile *addFile = new AddFile(this);
+	auto *addFile = new AddFile(this);
 	connect(addFile, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
 	addFile->show();
 }
