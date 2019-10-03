@@ -128,9 +128,14 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
     }
 }
 
+/**
+ * Save CRDT to a file
+ */
 void Thread::saveCRDTToFile() {
     if (needToSaveFile)
+    	qDebug() << "Saving CRDT";
         crdt->saveCRDT(filename);
+        needToSaveFile=false;
 }
 
 /**
