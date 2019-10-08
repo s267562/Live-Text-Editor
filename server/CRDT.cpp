@@ -114,6 +114,8 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
+        this->line.push_back(LEFT);
+        //TODO: Get current alignment
     }
 
     // if inserting a newline, split line into two lines.
@@ -153,6 +155,11 @@ Pos CRDT::handleStyleChanged(const Character &character) {
 
     return pos;
 }
+
+void CRDT::handleAlignmentChanged(alignment_type at,int blockNumber){
+    this->line[blockNumber-1]=at;
+}
+
 
 // handle delete
 

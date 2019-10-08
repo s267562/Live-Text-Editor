@@ -52,6 +52,10 @@ private:
     bool readShareCode(QTcpSocket *soc);
     bool sendAddFile(QTcpSocket *soc, QString filename);
 
+    bool readAlignmentChanged(QTcpSocket *soc);
+    void writeAlignmentChanged(QTcpSocket *soc, alignment_type at,int blockNumber);
+
+
 signals:
     void error(QTcpSocket::SocketError socketerror);
     void newMessage();

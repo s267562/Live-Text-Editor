@@ -10,8 +10,11 @@
 #include "../client/utils/Character.h"
 #include "../client/utils/Identifier.h"
 #include "../client/utils/Pos.h"
+#include "Utils/Constants.h"
 #include <math.h>
 #include <iostream>
+
+//enum align {LEFT, CENTER, RIGHT, JUSTIFY};
 
 class CRDT {
 public:
@@ -24,11 +27,13 @@ public:
 	bool saveCRDT(QString filename);
 	const std::vector<std::vector<Character>> &getStructure() const;
 
+	void handleAlignmentChanged(alignment_type at,int blockNumber);
+
 private:
     std::vector<std::vector<Character>> structure;
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
-
+	std::vector<alignment_type> line; // Matrice "structure" = blocchi (di qtextdocument-1)
 
     // insert
     Pos findInsertPosition(Character character);

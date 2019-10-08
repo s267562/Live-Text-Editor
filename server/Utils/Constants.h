@@ -19,10 +19,17 @@
 #define EDIT_ACCOUNT "EDT\n\r"
 #define SHARE_CODE "SHR\n\r"
 #define ADD_FILE "ADD\r\n"
+#define ALIGNMENT_CHANGED_MESSAGE "ALN\r\n"
 
 enum SocketState{
     UNLOGGED,
     LOGGED
 };
 
+enum alignment_type {
+    LEFT,
+    CENTER,
+    RIGHT,
+    JUSTIFY
+};
 #endif // CONSTANTS_H

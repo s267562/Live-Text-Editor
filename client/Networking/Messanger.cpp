@@ -150,7 +150,13 @@ void Messanger::onReadyRead(){
             if (!readAddFile()){
                 return;
             }
-        }else if (datas.toStdString() == ERR_MESSAGE){
+        }
+        else if(state == EDIT_FILE_STATE && datas.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+            if (!readAlignmentChanged()){
+                return;
+            }
+        }
+        else if (datas.toStdString() == ERR_MESSAGE){
             if (!readError()){
                 return;
             }
@@ -612,6 +618,37 @@ bool Messanger::writeStyleChanged(Character character){
     return true;
 }
 
+bool Messanger::writeAlignmentChanged(alignment_type at, int blockNumber){
+    qDebug() << "Messanger.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
+
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
+        QByteArray alignmentByteFormat=convertionNumber(at);
+        QByteArray blockNumberByteFormat=convertionNumber(blockNumber);
+        //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
+        //QByteArray sizeOfMessageBlockNumber = convertionNumber(blockNumberByteFormat.size());
+
+
+        message.append(" " + alignmentByteFormat);
+        message.append(" " + blockNumberByteFormat);
+        messages.push(message);
+
+        qDebug() << "                         " << message;
+        qDebug() << ""; // newLine
+
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            if (!writeMessage(socket, message)){
+                return false;
+            }
+            messages.pop();
+        }
+    }
+    return true;
+}
+
+
+
 /**
  * This method sends the character, that was removed
  * @param character
@@ -679,6 +716,48 @@ bool Messanger::readStyleChanged(){
     emit newMessage(message);
     return true;
 }
+
+
+bool Messanger::readAlignmentChanged(){
+
+    qDebug() << "Messanger.cpp - readAlignmentChanged()     ---------- READ ALIGNMENT CHANGED ----------";
+
+    readSpace(socket);
+    int alignType = readNumberFromSocket(socket);
+    readSpace(socket);
+
+    int blockNumber = readNumberFromSocket(socket);
+
+    alignment_type at;
+
+    switch (alignType){
+        case 0:
+            at=LEFT;
+            break;
+        case 1:
+            at=CENTER;
+            break;
+        case 2:
+            at=RIGHT;
+            break;
+        case 3:
+            at=JUSTIFY;
+            break;
+    }
+
+
+    //TODO: Continuare l'implementazione
+    /*QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+*/
+    Character character;
+
+    Message message(character, socket->socketDescriptor(), ALIGNMENT_CHANGED,at,blockNumber);
+
+    emit newMessage(message);
+
+    return true;
+}
+
 
 /**
  * This method reads the character, that was removed from other users

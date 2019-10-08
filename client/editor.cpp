@@ -17,6 +17,8 @@
 #include <QPrinter>
 #include <QColorDialog>
 #include <sharefile.h>
+#include <QtCharts>
+
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
@@ -175,6 +177,7 @@ void Editor::setupTextActions() {
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
 
+
     menu->addSeparator();
 
 
@@ -198,6 +201,8 @@ void Editor::setupTextActions() {
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+
+
 
 }
 
@@ -258,14 +263,68 @@ void Editor::colorChanged(const QColor &c)
 
 void Editor::textAlign(QAction *a)
 {
-    if (a == actionAlignLeft)
+    alignment_type at=LEFT;
+
+    if (a == actionAlignLeft) {
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-    else if (a == actionAlignCenter)
+    }
+    else if (a == actionAlignCenter) {
         textEdit->setAlignment(Qt::AlignHCenter);
-    else if (a == actionAlignRight)
+        at = CENTER;
+    }
+    else if (a == actionAlignRight) {
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-    else if (a == actionAlignJustify)
+        at = RIGHT;
+    }
+    else if (a == actionAlignJustify) {
         textEdit->setAlignment(Qt::AlignJustify);
+        at=JUSTIFY;
+    }
+
+    int oldCursorPos = this->textCursor.position();
+    int start=this->startSelection;
+    int end=this->endSelection;
+
+    this->textCursor.setPosition(start);
+    int startBlock=this->textCursor.blockNumber();
+
+    this->textCursor.setPosition(end);
+    int endBlock=this->textCursor.blockNumber();
+
+    for(int blockNum=startBlock; blockNum<=endBlock; blockNum++) {
+        this->controller->alignChange(at, blockNum);
+    }
+
+}
+
+void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
+
+    int oldCursorPos = this->textCursor.position();
+
+    QTextBlockFormat f=this->textCursor.blockFormat();
+    this->textCursor.movePosition(QTextCursor::Start);
+    this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
+
+    int cursorPos = this->textCursor.position();
+
+    if (at == LEFT) {
+        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == CENTER) {
+        f.setAlignment(Qt::AlignHCenter);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == RIGHT) {
+    f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == JUSTIFY) {
+        f.setAlignment(Qt::AlignJustify);
+        this->textCursor.setBlockFormat(f);
+    }
+
+    this->textCursor.setPosition(oldCursorPos);
 }
 
 
@@ -458,6 +517,8 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
 
     textCursor.setPosition(oldCursorPos);
 }
+
+
 
 void Editor::deleteChar(Pos pos) {
     int oldCursorPos = textCursor.position();

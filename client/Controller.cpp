@@ -21,6 +21,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
+
     now = connection;
     connection->show();
 }
@@ -179,9 +180,20 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
 
         // send insert at the server.
         this->messanger->writeStyleChanged(character);
-    } else {
+    }
+    else {
         // do nothing...
     }
+
+}
+
+
+void Controller::alignChange(alignment_type at, int blockNumber) {
+
+    // send insert at the server.
+
+    this->messanger->writeAlignmentChanged(at,blockNumber);
+
 }
 
 
@@ -214,7 +226,13 @@ void Controller::newMessage(Message message) {
             // delete from the editor.
             this->editor->changeStyle(pos, message.getCharacter().getTextCharFormat());
         }
-    } else if(message.getType() == DELETE) {
+    } else if(message.getType() == ALIGNMENT_CHANGED) {
+        this->editor->remoteAlignmentChanged(message.getAlignmentType(), message.getBlockNumber());
+
+
+
+    }
+    else if(message.getType() == DELETE) {
         Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
 
         if(pos) {

@@ -15,6 +15,9 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QGraphicsDropShadowEffect>
+#include "utils/Constants.h"
+
+
 
 
 class Controller;
@@ -38,6 +41,9 @@ public:
     ~Editor();
     void setFilename(QString *filename);
 
+    void remoteAlignmentChanged(alignment_type at, int blockNumber);
+
+    //void alignmentChanged(alignment_type at, int cursorPosition);
 
 public slots:
     void on_actionNew_File_triggered();

@@ -10,6 +10,7 @@
 #include "utils/Pos.h"
 #include "utils/Character.h"
 #include "utils/Identifier.h"
+#include "utils/Constants.h"
 #include <math.h>
 #include <iostream>
 #include <map>

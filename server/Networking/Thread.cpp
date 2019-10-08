@@ -81,6 +81,12 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         }
         writeOkMessage(soc);
         readyRead(soc, connectReadyRead, connectDisconnected);
+    } else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+        if (!readAlignmentChanged(soc)) {
+            writeErrMessage(soc);
+        }
+        writeOkMessage(soc);
+        readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == DELETE_MESSAGE) {
         if (!readDelete(soc)) {
             writeErrMessage(soc, DELETE_MESSAGE);
@@ -194,6 +200,47 @@ bool Thread::readStyleChanged(QTcpSocket *soc){
     return true;
 }
 
+bool Thread::readAlignmentChanged(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readAlignmentChanged()     ---------- READ ALIGNMENT CHANGED ----------";
+
+
+    //TODO: Manage better conversion from enum QByteArray
+    readSpace(soc);
+    int alignType = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    int blockNumber = readNumberFromSocket(soc);
+
+    alignment_type at;
+
+    switch (alignType){
+        case 0:
+            at=LEFT;
+            break;
+        case 1:
+            at=CENTER;
+            break;
+        case 2:
+            at=RIGHT;
+            break;
+        case 3:
+            at=JUSTIFY;
+            break;
+    }
+
+    //QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(alignTypeByteFormat);
+
+   // alignment_type (alignTypeByteFormat.toInt());
+
+    crdt->handleAlignmentChanged(at,blockNumber);
+
+    //TODO: Here to broadcast
+
+    this->writeAlignmentChanged(soc,at,blockNumber);
+
+    return true;
+}
+
 /**
  * This method reads the character, that was removed from other users
  * @param soc
@@ -273,6 +320,36 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
             writeMessage(socket.second, message);
         }
     }
+}
+
+
+void Thread::writeAlignmentChanged(QTcpSocket *soc, alignment_type at,int blockNumber){
+
+    qDebug() << "Thread.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
+
+    QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
+    QByteArray alignmentByteFormat=convertionNumber(at);
+    QByteArray blockNumberByteFormat=convertionNumber(blockNumber);
+    //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
+    //QByteArray sizeOfMessageBlockNumber = convertionNumber(blockNumberByteFormat.size());
+
+
+    message.append(" " + alignmentByteFormat);
+    message.append(" " + blockNumberByteFormat);
+
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+        if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
+    }
+
+
 }
 
 /**

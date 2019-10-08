@@ -544,6 +544,8 @@ bool CRDT::styleChanged(QTextCharFormat textCharFormat, Pos pos) {
     }
 }
 
+
+
 // remote style changed
 Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     Pos pos = findPosition(character);
@@ -552,3 +554,5 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
 
     return pos;
 }
+
+

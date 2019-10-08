@@ -37,6 +37,7 @@ public:
     bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
     bool writeDelete(Character character);
+    bool writeAlignmentChanged(alignment_type at, int blockNumber);
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -54,6 +55,8 @@ public:
     bool sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
     bool sendShareCode(QString shareCode);
     bool readAddFile();
+
+    bool readAlignmentChanged();
 
     User *user = nullptr;
 

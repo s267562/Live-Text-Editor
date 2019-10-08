@@ -70,6 +70,7 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
+    void alignChange(alignment_type at, int blockNumber);
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
@@ -80,6 +81,7 @@ public:
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
     void startLoadingPopup();
     void stopLoadingPopup();
+
 };
 
 

@@ -21,6 +21,8 @@
 #define EDIT_ACCOUNT "EDT\n\r"
 #define SHARE_CODE "SHR\n\r"
 #define ADD_FILE "ADD\r\n"
+#define ALIGNMENT_CHANGED_MESSAGE "ALN\r\n"
+
 
 #define TIMEOUT 15000
 
@@ -34,6 +36,13 @@ enum SocketState{
     WAITING_COMPLITE_FILE,
     WAITING_OK,
     EDIT_FILE_STATE
+};
+
+enum alignment_type {
+    LEFT,
+    CENTER,
+    RIGHT,
+    JUSTIFY
 };
 
 #endif // CONSTANTS_H
