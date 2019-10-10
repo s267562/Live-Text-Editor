@@ -16,7 +16,7 @@
 #include <QFontComboBox>
 #include <QGraphicsDropShadowEffect>
 #include "utils/Constants.h"
-
+#include <QLabel>
 
 
 
@@ -42,6 +42,7 @@ public:
     void setFilename(QString *filename);
 
     void remoteAlignmentChanged(alignment_type at, int blockNumber);
+    void formatText(std::vector<alignment_type> styleBlocks);
 
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
@@ -90,6 +91,8 @@ private:
     QStringList users;
     QMovie *loadingMovie;
     bool loadingFlag = true;
+
+    //QLabel otherCursor;
 
     void setFormat(CharFormat charFormat);
     void undo();

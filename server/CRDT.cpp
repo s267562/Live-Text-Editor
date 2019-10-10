@@ -10,14 +10,17 @@
 #include "CRDT.h"
 #include <QDebug>
 
-CRDT::CRDT() {
-	this->structure = { };
+CRDT::CRDT() : td(new QTextDocument), textCursor(td) {
+    this->structure = { };
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {
     return structure;
 }
 
+QTextDocument* CRDT::getTextDocument(){
+    return this->td;
+}
 
 // handle insert
 
@@ -25,10 +28,12 @@ Pos CRDT::handleInsert(Character character) {
 
     Pos pos = this->findInsertPosition(character);
     this->insertChar(character, pos);
+    this->insertIntoTextDocument(character.getValue(),character.getTextCharFormat(),pos);
 
     // print the structure for debugging
     qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
     for (int i = 0; i < structure.size(); i++) {
+       // qDebug() << "                                ---> line:" << i << "  alignment: " << line[i];
         for (int j = 0; j < structure[i].size(); j++) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
@@ -47,6 +52,10 @@ Pos CRDT::handleInsert(Character character) {
         }
     }
     qDebug() << ""; // newLine
+
+    auto pt=td->toPlainText();
+    auto ss=pt.toStdString();
+    qDebug() << td->toHtml();
 
     return pos;
 }
@@ -114,8 +123,6 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
-        this->line.push_back(LEFT);
-        //TODO: Get current alignment
     }
 
     // if inserting a newline, split line into two lines.
@@ -146,6 +153,24 @@ void CRDT::insertChar(Character character, Pos pos) {
     structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
 }
 
+void CRDT::insertIntoTextDocument(char character, QTextCharFormat charFormat, Pos pos){
+
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    textCursor.insertText(QString{character});
+    textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(charFormat);
+
+
+    textCursor.setPosition(oldCursorPos);
+
+}
+
+
 // handle style changed
 
 Pos CRDT::handleStyleChanged(const Character &character) {
@@ -153,11 +178,56 @@ Pos CRDT::handleStyleChanged(const Character &character) {
 
     this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
+    this->changeStyleOfDocument(pos,character.getTextCharFormat());
+
     return pos;
 }
 
+void CRDT::changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat) {
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+
+    textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
+    textCursor.mergeCharFormat(textCharFormat);
+
+    textCursor.setPosition(oldCursorPos);
+}
+
+
+// handle alignment
+
 void CRDT::handleAlignmentChanged(alignment_type at,int blockNumber){
-    this->line[blockNumber-1]=at;
+
+    int oldCursorPos = this->textCursor.position();
+
+    QTextBlockFormat f=this->textCursor.blockFormat();
+    this->textCursor.movePosition(QTextCursor::Start);
+    this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
+
+    int cursorPos = this->textCursor.position();
+
+    if (at == LEFT) {
+        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == CENTER) {
+        f.setAlignment(Qt::AlignHCenter);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == RIGHT) {
+        f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+        this->textCursor.setBlockFormat(f);
+    }
+    else if (at == JUSTIFY) {
+        f.setAlignment(Qt::AlignJustify);
+        this->textCursor.setBlockFormat(f);
+    }
+
+    this->textCursor.setPosition(oldCursorPos);
 }
 
 
@@ -178,6 +248,8 @@ void CRDT::handleDelete(const Character &character) {
 		this->removeEmptyLines();
 	}
 
+	this->deleteFromTextDocument(pos);
+
     // print the structure for debugging
     qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
     for (int i = 0; i < structure.size(); i++) {
@@ -196,6 +268,20 @@ void CRDT::handleDelete(const Character &character) {
     }
     qDebug() << ""; // newLine
 }
+
+void CRDT::deleteFromTextDocument(Pos pos){
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+
+    textCursor.deleteChar();
+
+    textCursor.setPosition(oldCursorPos);
+}
+
+
 
 Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char

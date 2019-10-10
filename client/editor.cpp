@@ -30,6 +30,14 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
+    //QRect pos=this->textEdit->cursorRect();
+
+    //qDebug() << "Rect: " << pos;
+
+
+    //this->otherCursor.move(pos.left()+10,pos.top());
+
+    //this->otherCursor.show();
 
     // TODO: from QByteArray to QPixMap
 
@@ -327,6 +335,14 @@ void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
     this->textCursor.setPosition(oldCursorPos);
 }
 
+
+
+void Editor::formatText(std::vector<alignment_type> styleBlocks){
+
+    for(int i=0; i<styleBlocks.size(); i++){
+        this->remoteAlignmentChanged(styleBlocks.at(i),i);
+    }
+}
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();

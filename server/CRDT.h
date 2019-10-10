@@ -13,6 +13,7 @@
 #include "Utils/Constants.h"
 #include <math.h>
 #include <iostream>
+#include <QtCharts>
 
 //enum align {LEFT, CENTER, RIGHT, JUSTIFY};
 
@@ -28,12 +29,21 @@ public:
 	const std::vector<std::vector<Character>> &getStructure() const;
 
 	void handleAlignmentChanged(alignment_type at,int blockNumber);
+	void insertIntoTextDocument(char character, QTextCharFormat charFormat, Pos pos);
+	void deleteFromTextDocument(Pos pos);
+	void changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat);
+	//void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+
+	QTextDocument* getTextDocument();
 
 private:
     std::vector<std::vector<Character>> structure;
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
-	std::vector<alignment_type> line; // Matrice "structure" = blocchi (di qtextdocument-1)
+    //TODO: Maybe better remove
+
+	QTextDocument *td;
+	QTextCursor textCursor;
 
     // insert
     Pos findInsertPosition(Character character);

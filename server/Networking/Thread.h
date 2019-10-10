@@ -33,11 +33,13 @@ private:
     bool needToSaveFile = false;
     bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
 
+
 public:
     explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);
     void run();
     void addSocket(QTcpSocket *soc, QString username);
     void sendListOfUsers(QTcpSocket *soc);
+
 
 private:
     bool readInsert(QTcpSocket *soc);
@@ -54,6 +56,7 @@ private:
 
     bool readAlignmentChanged(QTcpSocket *soc);
     void writeAlignmentChanged(QTcpSocket *soc, alignment_type at,int blockNumber);
+
 
 
 signals:

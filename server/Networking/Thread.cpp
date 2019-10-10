@@ -172,6 +172,7 @@ bool Thread::readInsert(QTcpSocket *soc){
 	return true;
 }
 
+
 bool Thread::readStyleChanged(QTcpSocket *soc){
     qDebug() << "Thread.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
 
@@ -211,7 +212,7 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
 
     int blockNumber = readNumberFromSocket(soc);
 
-    alignment_type at;
+    alignment_type at=LEFT;
 
     switch (alignType){
         case 0:
@@ -233,8 +234,6 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
    // alignment_type (alignTypeByteFormat.toInt());
 
     crdt->handleAlignmentChanged(at,blockNumber);
-
-    //TODO: Here to broadcast
 
     this->writeAlignmentChanged(soc,at,blockNumber);
 
@@ -450,6 +449,28 @@ void Thread::sendFile(QTcpSocket *soc){
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
     QByteArray message(SENDING_FILE);
     const std::vector<std::vector<Character>> file = crdt->getStructure();
+    std::vector<alignment_type> blockFormat;
+
+
+    for(int i=0; i<this->crdt->getTextDocument()->blockCount(); i++){
+        QTextBlock tb=this->crdt->getTextDocument()->findBlockByNumber(i+1);
+        Qt::Alignment al = tb.blockFormat().alignment();
+
+        if(al.testFlag(Qt::AlignLeft)){
+            blockFormat.push_back(LEFT);
+        }
+        else if(al.testFlag(Qt::AlignRight)){
+            blockFormat.push_back(RIGHT);
+        }
+        else if(al.testFlag(Qt::AlignCenter)){
+            blockFormat.push_back(CENTER);
+        }
+        else if(al.testFlag(Qt::AlignJustify)){
+            blockFormat.push_back(JUSTIFY);
+        }
+    }
+
+
     QByteArray numLines = convertionNumber(file.size());
 
     message.append(" " + numLines);
@@ -467,12 +488,22 @@ void Thread::sendFile(QTcpSocket *soc){
             message.append(" " + sizeOfMessage + " " + characterByteFormat);
         }
     }
+
+    QByteArray numBlocks = convertionNumber(blockFormat.size());
+    message.append(" " + numBlocks);
+
+    for (int i = 0; i < blockFormat.size(); i++){
+        QByteArray alignment = convertionNumber(blockFormat.at(i));
+        message.append(" " + alignment);
+    }
+
     qDebug() << "                         " << message;
     qDebug() << ""; // newLine
 
     if (!writeMessage(soc,message)){
         return;
     }
+
 }
 
 bool Thread::readShareCode(QTcpSocket *soc){

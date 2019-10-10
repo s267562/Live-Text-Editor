@@ -13,7 +13,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<alignment_type>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<alignment_type>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
@@ -37,7 +37,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<alignment_type >)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<alignment_type>)));
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
 }
 
@@ -242,9 +242,10 @@ void Controller::newMessage(Message message) {
     }
 }
 
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure) {
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<alignment_type> styleBlocks) {
     crdt->setStructure(initialStructure);
     this->editor->replaceText(this->crdt->toText());
+    this->editor->formatText(styleBlocks);
 }
 
 User* Controller::getUser(){

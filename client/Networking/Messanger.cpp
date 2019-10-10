@@ -558,8 +558,20 @@ bool Messanger::readFile(){
         }
         file.push_back(line);
     }
+    std::vector<alignment_type> styleBlocks;
 
-    emit fileRecive(file);
+    readSpace(socket);
+    int numBlocks = readNumberFromSocket(socket);
+
+
+    for (int j = 0; j < numBlocks; j++){
+        readSpace(socket);
+        alignment_type alignment = static_cast<alignment_type>(readNumberFromSocket(socket));
+        styleBlocks.push_back(alignment);
+    }
+
+
+    emit fileRecive(file, styleBlocks);
     return true;
 }
 
