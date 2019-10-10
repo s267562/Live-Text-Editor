@@ -5,9 +5,9 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include "../Networking/Messanger.h"
-#include "../Controller.h"
-#include "registration.h"
+#include "../../Networking/Messanger.h"
+#include "../../Controller.h"
+#include "Registration/registration.h"
 
 namespace Ui {
 class Login;

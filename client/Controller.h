@@ -8,11 +8,11 @@
 #include "CRDT.h"
 #include "editor.h"
 #include "User.h"
-#include "ui/login.h"
-#include "ui/connection.h"
-#include "ui/showFiles.h"
+#include "Login/login.h"
+#include "Connection/connection.h"
+#include "ShowFiles/showFiles.h"
 #include "Networking/Messanger.h"
-#include "ui/loading.h"
+#include "Loading/loading.h"
 #include <iostream>
 
 class Editor;

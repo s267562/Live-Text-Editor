@@ -2,11 +2,11 @@
 #include <QGraphicsDropShadowEffect>
 #include "showFiles.h"
 #include "ui_showFiles.h"
-#include "../Networking/Messanger.h"
-#include "customwidget.h"
-#include "editaccount.h"
-#include "../../server/SimpleCrypt/SimpleCrypt.h"
-#include "addfile.h"
+#include "../../Networking/Messanger.h"
+#include "CustomWidget/customwidget.h"
+#include "EditAccount/editaccount.h"
+#include "../../../server/SimpleCrypt/SimpleCrypt.h"
+#include "AddFile/addfile.h"
 
 ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 		QMainWindow(parent),

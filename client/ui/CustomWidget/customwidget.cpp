@@ -1,7 +1,7 @@
 #include <QMessageBox>
 #include "customwidget.h"
 #include "ui_customwidget.h"
-#include "sharefile.h"
+#include "ShareFile/sharefile.h"
 
 CustomWidget::CustomWidget(QWidget *parent, QString filename, bool owned, QString sharecode) :
 		QWidget(parent), filename(filename), fileShareCode(sharecode),

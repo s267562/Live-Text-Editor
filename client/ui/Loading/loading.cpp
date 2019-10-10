@@ -1,4 +1,4 @@
-#include "loading.h"
+#include "Loading/loading.h"
 #include "ui_loading.h"
 #include <QMovie>
 
