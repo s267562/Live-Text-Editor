@@ -110,7 +110,7 @@ void Messanger::onReadyRead(){
             if (!readUser()){
                 return;
             }
-        }else if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == SENDING_FILE){
+        }else if (datas.toStdString() == SENDING_FILE){
             if (!readFile()){
                 return;
             }
