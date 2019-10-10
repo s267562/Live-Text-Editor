@@ -462,11 +462,16 @@ void Thread::sendFile(QTcpSocket *soc){
         else if(al.testFlag(Qt::AlignRight)){
             blockFormat.push_back(RIGHT);
         }
-        else if(al.testFlag(Qt::AlignCenter)){
+        else if(al.testFlag(Qt::AlignHCenter)){
             blockFormat.push_back(CENTER);
         }
         else if(al.testFlag(Qt::AlignJustify)){
             blockFormat.push_back(JUSTIFY);
+        }
+        else{
+            //Allineamento non riconosciuto
+            qDebug() << "Allineamento non riconosciuto" ;
+            //TODO: Gestire
         }
     }
 

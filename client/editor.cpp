@@ -309,12 +309,15 @@ void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
 
     int oldCursorPos = this->textCursor.position();
 
-    QTextBlockFormat f=this->textCursor.blockFormat();
+    int bc = this->textEdit->textCursor().document()->blockCount();
+
     this->textCursor.movePosition(QTextCursor::Start);
     this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
 
     int cursorPos = this->textCursor.position();
+    int num=this->textCursor.blockNumber();
 
+    QTextBlockFormat f=this->textCursor.blockFormat();
     if (at == LEFT) {
         f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
         this->textCursor.setBlockFormat(f);
@@ -339,9 +342,19 @@ void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
 
 void Editor::formatText(std::vector<alignment_type> styleBlocks){
 
+    QTextDocument *doc = textEdit->document();
+
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
+
+
     for(int i=0; i<styleBlocks.size(); i++){
         this->remoteAlignmentChanged(styleBlocks.at(i),i);
     }
+
+    connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
 }
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
