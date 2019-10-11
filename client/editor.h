@@ -44,6 +44,8 @@ public:
     void remoteAlignmentChanged(alignment_type at, int blockNumber);
     void formatText(std::vector<alignment_type> styleBlocks);
 
+    void updateCursor(Pos position);
+
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
 public slots:
@@ -92,7 +94,7 @@ private:
     QMovie *loadingMovie;
     bool loadingFlag = true;
 
-    //QLabel otherCursor;
+    QLabel otherCursor;
 
     void setFormat(CharFormat charFormat);
     void undo();

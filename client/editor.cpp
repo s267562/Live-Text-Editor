@@ -20,7 +20,7 @@
 #include <QtCharts>
 
 
-Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
+Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : otherCursor("STD TEXT", this->textEdit), textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
     ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
@@ -30,14 +30,8 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-    //QRect pos=this->textEdit->cursorRect();
+    this->otherCursor.setStyleSheet("background-color : rgba(255,255,128,50%)");
 
-    //qDebug() << "Rect: " << pos;
-
-
-    //this->otherCursor.move(pos.left()+10,pos.top());
-
-    //this->otherCursor.show();
 
     // TODO: from QByteArray to QPixMap
 
@@ -507,6 +501,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos)
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
+
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
@@ -519,7 +514,30 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos)
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
+
     textCursor.setPosition(oldCursorPos);
+}
+
+
+void Editor::updateCursor(Pos position){
+
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &Editor::onCursorPositionChanged);
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, position.getLine());
+    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, position.getCh());
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+
+    this->otherCursor.move(coord.topRight().x()+7,coord.topRight().y()-10);
+
+    this->otherCursor.show();
+
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &Editor::onCursorPositionChanged);
+
+
 }
 
 void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {

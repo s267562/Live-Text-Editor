@@ -12,6 +12,7 @@
 #include "CharFormat.h"
 #include <QJsonDocument>
 #include <QtGui/QTextCharFormat>
+#include <QLabel>
 
 class Character {
 public:
@@ -37,6 +38,7 @@ private:
     int counter;
     QString siteId;
     std::vector<Identifier> position;
+
 };
 
 
