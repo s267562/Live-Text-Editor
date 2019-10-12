@@ -95,7 +95,8 @@ private:
     bool loadingFlag = true;
 
     QLabel otherCursor;
-
+    QTextCursor otherTextCursor;
+    
     void setFormat(CharFormat charFormat);
     void undo();
     void redo();

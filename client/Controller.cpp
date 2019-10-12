@@ -217,8 +217,6 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-
-            this->editor->updateCursor(pos);
             this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos);
         }
     } else if(message.getType() == STYLE_CHANGED) {
@@ -240,7 +238,6 @@ void Controller::newMessage(Message message) {
         if(pos) {
             // delete from the editor.
             this->editor->deleteChar(pos);
-            this->editor->updateCursor(pos);
         }
     }
 }

@@ -21,6 +21,13 @@
 #define ADD_FILE "ADD\r\n"
 #define ALIGNMENT_CHANGED_MESSAGE "ALN\r\n"
 
+
+
+
+
+
+
+
 enum SocketState{
     UNLOGGED,
     LOGGED
