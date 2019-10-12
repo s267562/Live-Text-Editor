@@ -96,7 +96,10 @@ private:
 
     QLabel otherCursor;
     QTextCursor otherTextCursor;
-    
+
+    std::vector<QString> colors;
+
+
     void setFormat(CharFormat charFormat);
     void undo();
     void redo();

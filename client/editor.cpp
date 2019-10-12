@@ -21,8 +21,11 @@
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : otherCursor("STD TEXT", this->textEdit), textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
-    ui->setupUi(this);
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller),
+                                                                          colors({"#B22222","#DC143C","#FF0000","#FF6347","#FF7F50","#CD5C5C","#F08080","#E9967A","#FA8072","#FFA07A","#FF4500","#FF8C00","#FFA500","#FFD700","#B8860B","#DAA520","#EEE8AA","#BDB76B","#F0E68C","#808000","#FFFF00","#9ACD32","#556B2F","#6B8E23","#7CFC00","#7FFF00","#ADFF2F","#006400","#008000","#228B22","#00FF00","#32CD32","#8FBC8F","#00FA9A","#00FF7F","#2E8B57","#66CDAA","#3CB371","#20B2AA","#2F4F4F","#008080","#008B8B","#00FFFF","#00FFFF","#00CED1","#40E0D0","#48D1CC","#AFEEEE","#7FFFD4","#5F9EA0","#4682B4","#6495ED","#00BFFF","#1E90FF","#87CEEB","#87CEFA","#191970","#000080","#00008B","#0000CD","#0000FF","#4169E1","#8A2BE2","#4B0082","#483D8B","#6A5ACD","#7B68EE","#9370DB","#8B008B","#9400D3","#9932CC","#BA55D3","#800080","#DDA0D","#EE82EE","#FF00FF","#DA70D6","#C71585","#DB7093","#FF1493","#FF69B4","#8B4513","#A0522D","#D2691E","#CD853F","#F4A460","#DEB887","#D2B48C","#BC8F8F","#708090","#778899","#B0C4DE","#E6E6FA",
+                                                                                 }){
+
+ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
 
@@ -30,100 +33,9 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : otherC
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-/**#define COL0 "#B22222"
-#define COL1 "#DC143C"
-#define COL2 "#FF0000"
-#define COL3 "#FF6347"
-#define COL4 "#FF7F50"
-#define COL5 "#CD5C5C"
-#define COL6 "#F08080"
-#define COL7 "#E9967A"
-#define COL8 "#FA8072"
-#define COL9 "#FFA07A"
-#define COL10 "#FF4500"
-#define COL11 "#FF8C00"
-#define COL12 "#FFA500"
-#define COL13 "#FFD700"
-#define COL14 "#B8860B"
-#define COL15 "#DAA520"
-#define COL16 "#EEE8AA"
-#define COL17 "#BDB76B"
-#define COL18 "#F0E68C"
-#define COL19 "#808000"
-#define COL20 "#FFFF00"
-#define COL21 "#9ACD32"
-#define COL22 "#556B2F"
-#define COL23 "#6B8E23"
-#define COL24 "#7CFC00"
-#define COL25 "#7FFF00"
-#define COL26 "#ADFF2F"
-#define COL27 "#006400"
-#define COL28 "#008000"
-#define COL29 "#228B22"
-#define COL30 "#00FF00"
-#define COL31 "#32CD32"
-#define COL32 "#8FBC8F"
-#define COL33 "#00FA9A"
-#define COL34 "#00FF7F"
-#define COL35 "#2E8B57"
-#define COL36 "#66CDAA"
-#define COL37 "#3CB371"
-#define COL38 "#20B2AA"
-#define COL39 "#2F4F4F"
-#define COL40 "#008080"
-#define COL41 "#008B8B"
-#define COL42 "#00FFFF"
-#define COL43 "#00FFFF"
-#define COL44 "#00CED1"
-#define COL45 "#40E0D0"
-#define COL46 "#48D1CC"
-#define COL47 "#AFEEEE"
-#define COL48 "#7FFFD4"
-#define COL49 "#5F9EA0"
-#define COL50 "#4682B4"
-#define COL51 "#6495ED"
-#define COL52 "#00BFFF"
-#define COL53 "#1E90FF"
-#define COL54 "#87CEEB"
-#define COL55 "#87CEFA"
-#define COL56 "#191970"
-#define COL57 "#000080"
-#define COL58 "#00008B"
-#define COL59 "#0000CD"
-#define COL60 "#0000FF"
-#define COL61 "#4169E1"
-#define COL62 "#8A2BE2"
-#define COL63 "#4B0082"
-#define COL64 "#483D8B"
-#define COL65 "#6A5ACD"
-#define COL66 "#7B68EE"
-#define COL67 "#9370DB"
-#define COL68 "#8B008B"
-#define COL69 "#9400D3"
-#define COL70 "#9932CC"
-#define COL71 "#BA55D3"
-#define COL72 "#800080"
-#define COL74 "#EE82EE"
-#define COL75 "#FF00FF"
-#define COL76 "#DA70D6"
-#define COL77 "#C71585"
-#define COL78 "#DB7093"
-#define COL79 "#FF1493"
-#define COL80 "#FF69B4"
-#define COL81 "#8B4513"
-#define COL82 "#A0522D"
-#define COL83 "#D2691E"
-#define COL84 "#CD853F"
-#define COL85 "#F4A460"
-#define COL86 "#DEB887"
-#define COL87 "#D2B48C"
-#define COL88 "#BC8F8F"
-#define COL89 "#708090"
-#define COL90 "#778899"
-#define COL91 "#B0C4DE"
-#define COL92 "#E6E6FA"
-*/
-    QColor color("");
+
+
+    QColor color(colors[10]);
     color.setAlpha(128); // opacity
 
 

@@ -23,11 +23,6 @@
 
 
 
-
-
-
-
-
 enum SocketState{
     UNLOGGED,
     LOGGED
