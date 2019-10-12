@@ -16,7 +16,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QColorDialog>
-#include <sharefile.h>
+#include <ShareFile/sharefile.h>
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {

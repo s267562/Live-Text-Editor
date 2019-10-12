@@ -3,8 +3,6 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCommandLineParser>
-#include "ui/login.h"
-#include "ui/ui_login.h"
 #include "utils/Constants.h"
 
 int main(int argc, char *argv[]) {

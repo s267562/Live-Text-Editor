@@ -29,8 +29,8 @@ include_directories (client/ui)
 
 add_executable(client
         client/textEditor.qrc
-        client/ui/login.ui
-        client/ui/login.cpp
+        client/ui/Login/login.ui
+        client/ui/Login/login.cpp
         client/main.cpp
         client/resource.qrc
         client/editor.ui
@@ -44,25 +44,25 @@ add_executable(client
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
         client/utils/Constants.h
-        client/ui/connection.cpp client/ui/connection.ui
-        client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
+        client/ui/Connection/connection.cpp client/ui/Connection/connection.ui
+        client/ui/Registration/registration.ui client/ui/Registration/registration.cpp client/ui/Registration/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
-        client/ui/showFiles.cpp client/ui/showFiles.ui
-        client/ui/customwidget.cpp client/ui/customwidget.ui
-        client/ui/sharefile.cpp client/ui/sharefile.ui
-        client/ui/createfile.cpp  client/ui/createfile.ui
-        client/ui/editaccount.cpp client/ui/editaccount.ui
-        client/ui/loading.cpp client/ui/loading.ui
+        client/ui/ShowFiles/showFiles.cpp client/ui/ShowFiles/showFiles.ui
+        client/ui/CustomWidget/customwidget.cpp client/ui/CustomWidget/customwidget.ui
+        client/ui/ShareFile/sharefile.cpp client/ui/ShareFile/sharefile.ui
+        client/ui/CreateFile/createfile.cpp client/ui/CreateFile/createfile.ui
+        client/ui/EditAccount/editaccount.cpp client/ui/EditAccount/editaccount.ui
+        client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
-        client/ui/addfile.ui client/ui/addfile.cpp)
+        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
 
 add_executable(client2
         client/textEditor.qrc
-        client/ui/login.ui
-        client/ui/login.cpp
-        client/main.cpp
+        client/ui/Login/login.ui
+        client/ui/Login/login.cpp
+        client/main2.cpp
         client/resource.qrc
         client/editor.ui
         client/editor.cpp client/editor.h
@@ -75,19 +75,19 @@ add_executable(client2
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
         client/utils/Constants.h
-        client/ui/connection.cpp client/ui/connection.ui
-        client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
+        client/ui/Connection/connection.cpp client/ui/Connection/connection.ui
+        client/ui/Registration/registration.ui client/ui/Registration/registration.cpp client/ui/Registration/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
-        client/ui/showFiles.cpp client/ui/showFiles.ui
-        client/ui/customwidget.cpp client/ui/customwidget.ui
-        client/ui/sharefile.cpp client/ui/sharefile.ui
-        client/ui/createfile.cpp  client/ui/createfile.ui
-        client/ui/editaccount.cpp client/ui/editaccount.ui
-        client/ui/loading.cpp client/ui/loading.ui
+        client/ui/ShowFiles/showFiles.cpp client/ui/ShowFiles/showFiles.ui
+        client/ui/CustomWidget/customwidget.cpp client/ui/CustomWidget/customwidget.ui
+        client/ui/ShareFile/sharefile.cpp client/ui/ShareFile/sharefile.ui
+        client/ui/CreateFile/createfile.cpp client/ui/CreateFile/createfile.ui
+        client/ui/EditAccount/editaccount.cpp client/ui/EditAccount/editaccount.ui
+        client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
-        client/ui/addfile.ui client/ui/addfile.cpp)
+        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
 
 add_executable(server
         server/main.cpp

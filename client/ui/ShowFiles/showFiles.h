@@ -3,8 +3,8 @@
 
 #include <QListWidget>
 #include <QMainWindow>
-#include "../Controller.h"
-#include "createfile.h"
+#include "../../Controller.h"
+#include "CreateFile/createfile.h"
 
 namespace Ui {
 class ShowFiles;

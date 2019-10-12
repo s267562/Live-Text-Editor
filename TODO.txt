@@ -1,2 +1,4 @@
-- allineamento testo
-- testare reale utilizzo in rete (no locale)
+1. bloccare doppio accesso ad un client
+2. allineamento testo
+3. testare reale utilizzo in rete (no locale)
+4. cambio del nome del file

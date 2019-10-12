@@ -2,7 +2,7 @@
 #define EDITACCOUNT_H
 
 #include <QDialog>
-#include "../User.h"
+#include "../../User.h"
 
 namespace Ui {
 class EditAccount;
