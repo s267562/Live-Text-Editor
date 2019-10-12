@@ -286,30 +286,6 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + owner);
 	}
 
-	//******************************************************************************************************
-
-	//******************************************* Versione dtest senza DB***********************************
-//	int nFiles = 2;
-//	std::list<std::pair<QString, bool>> files;                                /* files fantoccio */
-//	files.push_back(std::make_pair("file1", true));
-//	files.push_back(std::make_pair("file2", false));
-//
-//	QByteArray message(LIST_OF_FILE);
-//
-//	QByteArray numFiles = convertionNumber(nFiles);
-//	message.append(" " + numFiles);
-//
-//	for (std::pair<QString, bool> file : files) {
-//		QByteArray fileNameSize = convertionNumber(file.first.size());
-//		QByteArray shared;
-//		shared.setNum(file.second ? 1 : 0);
-//		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
-//	}
-//
-//	qDebug() << "                                " << message;
-//	qDebug() << ""; // newLine
-	//******************************************************************************************************
-
 	writeMessage(soc, message);
 	if (nFiles == 0)
 		return false;
@@ -352,12 +328,15 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		qDebug() << ""; // newLine
 
 		// First try to open requested file, else create a new one
-		CRDT crdt ;//= new CRDT();
-		if (!crdt.loadCRDT(fileName)) {
+		CRDT loadedCrdt;
+		Thread *thread;
+		if (!loadedCrdt.loadCRDT(fileName)) {
 			qDebug() << "File need to be created";
+			CRDT *crdt = new CRDT();
 			DB.createFile(fileName, usernames[socketDescriptor]);
-		}
-		Thread *thread = new Thread(this, &crdt, fileName, this);                        /* create new thread */
+			thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
+		} else
+			thread = new Thread(this, &loadedCrdt, fileName, this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
 						  usernames[socketDescriptor]);                            /* socket transition to secondary thread */

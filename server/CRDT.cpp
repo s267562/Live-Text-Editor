@@ -11,7 +11,7 @@
 #include <QDebug>
 
 CRDT::CRDT() {
-	this->structure = { };
+	//this->structure = { };
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {
