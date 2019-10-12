@@ -2,3 +2,8 @@
 2. allineamento testo
 3. testare reale utilizzo in rete (no locale)
 4. cambio del nome del file
+
+
+lettura del file lato server
+cambio nome file lato server al salvataggio
+
