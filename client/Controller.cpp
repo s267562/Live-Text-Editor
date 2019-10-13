@@ -217,7 +217,7 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos);
+            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, character.getSiteId());
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
@@ -233,11 +233,12 @@ void Controller::newMessage(Message message) {
 
     }
     else if(message.getType() == DELETE) {
-        Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
+        Character character=message.getCharacter();
+        Pos pos = this->crdt->handleRemoteDelete(character);
 
         if(pos) {
             // delete from the editor.
-            this->editor->deleteChar(pos);
+            this->editor->deleteChar(pos, character.getSiteId());
         }
     }
 }

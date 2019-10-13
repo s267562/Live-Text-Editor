@@ -17,7 +17,7 @@
 #include <QGraphicsDropShadowEffect>
 #include "utils/Constants.h"
 #include <QLabel>
-
+#include "utils/OtherCursor.h"
 
 
 class Controller;
@@ -33,9 +33,9 @@ public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
     void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);
+    void deleteChar(Pos pos, QString siteId);
     void reset();
     void replaceText(const QString initialText);
     ~Editor();
@@ -44,7 +44,7 @@ public:
     void remoteAlignmentChanged(alignment_type at, int blockNumber);
     void formatText(std::vector<alignment_type> styleBlocks);
 
-    void updateCursor(Pos position);
+    void updateCursor(Pos position, QString siteId);
 
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
@@ -94,8 +94,8 @@ private:
     QMovie *loadingMovie;
     bool loadingFlag = true;
 
-    QLabel otherCursor;
-    QTextCursor otherTextCursor;
+
+    QHash<QString, QPointer<OtherCursor>> otherCursors;
 
     std::vector<QString> colors;
 
