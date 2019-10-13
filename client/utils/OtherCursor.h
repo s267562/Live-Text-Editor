@@ -19,9 +19,8 @@ public:
 
     const QTextCursor &getOtherCursor() const;
 
-    void setOtherCursor(const QTextCursor &textCursor);
+    void setOtherCursorPosition(int position);
 
-    virtual ~OtherCursor();
 };
 
 

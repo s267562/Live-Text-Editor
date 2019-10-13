@@ -15,11 +15,6 @@ const QTextCursor &OtherCursor::getOtherCursor() const {
     return textCursor;
 }
 
-void OtherCursor::setOtherCursor(const QTextCursor &textCursor) {
-    OtherCursor::textCursor = textCursor;
+void OtherCursor::setOtherCursorPosition(int position) {
+    textCursor.setPosition(position);
 }
-
-OtherCursor::~OtherCursor() {
-
-}
-

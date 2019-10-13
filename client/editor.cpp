@@ -340,7 +340,10 @@ void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
 
 void Editor::formatText(std::vector<alignment_type> styleBlocks){
 
+
+
     QTextDocument *doc = textEdit->document();
+
 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
@@ -351,8 +354,9 @@ void Editor::formatText(std::vector<alignment_type> styleBlocks){
         this->remoteAlignmentChanged(styleBlocks.at(i),i);
     }
 
-    connect(doc, &QTextDocument::contentsChange,
+     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
+
 }
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
@@ -515,13 +519,13 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
 
-    this->otherCursors[siteId]->setOtherCursor(textCursor);
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
-    Pos coord(otherCursors[siteId]->getOtherCursor().positionInBlock(), otherCursors[siteId]->getOtherCursor().blockNumber());
+    Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
 
     this->updateCursor(coord, siteId);
 
-    // qDebug() << "Position of OTHER CURSOR: " << otherTextCursor.position();
+    //qDebug() << "Position of OTHER CURSOR: " << otherTextCursor.position();
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -580,6 +584,9 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
 
 
 void Editor::deleteChar(Pos pos, QString siteId) {
+
+    //TODO: il siteId non è di chi manda il messaggio ma di chi ha inserito il carattere
+
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
@@ -592,10 +599,13 @@ void Editor::deleteChar(Pos pos, QString siteId) {
 
     textCursor.deleteChar();
 
-    this->otherCursors[siteId]->setOtherCursor(textCursor);
+    qDebug() << siteId;
 
-    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
-    Pos coord(this->otherCursors[siteId]->getOtherCursor().positionInBlock(),this->otherCursors[siteId]->getOtherCursor().blockNumber());
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+
+
+//    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
+    Pos coord(textCursor.positionInBlock(),textCursor.blockNumber());
 
     this->updateCursor(coord, siteId);
 
@@ -753,15 +763,15 @@ void Editor::removeUser(QString user) {
         return s == user;
     }));
 
-    qDebug() << "Before: " << this->otherCursors.size();
-    qDebug() << this->otherCursors[user]->text();
+   // qDebug() << "Before: " << this->otherCursors.size();
+   // qDebug() << this->otherCursors[user]->text();
 
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
-    this->otherCursors[user]->hide();//TODO: ???
-    this->otherCursors.remove(user);
+  //  this->otherCursors[user]->hide();//TODO: ???
+ //   this->otherCursors.remove(user);
 
-    qDebug() << "After: " << this->otherCursors.size();
+  //  qDebug() << "After: " << this->otherCursors.size();
 
 
 
@@ -788,7 +798,7 @@ void Editor::setUsers(QStringList users) {
     controller->stopLoadingPopup();
 
     std::for_each( users.begin(), users.end(), [this](QString user){
-        otherCursors[user]=new OtherCursor(user, this->textEdit);
+        otherCursors.insert(user, new OtherCursor(user, this->textEdit));
         int colorIndex=qHash(user)%91;
         QColor color(colors[colorIndex]);
         color.setAlpha(128); // opacity
