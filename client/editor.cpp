@@ -601,15 +601,16 @@ void Editor::deleteChar(Pos pos, QString siteId) {
 
     qDebug() << siteId;
 
-    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+    if(!this->otherCursors[siteId].isNull()) {
+        this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
 
 //    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
-    Pos coord(textCursor.positionInBlock(),textCursor.blockNumber());
+        Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
 
-    this->updateCursor(coord, siteId);
+        this->updateCursor(coord, siteId);
 
-
+    }
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
