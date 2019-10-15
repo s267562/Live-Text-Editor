@@ -15,6 +15,8 @@ bool writeOkMessage(QTcpSocket *soc);
 bool writeErrMessage(QTcpSocket *soc, QString type = "");
 QByteArray convertionNumber(int number);
 int readNumberFromSocket(QTcpSocket *socket);
+bool readQString(QTcpSocket *soc,QString &in, int size);
+QByteArray convertionQString(QString str);
 
 
 #endif //TEXTEDITOR_COMMONFUNCTIONS_H

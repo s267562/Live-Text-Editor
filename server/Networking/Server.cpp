@@ -130,9 +130,10 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << "                         usernameSize: " << usernameSize;
 
 	readSpace(soc);
+
 	/* username */
-	QByteArray username;
-	if (!readChunck(soc, username, usernameSize)) {
+    QString username;
+	if (!readQString(soc, username, usernameSize)) {
 		return false;
 	}
 	readSpace(soc);
@@ -142,10 +143,10 @@ bool Server::logIn(QTcpSocket *soc) {
 	readSpace(soc);
 	qDebug() << "                         passwordSize: " << passwordSize;
 
-	QByteArray password;
-	if (!readChunck(soc, password, passwordSize)) {
-		return false;
-	}
+	QString password;
+    if (!readQString(soc, password, passwordSize)) {
+        return false;
+    }
 
 	qDebug() << "                         username: " << username << " password: " << password;
 	qDebug() << ""; // newLine
@@ -176,24 +177,24 @@ bool Server::registration(QTcpSocket *soc) {
 		return false;
 	}
 	readSpace(soc);
-	int sizeUsername = readNumberFromSocket(soc);
+	int usernameSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//username
-	QByteArray username;
-	if (!readChunck(soc, username, sizeUsername)) {
-		return false;
-	}
+    QString username;
+    if (!readQString(soc, username, usernameSize)) {
+        return false;
+    }
 	readSpace(soc);
 
-	int sizePassword = readNumberFromSocket(soc);
+	int passwordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-	QByteArray password;
-	if (!readChunck(soc, password, sizePassword)) {
-		return false;
-	}
+    QString password;
+    if (!readQString(soc, password, passwordSize)) {
+        return false;
+    }
 	readSpace(soc);
 
 	/*QDataStream in(soc);
@@ -202,8 +203,8 @@ bool Server::registration(QTcpSocket *soc) {
 	int sizeAvatar = readNumberFromSocket(soc);
 	readSpace(soc);
 
-	qDebug() << "                                username: " << username << " size: " << sizeUsername;
-	qDebug() << "                                password: " << password << " size: " << sizePassword;
+	qDebug() << "                                username: " << username << " size: " << usernameSize;
+	qDebug() << "                                password: " << password << " size: " << passwordSize;
 	qDebug() << "                                avatar size: " << sizeAvatar;
 
 	//avatar
@@ -247,9 +248,10 @@ bool Server::sendUser(QTcpSocket *soc) {
 	username = usernames[soc->socketDescriptor()];
 	image = DB.getAvatar(username);
 	QByteArray imageSize = convertionNumber(image.size());
-	QByteArray usernameSize = convertionNumber(username.size());
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 
-	message.append(" " + usernameSize + " " + username.toUtf8() + " " + imageSize + " " + image);
+	message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
 
 	qDebug() << message;
 
@@ -297,10 +299,11 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 	message.append(" " + numFiles);
 
 	for (std::pair<QString, bool> file : files) {
-		QByteArray fileNameSize = convertionNumber(file.first.size());
+        QByteArray fileNameByteArray = convertionQString(file.first);
+        QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 		QByteArray shared;
 		shared.setNum(file.second ? 1 : 0);
-		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + shared);
+		message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
 	}
 
 	qDebug() << "                                " << message;
@@ -375,30 +378,30 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	readSpace(soc);
 
 	//username
-	QByteArray username;
-	if (!readChunck(soc, username, sizeUsername)) {
-		return false;
-	}
+    QString username;
+    if (!readQString(soc, username, sizeUsername)) {
+        return false;
+    }
 	readSpace(soc);
 
 	int newPasswordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-	QByteArray newPassword;
-	if (!readChunck(soc, newPassword, newPasswordSize)) {
-		return false;
-	}
+    QString newPassword;
+    if (!readQString(soc, newPassword, newPasswordSize)) {
+        return false;
+    }
 	readSpace(soc);
 
 	int oldPasswordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-	QByteArray oldPassword;
-	if (!readChunck(soc, oldPassword, oldPasswordSize)) {
-		return false;
-	}
+    QString oldPassword;
+    if (!readQString(soc, oldPassword, oldPasswordSize)) {
+        return false;
+    }
 	readSpace(soc);
 
 
@@ -539,10 +542,11 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
 bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 	QByteArray message(ADD_FILE);
 
-	QByteArray fileNameSize = convertionNumber(filename.size());
+    QByteArray fileNameByteArray = convertionQString(filename);
+	QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 	QByteArray shared;
 	shared.setNum(0);
-	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+	message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
 
 	if (!writeMessage(soc, message)) {
 		return false;

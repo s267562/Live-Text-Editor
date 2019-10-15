@@ -316,8 +316,10 @@ void Thread::sendListOfUsers(QTcpSocket *soc){
         message.append(" " + usernamesSize);
         for (auto u : usernames){
             if (u.first != soc->socketDescriptor()){
-                QByteArray usernameSize = convertionNumber(u.second.size());
-                message.append(" " + usernameSize + " " + u.second.toUtf8());
+                QByteArray usernameByteArray = convertionQString(u.second);
+                QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+
+                message.append(" " + usernameSize + " " + usernameByteArray);
             }
         }
     }
@@ -334,8 +336,9 @@ void Thread::sendListOfUsers(QTcpSocket *soc){
 void Thread::sendNewUser(QTcpSocket *soc){
     QByteArray message(LIST_OF_USERS);
     QByteArray usernamesSize = convertionNumber(1);
-    QByteArray usernameSize = convertionNumber(usernames[soc->socketDescriptor()].size());
-    message.append(" " + usernamesSize + " " + usernameSize + " " + usernames[soc->socketDescriptor()].toUtf8());
+    QByteArray usernameByteArray = convertionQString(usernames[soc->socketDescriptor()]);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    message.append(" " + usernamesSize + " " + usernameSize + " " + usernameByteArray);
 
     for (auto s : sockets){
         if (soc->socketDescriptor() != s.second->socketDescriptor()){
@@ -353,8 +356,9 @@ void Thread::sendNewUser(QTcpSocket *soc){
  */
 void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
     QByteArray message(REMOVE_USER);
-    QByteArray usernameSize = convertionNumber(username.size());
-    message.append(" " + usernameSize + " " + username.toUtf8());
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    message.append(" " + usernameSize + " " + usernameByteArray);
 
     for (auto s : sockets){
         if (socketDescriptor != s.first) {
@@ -404,8 +408,8 @@ bool Thread::readShareCode(QTcpSocket *soc){
     int shareCodeSize = readNumberFromSocket(soc);
     readSpace(soc);
 
-    QByteArray shareCode;
-    if (!readChunck(soc, shareCode, shareCodeSize)){
+    QString shareCode;
+    if (!readQString(soc, shareCode, shareCodeSize)){
         return false;
     }
 
@@ -424,10 +428,11 @@ bool Thread::readShareCode(QTcpSocket *soc){
 bool Thread::sendAddFile(QTcpSocket *soc, QString filename) {
     QByteArray message(ADD_FILE);
 
-    QByteArray fileNameSize = convertionNumber(filename.size());
+    QByteArray fileNameByteArray = convertionQString(filename);
+    QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
     QByteArray shared;
     shared.setNum(0);
-    message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + shared);
+    message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
 
     if (!writeMessage(soc, message)) {
         return false;

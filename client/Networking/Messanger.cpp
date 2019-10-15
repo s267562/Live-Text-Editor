@@ -1,6 +1,7 @@
 #include "Messanger.h"
 #include "../utils/Identifier.h"
 #include "common/commonFunctions.h"
+#include "../../server/Networking/common/commonFunctions.h"
 #include <QFile>
 #include <QPixmap>
 #include <iostream>
@@ -68,22 +69,6 @@ void Messanger::onReadyRead(){
 
     qDebug() << "Messanger.cpp - onReadyRead()     msg received:" << datas;
     qDebug() << ""; // newLine
-    /*
-    if ((datas.toStdString() == OK_MESSAGE || datas.toStdString() == LIST_OF_FILE) && !clientIsLogged){
-        //clientIsLogged = true;
-        reciveOkMessage = true;
-    }else if (datas.toStdString() == ERR_MESSAGE){
-        readError();
-        socket->flush();
-        return;
-    }else if (datas.toStdString() == AVATAR_MESSAGE){
-        readUser();
-        if (clientIsLogged){
-            emit okEditAccount();
-        }
-        clientIsLogged = true;
-        onReadyRead();
-    }*/
 
     if (!clientIsLogged){
         if (state == UNLOGGED && datas.toStdString() == AVATAR_MESSAGE){
@@ -157,45 +142,6 @@ void Messanger::onReadyRead(){
         }
     }
 
-    /*if (clientIsLogged){
-        if (datas.toStdString() == OK_MESSAGE){
-            // capire quale messaggio di ok è stato ricevuto...
-        }else if (datas.toStdString() == INSERT_MESSAGE){
-            if (!readInsert()){
-                return;
-            }
-        }else if (datas.toStdString() == STYLE_CAHNGED_MESSAGE){
-            if (!readStyleChanged()){
-                return;
-            }
-        }else if (datas.toStdString() == DELETE_MESSAGE){
-            if (!readDelete()){
-                return;
-            }
-        }else if (datas.toStdString() == LIST_OF_FILE){
-            if (!readFileNames()){
-                return;
-            }
-            reciveOkMessage = true;
-            #if !UI
-                    requestForFile("prova");         TEST: TEXT EDITOR
-            #endif
-        } else if (datas.toStdString() == LIST_OF_USERS){
-            if (!readUsernames()){
-                return;
-            }
-        } else if (datas.toStdString() == REMOVE_USER){
-            if (!readRemoveUser()){
-                return;
-            }
-        }else if (datas.toStdString() == SENDING_FILE){
-            if (!readFile()){
-                return;
-            }
-        }
-        despatchMessage();
-        onReadyRead();
-    }*/
     despatchMessage();
     onReadyRead();
 }
@@ -257,10 +203,13 @@ bool Messanger::logIn(QString username, QString password) {
 
     if (!clientIsLogged) {
         QByteArray message(LOGIN_MESSAGE);
-        QByteArray usernameSize = convertionNumber(username.size());
-        QByteArray passwordSize = convertionNumber(password.size());
+        QByteArray usernameByteArray = convertionQString(username);
+        QByteArray passwordByteArray = convertionQString(password);
+        QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+        QByteArray passwordSize = convertionNumber(passwordByteArray.size());
 
-        message.append(" " + usernameSize + " " + username.toUtf8()  + " " + passwordSize + " " + password.toUtf8());
+
+        message.append(" " + usernameSize + " " + usernameByteArray  + " " + passwordSize + " " + passwordByteArray);
         qDebug() << "                        " << message;
         qDebug() << ""; // newLine
 
@@ -286,11 +235,13 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
 
     QByteArray message(REGISTRATION_MESSAGE);
 
-    QByteArray usernameSize = convertionNumber(username.size());
-    QByteArray passwordSize = convertionNumber(password.size());
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray passwordByteArray = convertionQString(password);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    QByteArray passwordSize = convertionNumber(passwordByteArray.size());
     QByteArray imageSize = convertionNumber(avatar.size());
 
-    message.append(" " + usernameSize + " " + username.toUtf8() + " " + passwordSize + " " + password.toUtf8() + " " + imageSize + " " + avatar);
+    message.append(" " + usernameSize + " " + usernameByteArray + " " + passwordSize + " " + passwordByteArray + " " + imageSize + " " + avatar);
 
     qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.size();
     qDebug() << ""; // newLine
@@ -318,13 +269,17 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
 
     QByteArray message(EDIT_ACCOUNT);
 
-    QByteArray usernameSize = convertionNumber(username.size());
-    QByteArray newPasswordSize = convertionNumber(newPassword.size());
-    QByteArray oldPasswordSize = convertionNumber(oldPassword.size());
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray oldPasswordByteArray = convertionQString(oldPassword);
+    QByteArray newPasswordByteArray = convertionQString(newPassword);
+
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    QByteArray newPasswordSize = convertionNumber(newPasswordByteArray.size());
+    QByteArray oldPasswordSize = convertionNumber(oldPasswordByteArray.size());
     QByteArray imageSize = convertionNumber(avatar.size());
 
-    message.append(" " + usernameSize + " " + username.toUtf8() + " " + newPasswordSize + " " + newPassword.toUtf8() + " "
-    + oldPasswordSize + " " + oldPassword.toUtf8() + " " + imageSize + " " + avatar);
+    message.append(" " + usernameSize + " " + usernameByteArray + " " + newPasswordSize + " " + newPasswordByteArray + " "
+    + oldPasswordSize + " " + oldPasswordByteArray + " " + imageSize + " " + avatar);
 
     qDebug() << "                                " << message;
     qDebug() << ""; // newLine
@@ -349,9 +304,9 @@ bool Messanger::readUser(){
     int usernameSize = readNumberFromSocket(socket);
 
     readSpace(socket);
-    QByteArray username;
 
-    if (!readChunck(socket, username, usernameSize)){
+    QString username;
+    if (!readQString(socket, username, usernameSize)) {
         return false;
     }
 
@@ -394,8 +349,8 @@ bool Messanger::readFileNames(){
         readSpace(socket);
         int fileNameSize = readNumberFromSocket(socket);
         readSpace(socket);
-        QByteArray fileName;
-        if (!readChunck(socket, fileName, fileNameSize)){
+        QString fileName;
+        if (!readQString(socket, fileName, fileNameSize)){
             return false;
         }
         readSpace(socket);
@@ -451,9 +406,10 @@ bool Messanger::requestForFile(QString fileName){
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(REQUEST_FILE_MESSAGE);
-        QByteArray fileNameSize = convertionNumber(fileName.size());
+        QByteArray fileNameByteArray = convertionQString(fileName);
+        QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 
-        message.append(" " + fileNameSize + " " + fileName.toUtf8());
+        message.append(" " + fileNameSize + " " + fileNameByteArray);
         qDebug() << "                                 " << message;
         qDebug() << ""; // newLine
 
@@ -489,8 +445,8 @@ bool Messanger::readUsernames(){
             int usernameSize = readNumberFromSocket(socket);
             qDebug() << usernameSize;
             readSpace(socket);
-            QByteArray username;
-            if (!readChunck(socket, username, usernameSize)){
+            QString username;
+            if (!readQString(socket, username, usernameSize)){
                 return false;
             }
             qDebug() << "                              usename: "<<username;
@@ -510,9 +466,9 @@ bool Messanger::readRemoveUser(){
     qDebug() << "Messanger.cpp - readRemoveUser()     ---------- READ REMOVE USER ----------";
     readSpace(socket);
     int usernameSize = readNumberFromSocket(socket);
-    QByteArray username;
+    QString username;
     readSpace(socket);
-    if (!readChunck(socket, username, usernameSize)){
+    if (!readQString(socket, username, usernameSize)){
         return false;
     }
 

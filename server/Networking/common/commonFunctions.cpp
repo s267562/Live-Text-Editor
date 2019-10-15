@@ -101,3 +101,18 @@ int readNumberFromSocket(QTcpSocket *socket){
     outNumberResult >> result;
     return result;
 }
+
+bool readQString(QTcpSocket *soc, QString &in, int size){
+    QByteArray byteArray;
+    if (!readChunck(soc, byteArray, size)) {
+        return false;
+    }
+    qDebug() << byteArray;
+    in = QString::fromUtf16(reinterpret_cast<const ushort*>(byteArray.data()), size/2);
+    return true;
+}
+
+QByteArray convertionQString(QString str){
+    QByteArray returnValue(reinterpret_cast<const char *>(str.utf16()), str.size() * 2);
+    return returnValue;
+}
