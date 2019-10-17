@@ -3,7 +3,7 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCommandLineParser>
-#include "utils/Constants.h"
+#include "../common/Constants.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

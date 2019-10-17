@@ -1,5 +1,4 @@
 #include <QDataStream>
-#include <QPixmap>
 #include <shared_mutex>
 #include "Server.h"
 #include "../SimpleCrypt/SimpleCrypt.h"

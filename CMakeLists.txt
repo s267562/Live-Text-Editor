@@ -43,7 +43,7 @@ add_executable(client
         client/Controller.cpp client/Controller.h
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
-        client/utils/Constants.h
+        common/Constants.h
         client/ui/Connection/connection.cpp client/ui/Connection/connection.ui
         client/ui/Registration/registration.ui client/ui/Registration/registration.cpp client/ui/Registration/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
@@ -53,8 +53,8 @@ add_executable(client
         client/ui/CreateFile/createfile.cpp client/ui/CreateFile/createfile.ui
         client/ui/EditAccount/editaccount.cpp client/ui/EditAccount/editaccount.ui
         client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
-        client/Networking/common/commonFunctions.h
-        client/Networking/common/commonFunctions.cpp
+        common/commonFunctions.h
+        common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
 
@@ -74,7 +74,7 @@ add_executable(client2
         client/Controller.cpp client/Controller.h
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
-        client/utils/Constants.h
+        common/Constants.h
         client/ui/Connection/connection.cpp client/ui/Connection/connection.ui
         client/ui/Registration/registration.ui client/ui/Registration/registration.cpp client/ui/Registration/registration.h client/ui/resources.qrc
         client/ui/clickablelabel.cpp client/ui/clickablelabel.h
@@ -84,8 +84,8 @@ add_executable(client2
         client/ui/CreateFile/createfile.cpp client/ui/CreateFile/createfile.ui
         client/ui/EditAccount/editaccount.cpp client/ui/EditAccount/editaccount.ui
         client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
-        client/Networking/common/commonFunctions.h
-        client/Networking/common/commonFunctions.cpp
+        common/commonFunctions.h
+        common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
 
@@ -106,10 +106,10 @@ add_executable(server
         client/utils/CharFormat.h
         client/utils/Pos.h
         client/utils/Pos.cpp
-        server/Utils/Constants.h
-        server/Networking/common/commonFunctions.h
-        server/Networking/common/commonFunctions.cpp
-        server/Networking/message/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
+        common/Constants.h
+        common/commonFunctions.h
+        common/commonFunctions.cpp
+        common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 
 target_link_libraries(client ${LIBRARIES})

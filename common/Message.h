@@ -6,7 +6,7 @@
 #define TEXTEDITOR_MESSAGE_H
 
 #include <QtGlobal>
-#include "../../../client/utils/Character.h"
+#include "../client/utils/Character.h"
 
 enum TypeMessage {
     INSERT,

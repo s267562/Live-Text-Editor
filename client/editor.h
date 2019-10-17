@@ -36,7 +36,7 @@ public:
     void reset();
     void replaceText(const QString initialText);
     ~Editor();
-    void setFilename(QString *filename);
+    void setFilename(QString filename);
 
 
 public slots:
@@ -113,7 +113,7 @@ private:
 
     QGraphicsDropShadowEffect *m_shadowEffect1;
     QGraphicsDropShadowEffect *m_shadowEffect2;
-    QString *filename;
+    QString filename;
 
 };
 

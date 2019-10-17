@@ -6,8 +6,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "Thread.h"
-#include "../Utils/Constants.h"
-#include "common/commonFunctions.h"
+#include "../../common/Constants.h"
+#include "../../common/commonFunctions.h"
 #include "../DB/Database.h"
 
 class Thread;

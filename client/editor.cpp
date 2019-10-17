@@ -4,6 +4,7 @@
 
 #include "editor.h"
 #include "ui_editor.h"
+#include "../server/SimpleCrypt/SimpleCrypt.h"
 #include <QMenuBar>
 #include <QMenu>
 #include <QSlider>
@@ -508,7 +509,11 @@ void Editor::on_actionNew_File_triggered() {
 }
 
 void Editor::on_actionShare_file_triggered() {
-    ShareFile *shareFile = new ShareFile(this, *this->filename);
+    SimpleCrypt crypto;                                                    /* ATTENZIONE: Stesso codice presente in getsharecode in showfile!!!*/
+    crypto.setKey(0xf55f15758b7e0153); // Random generated key, same must be used server side!!!
+
+    QString shareCode = crypto.encryptToString(controller->getUser()->getUsername() + "%_##$$$##_%" + filename);
+    ShareFile *shareFile = new ShareFile(this, this->filename, shareCode);
     shareFile->show();
 }
 
@@ -699,6 +704,6 @@ void Editor::showError(){
     QMessageBox::information(this, "Error", "Error!");
 }
 
-void Editor::setFilename(QString *filename){
+void Editor::setFilename(QString filename){
     this->filename = filename;
 }

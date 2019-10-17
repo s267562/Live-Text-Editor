@@ -5,11 +5,11 @@
 #include <QTcpSocket>
 #include <queue>
 #include <QtCore/QTimer>
-#include "../Utils/Constants.h"
+#include "../../common/Constants.h"
 #include "../../client/utils/Identifier.h"
 #include "../../client/utils/Character.h"
-#include "common/commonFunctions.h"
-#include "message/Message.h"
+#include "../../common/commonFunctions.h"
+#include "../../common/Message.h"
 #include "../../client/utils/Pos.h"
 #include "../CRDT.h"
 #include "Server.h"

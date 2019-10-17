@@ -5,30 +5,30 @@
 #include <QTcpSocket>
 #include <QString>
 #include <queue>
-#include "../utils/Constants.h"
+#include "../../common/Constants.h"
 #include "../utils/Identifier.h"
 #include "../utils/Character.h"
 #include "../utils/Pos.h"
 #include "message/Message.h"
 #include "../CRDT.h"
 #include "../User.h"
+#include "../../common/commonFunctions.h"
+
 
 class Messanger: public QObject{
     Q_OBJECT
 private:
-    SocketState state;
-    QString siteId;
     QString serverIP;
     QString serverPort;
     QTcpSocket *socket;
     qintptr socketDescriptor;
+    SocketState state;
+    QString siteId;
     CRDT *crdt;
     bool reciveOkMessage;
     bool clientIsLogged;
     QMetaObject::Connection c;
     QMetaObject::Connection d;
-
-private:
     std::queue<QByteArray> messages;
 
 public:

@@ -1,10 +1,5 @@
 #include "Messanger.h"
-#include "../utils/Identifier.h"
-#include "common/commonFunctions.h"
-#include "../../server/Networking/common/commonFunctions.h"
-#include <QFile>
 #include <QPixmap>
-#include <iostream>
 #include <QJsonDocument>
 #include <QtCore/QBuffer>
 
@@ -687,8 +682,8 @@ bool Messanger::readAddFile(){
     int fileNameSize = readNumberFromSocket(socket);
     readSpace(socket);
 
-    QByteArray fileName;
-    if (!readChunck(socket, fileName, fileNameSize)){
+    QString fileName;
+    if (!readQString(socket, fileName, fileNameSize)){
         return false;
     }
     readSpace(socket);

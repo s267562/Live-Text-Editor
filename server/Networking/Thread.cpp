@@ -91,9 +91,9 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         int fileNameSize = readNumberFromSocket(soc);
         readSpace(soc);
 
-        QByteArray fileName;
+        QString fileName;
 
-        if (!readChunck(soc, fileName, fileNameSize)){
+        if (!readQString(soc, fileName, fileNameSize)){
             writeErrMessage(soc, REQUEST_FILE_MESSAGE);
             return;
         }

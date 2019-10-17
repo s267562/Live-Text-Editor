@@ -6,7 +6,7 @@
 #define TEXTEDITOR_COMMONFUNCTIONS_H
 #include <QObject>
 #include <QTcpSocket>
-#include "../../utils/Constants.h"
+#include "../../../common/Constants.h"
 
 bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size);
 bool readSpace(QTcpSocket *soc);

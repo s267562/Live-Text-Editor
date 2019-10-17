@@ -85,7 +85,6 @@ QByteArray convertionNumber(int number){
     QByteArray numberResult;
     QDataStream outNumberResult(&numberResult, QIODevice::WriteOnly);
     outNumberResult << number;
-    //qDebug() << numberResult;
     return numberResult;
 }
 
