@@ -37,7 +37,7 @@ public:
     bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
     bool writeDelete(Character character);
-    bool writeAlignmentChanged(alignment_type at, int blockNumber);
+    bool writeAlignmentChanged(int alignment_type, int blockNumber);
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -75,7 +75,7 @@ signals:
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
-    void fileRecive(std::vector<std::vector<Character>> file, std::vector<alignment_type > at);
+    void fileRecive(std::vector<std::vector<Character>> file, std::vector<int > at);
     void requestForFileFailed();
     void insertFailed();
     void deleteFailed();

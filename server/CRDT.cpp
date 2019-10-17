@@ -200,7 +200,7 @@ void CRDT::changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat)
 
 // handle alignment
 
-void CRDT::handleAlignmentChanged(alignment_type at,int blockNumber){
+void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 
     int oldCursorPos = this->textCursor.position();
 
@@ -210,22 +210,32 @@ void CRDT::handleAlignmentChanged(alignment_type at,int blockNumber){
 
     int cursorPos = this->textCursor.position();
 
-    if (at == LEFT) {
-        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == CENTER) {
-        f.setAlignment(Qt::AlignHCenter);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == RIGHT) {
-        f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == JUSTIFY) {
-        f.setAlignment(Qt::AlignJustify);
-        this->textCursor.setBlockFormat(f);
-    }
+    Qt::Alignment a(alignment);
+
+    qDebug() << a;
+
+    f.setAlignment(a);
+
+    this->textCursor.setBlockFormat(f);
+    
+    
+    
+//    if (at == LEFT) {
+//        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == CENTER) {
+//        f.setAlignment(Qt::AlignHCenter);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == RIGHT) {
+//        f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == JUSTIFY) {
+//        f.setAlignment(Qt::AlignJustify);
+//        this->textCursor.setBlockFormat(f);
+//    }
 
     this->textCursor.setPosition(oldCursorPos);
 }

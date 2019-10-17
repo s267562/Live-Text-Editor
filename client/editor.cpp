@@ -194,6 +194,7 @@ void Editor::setupTextActions() {
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
+
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
 
     comboSize = new QComboBox(tb);
@@ -209,6 +210,9 @@ void Editor::setupTextActions() {
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
 
 
+    //QFont dFont(QString("Al Bayan"), 12);
+
+   // this->textEdit->document()->setDefaultFont(dFont);
 
 }
 
@@ -269,22 +273,31 @@ void Editor::colorChanged(const QColor &c)
 
 void Editor::textAlign(QAction *a)
 {
-    alignment_type at=LEFT;
+   // int at=LEFT;
+    int alCode=0;
 
     if (a == actionAlignLeft) {
-        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute); //Absolute means that the "left" not depends on layout of widget
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
     }
     else if (a == actionAlignCenter) {
         textEdit->setAlignment(Qt::AlignHCenter);
-        at = CENTER;
+       // at = CENTER;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
     }
     else if (a == actionAlignRight) {
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-        at = RIGHT;
+      // at = RIGHT;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
     }
     else if (a == actionAlignJustify) {
         textEdit->setAlignment(Qt::AlignJustify);
-        at=JUSTIFY;
+       // at=JUSTIFY;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
     }
 
     int oldCursorPos = this->textCursor.position();
@@ -298,12 +311,12 @@ void Editor::textAlign(QAction *a)
     int endBlock=this->textCursor.blockNumber();
 
     for(int blockNum=startBlock; blockNum<=endBlock; blockNum++) {
-        this->controller->alignChange(at, blockNum);
+        this->controller->alignChange(alCode, blockNum);
     }
 
 }
 
-void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
+void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
 
     int oldCursorPos = this->textCursor.position();
 
@@ -316,29 +329,33 @@ void Editor::remoteAlignmentChanged(alignment_type at, int blockNumber){
     int num=this->textCursor.blockNumber();
 
     QTextBlockFormat f=this->textCursor.blockFormat();
-    if (at == LEFT) {
-        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == CENTER) {
-        f.setAlignment(Qt::AlignHCenter);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == RIGHT) {
-    f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-        this->textCursor.setBlockFormat(f);
-    }
-    else if (at == JUSTIFY) {
-        f.setAlignment(Qt::AlignJustify);
-        this->textCursor.setBlockFormat(f);
-    }
+
+    f.setAlignment(Qt::Alignment(alignment));
+    this->textCursor.setBlockFormat(f);
+
+//    if (at == LEFT) {
+//        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == CENTER) {
+//        f.setAlignment(Qt::AlignHCenter);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == RIGHT) {
+//    f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+//        this->textCursor.setBlockFormat(f);
+//    }
+//    else if (at == JUSTIFY) {
+//        f.setAlignment(Qt::AlignJustify);
+//        this->textCursor.setBlockFormat(f);
+//    }
 
     this->textCursor.setPosition(oldCursorPos);
 }
 
 
 
-void Editor::formatText(std::vector<alignment_type> styleBlocks){
+void Editor::formatText(std::vector<int> styleBlocks){
 
 
 
@@ -500,6 +517,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     }
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
+
+    qDebug() << this->textEdit->document()->blockCount();
 }
 
 void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
@@ -519,6 +538,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
 
+    qDebug()<<siteId;
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
     Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
@@ -838,12 +858,16 @@ void Editor::replaceText(const QString initialText) {
 
     textEdit->setText(initialText);
 
+
+
+
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
     QTextCursor newCursor = textEdit->textCursor();
     newCursor.movePosition(QTextCursor::End);
     textEdit->setTextCursor(newCursor);
+    qDebug() << "Alignment: " << textEdit->alignment();
 }
 
 void Editor::reset() {

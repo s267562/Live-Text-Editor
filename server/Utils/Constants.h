@@ -28,10 +28,10 @@ enum SocketState{
     LOGGED
 };
 
-enum alignment_type {
-    LEFT,
-    CENTER,
-    RIGHT,
-    JUSTIFY
-};
+//enum alignment_type {
+//    LEFT,
+//    CENTER,
+//    RIGHT,
+//    JUSTIFY
+//};
 #endif // CONSTANTS_H

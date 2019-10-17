@@ -212,30 +212,30 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
 
     int blockNumber = readNumberFromSocket(soc);
 
-    alignment_type at=LEFT;
-
-    switch (alignType){
-        case 0:
-            at=LEFT;
-            break;
-        case 1:
-            at=CENTER;
-            break;
-        case 2:
-            at=RIGHT;
-            break;
-        case 3:
-            at=JUSTIFY;
-            break;
-    }
+//    int at=0;
+//
+//    switch (alignType){
+//        case 0:
+//            at=LEFT;
+//            break;
+//        case 1:
+//            at=CENTER;
+//            break;
+//        case 2:
+//            at=RIGHT;
+//            break;
+//        case 3:
+//            at=JUSTIFY;
+//            break;
+//    }
 
     //QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(alignTypeByteFormat);
 
    // alignment_type (alignTypeByteFormat.toInt());
 
-    crdt->handleAlignmentChanged(at,blockNumber);
+    crdt->handleAlignmentChanged(alignType,blockNumber);
 
-    this->writeAlignmentChanged(soc,at,blockNumber);
+    this->writeAlignmentChanged(soc,alignType,blockNumber);
 
     return true;
 }
@@ -290,10 +290,16 @@ void Thread::writeInsert(QTcpSocket *soc, Character character){
     qDebug() << "                         " << message;
     qDebug() << ""; // newLine
 
+
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+    message.append(" "+sizeOfSender+" "+username);
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         if(socket.first != soc->socketDescriptor()) {
-            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
         }
     }
@@ -308,8 +314,16 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
 
     message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+    message.append(" "+sizeOfSender+" "+username);
+
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
+
     qDebug() << "                         " << message;
     qDebug() << ""; // newLine
+
 
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
@@ -322,12 +336,12 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
 }
 
 
-void Thread::writeAlignmentChanged(QTcpSocket *soc, alignment_type at,int blockNumber){
+void Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, int blockNumber){
 
     qDebug() << "Thread.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
     QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
-    QByteArray alignmentByteFormat=convertionNumber(at);
+    QByteArray alignmentByteFormat=convertionNumber(alignment);
     QByteArray blockNumberByteFormat=convertionNumber(blockNumber);
     //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
     //QByteArray sizeOfMessageBlockNumber = convertionNumber(blockNumberByteFormat.size());
@@ -336,6 +350,12 @@ void Thread::writeAlignmentChanged(QTcpSocket *soc, alignment_type at,int blockN
     message.append(" " + alignmentByteFormat);
     message.append(" " + blockNumberByteFormat);
 
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+
+    message.append(" "+sizeOfSender+" "+username);
+
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
     qDebug() << "                         " << message;
     qDebug() << ""; // newLine
 
@@ -368,11 +388,17 @@ void Thread::writeDelete(QTcpSocket *soc, Character character){
     qDebug() << "                         " << message;
     qDebug() << ""; // newLine
 
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+
+    message.append(" "+sizeOfSender+" "+username);
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+         qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
         if(socket.first != soc->socketDescriptor()) {
-            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
         }
     }
@@ -449,30 +475,32 @@ void Thread::sendFile(QTcpSocket *soc){
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
     QByteArray message(SENDING_FILE);
     const std::vector<std::vector<Character>> file = crdt->getStructure();
-    std::vector<alignment_type> blockFormat;
+    std::vector<int> blockFormat;
 
 
     for(int i=0; i<this->crdt->getTextDocument()->blockCount(); i++){
-        QTextBlock tb=this->crdt->getTextDocument()->findBlockByNumber(i+1);
-        Qt::Alignment al = tb.blockFormat().alignment();
+        QTextBlock tb=this->crdt->getTextDocument()->findBlockByNumber(i);
+        int al = tb.blockFormat().alignment();
 
-        if(al.testFlag(Qt::AlignLeft)){
-            blockFormat.push_back(LEFT);
-        }
-        else if(al.testFlag(Qt::AlignRight)){
-            blockFormat.push_back(RIGHT);
-        }
-        else if(al.testFlag(Qt::AlignHCenter)){
-            blockFormat.push_back(CENTER);
-        }
-        else if(al.testFlag(Qt::AlignJustify)){
-            blockFormat.push_back(JUSTIFY);
-        }
-        else{
-            //Allineamento non riconosciuto
-            qDebug() << "Allineamento non riconosciuto" ;
-            //TODO: Gestire
-        }
+        blockFormat.push_back(al);
+
+//        if(al.testFlag(Qt::AlignLeft)){
+//            blockFormat.push_back(LEFT);
+//        }
+//        else if(al.testFlag(Qt::AlignRight)){
+//            blockFormat.push_back(RIGHT);
+//        }
+//        else if(al.testFlag(Qt::AlignHCenter)){
+//            blockFormat.push_back(CENTER);
+//        }
+//        else if(al.testFlag(Qt::AlignJustify)){
+//            blockFormat.push_back(JUSTIFY);
+//        }
+//        else{
+//            //Allineamento non riconosciuto
+//            qDebug() << "Allineamento non riconosciuto" ;
+//            //TODO: Gestire
+//        }
     }
 
 

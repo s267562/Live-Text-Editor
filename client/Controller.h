@@ -62,7 +62,7 @@ public slots:
     /* EDITOR */
     void showEditor();
     void newMessage(Message message);
-    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<alignment_type> styleBlocks);
+    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<int> styleBlocks);
 
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
@@ -70,7 +70,7 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
-    void alignChange(alignment_type at, int blockNumber);
+    void alignChange(int alignment_type, int blockNumber);
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);

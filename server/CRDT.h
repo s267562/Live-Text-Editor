@@ -28,7 +28,7 @@ public:
 	bool saveCRDT(QString filename);
 	const std::vector<std::vector<Character>> &getStructure() const;
 
-	void handleAlignmentChanged(alignment_type at,int blockNumber);
+	void handleAlignmentChanged(int alignment,int blockNumber);
 	void insertIntoTextDocument(char character, QTextCharFormat charFormat, Pos pos);
 	void deleteFromTextDocument(Pos pos);
 	void changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat);

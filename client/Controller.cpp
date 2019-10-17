@@ -13,7 +13,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<alignment_type>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<alignment_type>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<int>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<int>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
@@ -37,7 +37,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<alignment_type >)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<alignment_type>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<int >)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<int>)));
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
 }
 
@@ -188,11 +188,11 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
 }
 
 
-void Controller::alignChange(alignment_type at, int blockNumber) {
+void Controller::alignChange(int alignment_type, int blockNumber) {
 
     // send insert at the server.
 
-    this->messanger->writeAlignmentChanged(at,blockNumber);
+    this->messanger->writeAlignmentChanged(alignment_type,blockNumber);
 
 }
 
@@ -217,7 +217,8 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, character.getSiteId());
+            qDebug() << message.getSender();
+            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, message.getSender());
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
@@ -238,12 +239,12 @@ void Controller::newMessage(Message message) {
 
         if(pos) {
             // delete from the editor.
-            this->editor->deleteChar(pos, character.getSiteId());
+            this->editor->deleteChar(pos, message.getSender());
         }
     }
 }
 
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<alignment_type> styleBlocks) {
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<int> styleBlocks) {
     crdt->setStructure(initialStructure);
     this->editor->replaceText(this->crdt->toText());
     this->editor->formatText(styleBlocks);

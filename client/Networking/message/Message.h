@@ -15,12 +15,13 @@ class Message {
     qintptr socketID;
     TypeMessage type;
 
-    alignment_type at;
+    int alignment;
     int blockNumber;
+    QString sender;
     /* adding timestamp? */
 public:
-    Message(Character character, qintptr socketID, TypeMessage type, alignment_type at=LEFT, int blockNumber=-1):
-    character(character), socketID(socketID), type(type), at(at), blockNumber(blockNumber) {}
+    Message(Character character, qintptr socketID, TypeMessage type, QString sender, int alignment=0x1, int blockNumber=-1):
+    character(character), socketID(socketID), type(type), alignment(alignment), blockNumber(blockNumber), sender(sender) {}
 
 
     const Character &getCharacter() const {
@@ -38,8 +39,13 @@ public:
     int getBlockNumber()const {
         return blockNumber;
     }
-    alignment_type getAlignmentType()const {
-        return at;
+
+    int getAlignmentType()const {
+        return alignment;
+    }
+
+    const QString &getSender() const {
+        return sender;
     }
 
 };

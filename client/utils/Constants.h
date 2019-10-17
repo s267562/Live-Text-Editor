@@ -38,11 +38,11 @@ enum SocketState{
     EDIT_FILE_STATE
 };
 
-enum alignment_type {
-    LEFT,
-    CENTER,
-    RIGHT,
-    JUSTIFY
-};
+//enum alignment_type {
+//    LEFT,
+//    CENTER,
+//    RIGHT,
+//    JUSTIFY
+//};
 
 #endif // CONSTANTS_H

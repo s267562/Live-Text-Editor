@@ -41,8 +41,8 @@ public:
     ~Editor();
     void setFilename(QString *filename);
 
-    void remoteAlignmentChanged(alignment_type at, int blockNumber);
-    void formatText(std::vector<alignment_type> styleBlocks);
+    void remoteAlignmentChanged(int alignment, int blockNumber);
+    void formatText(std::vector<int> styleBlocks);
 
     void updateCursor(Pos position, QString siteId);
 
