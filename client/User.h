@@ -24,6 +24,7 @@ public:
     bool isIsLogged() const;
     const QString &getUsername() const;
     const QPixmap &getAvatar() const;
+    void setAvatar(const QPixmap &avatar);
     std::map<QString, bool> getFileList() const;
 };
 

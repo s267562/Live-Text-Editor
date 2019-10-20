@@ -4,6 +4,7 @@
 #include <QListWidget>
 #include <QMainWindow>
 #include "../../Controller.h"
+#include "EditAccount/editaccount.h"
 #include "CreateFile/createfile.h"
 
 namespace Ui {
@@ -21,6 +22,7 @@ public:
     ~ShowFiles();
     void addFiles(std::map<QString, bool> l);
     void addFile(std::map<QString, bool> l);
+    void closeEditAccount();
 
 public slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
@@ -39,6 +41,7 @@ private:
     bool newFileShown = false;
     Controller *controller = nullptr;
     CreateFile *createFile = nullptr;
+    EditAccount *editAcc = nullptr;
 
     void resizeEvent(QResizeEvent *event);
 

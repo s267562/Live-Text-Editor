@@ -23,17 +23,15 @@ private:
     QTcpSocket *socket;
     qintptr socketDescriptor;
     SocketState state;
-    QString siteId;
-    CRDT *crdt;
     bool reciveOkMessage;
     bool clientIsLogged;
-    QMetaObject::Connection c;
-    QMetaObject::Connection d;
     std::queue<QByteArray> messages;
+
+    QMetaObject::Connection connectReadyRead;
+    QMetaObject::Connection connectDisconnected;
 
 public:
     Messanger(QObject *parent = nullptr);
-    void setCRDT(CRDT *crdt);
     bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
     bool writeDelete(Character character);
@@ -55,8 +53,6 @@ public:
     bool sendShareCode(QString shareCode);
     bool readAddFile();
 
-    User *user = nullptr;
-
 public slots:
     void onReadyRead();
     void onDisconnect();
@@ -67,7 +63,6 @@ signals:
     void loginFailed();
     void registrationFailed();
     void newMessage(Message message);
-    void userVerified();
     void fileNames(std::map<QString, bool> fileList);
     void logout();
     void setUsers(QStringList);

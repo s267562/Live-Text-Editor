@@ -5,16 +5,14 @@
 
 Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
+    /* define initial state */
     reciveOkMessage = false;
     state = UNLOGGED;
+    clientIsLogged = false;
 
     /* define connection */
-    c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-    d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
-}
-
-void Messanger::setCRDT(CRDT *crdt) {
-    this->crdt = crdt;
+    this->connectReadyRead = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    this->connectDisconnected = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
 }
 
 /**
@@ -44,7 +42,7 @@ bool Messanger::connectTo(QString host, QString port){
 
     qDebug() << "Messanger.cpp - connectTo()     " << socket->socketDescriptor() << " connected";
     qDebug() << ""; // newLine
-    clientIsLogged = false;
+
     return true;
 }
 
@@ -178,6 +176,7 @@ bool Messanger::despatchMessage(){
         messages.pop();
         if (!writeMessage(socket, message)){
             // push ???
+            messages.push(message);
             return false;
         }
         reciveOkMessage = false;
@@ -213,8 +212,8 @@ bool Messanger::logIn(QString username, QString password) {
         }
     }
 
-    this->crdt->setSiteId(username);    //TODO: da rimuovere...
-    this->siteId = username;            //TODO: da rimuovere...
+    //this->crdt->setSiteId(username);    //TODO: da rimuovere...
+    //this->siteId = username;            //TODO: da rimuovere...
 
     return true;
 }
@@ -244,9 +243,6 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
     if (!writeMessage(socket, message)){
         return false;
     }
-
-    this->crdt->setSiteId(username);
-    this->siteId = username;
 
     return true;
 }
@@ -283,8 +279,8 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
         return false;
     }
 
-    this->crdt->setSiteId(username);
-    this->siteId = username;
+   // this->crdt->setSiteId(username);
+    //this->siteId = username;
 
     return true;
 }
@@ -319,8 +315,7 @@ bool Messanger::readUser(){
 
     QImage image1 = QImage::fromData(avatar,"PNG");
     QPixmap pixmap = QPixmap::fromImage(image1);
-    User *user1 = new User(username, pixmap);
-    user = user1;
+    User *user = new User(username, pixmap);
 
     emit reciveUser(user);
     return true;
@@ -373,19 +368,21 @@ bool Messanger::readFileNames(){
  */
 bool Messanger::logOut(){
     if (clientIsLogged){
-        disconnect(c);
-        disconnect(d);
+        disconnect(connectReadyRead);
+        disconnect(connectDisconnected);
         socket->deleteLater();
-        delete socket;
-        socket = new QTcpSocket();
+
+        socket = new QTcpSocket(this);
         if (!connectTo(serverIP, serverPort)){
             qDebug() << "Connesione fallita";
             return false;
         }
+
         clientIsLogged = false;
         state = UNLOGGED;
-        c = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-        d = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+        reciveOkMessage = false;
+        connectReadyRead = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+        connectDisconnected = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
         emit logout();
     }
     return true;
@@ -408,13 +405,11 @@ bool Messanger::requestForFile(QString fileName){
         qDebug() << "                                 " << message;
         qDebug() << ""; // newLine
 
-        messages.push(message);
 
         reciveOkMessage = true;
         if (!writeMessage(socket, message)){
             return false;
         }
-        messages.pop();
 
         return true;
     }else{
@@ -461,8 +456,9 @@ bool Messanger::readRemoveUser(){
     qDebug() << "Messanger.cpp - readRemoveUser()     ---------- READ REMOVE USER ----------";
     readSpace(socket);
     int usernameSize = readNumberFromSocket(socket);
-    QString username;
     readSpace(socket);
+
+    QString username;
     if (!readQString(socket, username, usernameSize)){
         return false;
     }

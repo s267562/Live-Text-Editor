@@ -33,3 +33,7 @@ void User::setUsername(const QString &username) {
 const QPixmap &User::getAvatar() const {
     return avatar;
 }
+
+void User::setAvatar(const QPixmap &avatar) {
+    User::avatar = avatar;
+}

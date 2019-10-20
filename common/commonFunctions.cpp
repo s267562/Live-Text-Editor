@@ -107,7 +107,6 @@ bool readQString(QTcpSocket *soc, QString &in, int size){
     if (!readChunck(soc, byteArray, size)) {
         return false;
     }
-    qDebug() << byteArray;
     in = QString::fromUtf16(reinterpret_cast<const ushort*>(byteArray.data()), size/2);
     return true;
 }

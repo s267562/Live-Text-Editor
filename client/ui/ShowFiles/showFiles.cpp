@@ -4,7 +4,6 @@
 #include "ui_showFiles.h"
 #include "../../Networking/Messanger.h"
 #include "CustomWidget/customwidget.h"
-#include "EditAccount/editaccount.h"
 #include "../../../server/SimpleCrypt/SimpleCrypt.h"
 #include "AddFile/addfile.h"
 
@@ -22,7 +21,6 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 	connect(ui->addFile, SIGNAL(clicked()), this, SLOT(on_actionAdd_File_triggered()));
 	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
 	connect(ui->logout, SIGNAL(clicked()), this, SLOT(on_actionLogout_triggered()));
-	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
 
 	QGraphicsDropShadowEffect *m_shadowEffect = new QGraphicsDropShadowEffect(this);
 	m_shadowEffect->setColor(QColor(0, 0, 0, 255 * 0.1));
@@ -101,10 +99,16 @@ void ShowFiles::showError() {
 }
 
 void ShowFiles::editAccount() {
-	EditAccount *editAccount = new EditAccount(this, controller->getUser());
-	connect(editAccount, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
+	this->editAcc = new EditAccount(this, controller->getUser());
+	connect(editAcc, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
 			SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
-	editAccount->show();
+	editAcc->show();
+}
+
+void ShowFiles::closeEditAccount() {
+    if (this->editAcc != nullptr){
+        editAcc->close();
+    }
 }
 
 /**

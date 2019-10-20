@@ -9,7 +9,6 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     user = nullptr;
     editor = nullptr;
     crdt = new CRDT();
-    messanger->setCRDT(crdt);
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
@@ -43,23 +42,38 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
 /* USER */
 
 void Controller::reciveUser(User *user){
-    this->user = user;
+    if (this->user == nullptr || this->user->isIsLogged() != true){
+        this->user = user;
+        this->crdt->setSiteId(user->getUsername());
+        this->user->setIsLogged(true);
+    }else{
+        this->user->setUsername(user->getUsername());
+        this->user->setAvatar(user->getAvatar());
+        stopLoadingPopup();
+        this->finder->closeEditAccount();
+    }
+}
+
+User* Controller::getUser(){
+    return this->user;
 }
 
 /* NETWORKING */
 
 void Controller::errorConnection(){
     QMessageBox::information(now, "Connection", "Try again, connection not established!");
-    // TODO: retry...
+    now->close();
+    now = connection;
+    connection->show();
 }
 
 /* CONNECTION */
 
 void Controller::connectClient(QString address, QString port) {
-    bool res = this->messanger->connectTo(address, port);    // TODO: non va...
+    bool res = this->messanger->connectTo(address, port);
 
     if (res) {
-        this->connection->close();
+        now->close();
 
         /* creation login object */
         login = new Login(this, this);
@@ -68,7 +82,6 @@ void Controller::connectClient(QString address, QString port) {
         connect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
         connect(this->messanger, &Messanger::logout, this, &Controller::showLogin);
         connect(this->login, SIGNAL(showRegistration()), this, SLOT(showRegistration()));
-        //connect(this->login, SIGNAL(loginSuccessful()), this, SLOT(showFileFinder()));
 
         /* creation registration object */
         registration = new Registration(this, this);
@@ -115,12 +128,9 @@ void Controller::showFileFinder(std::map<QString, bool> fileList){
 
     if (user != nullptr){
         user->setFileList(fileList);
-        user->setIsLogged(true);
         now = finder;
         this->finder->show();
     }
-
-
 }
 
 void Controller::showFileFinderOtherView(){
@@ -184,7 +194,6 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
     }
 }
 
-
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleLocalDelete(startPos, endPos);
 
@@ -229,24 +238,18 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure) 
     this->editor->replaceText(this->crdt->toText());
 }
 
-User* Controller::getUser(){
-    user = messanger->user;
-    return user;
-}
-
 void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
     messanger->sendEditAccount(username, newPassword, oldPassword, avatar);
-    /*loading = new Loading(now);
-    loading->show();*/
+    startLoadingPopup();
 }
 
 void Controller::errorEditAccount() {
     QMessageBox::warning(now, "Edit account", "Try again, Edit account!");
-    //loading->close();
+    stopLoadingPopup();
 }
 
 void Controller::okEditAccount(){
-    //loading->close();
+    stopLoadingPopup();
 }
 
 void Controller::startLoadingPopup(){
@@ -267,10 +270,10 @@ void Controller::sendShareCode(QString sharecode){
 
 void Controller::shareCodeFailed(){
     QMessageBox::warning(now, "Share Code", "Share code is wrong! Try again!");
-    loading->close();
+    stopLoadingPopup();
 }
 
 void Controller::addFileNames(std::map<QString, bool> filenames){
     finder->addFile(filenames);
-    loading->close();
+    stopLoadingPopup();
 }
