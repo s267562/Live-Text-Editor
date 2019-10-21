@@ -151,7 +151,7 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	// Check if user is already logged in
-	for (std::pair<quintptr, QString> pair : usernames) {
+	for (const std::pair<quintptr, QString> &pair : usernames) {
 		if (pair.second == QString(username))
 			return false;
 	}
@@ -268,46 +268,24 @@ bool Server::sendUser(QTcpSocket *soc) {
  */
 bool Server::sendFileNames(QTcpSocket *soc) {
 	qDebug() << "Server.cpp - sendFileNames()     ---------- LIST OF FILE ----------";
-	// TODO gestione file dell'utente
+
 
 	//********************************* Versione finale ******************************************************
 	// get username from map of logged in users
-//	QString username = usernames[soc->socketDescriptor()];
-//	QList<QString> files = DB.getFiles("");
-//	int nFiles = files.size();
-//	QByteArray message(LIST_OF_FILE);
-//	QByteArray numFiles = convertionNumber(nFiles);
-//
-//	message.append(" " + numFiles);
-//
-//	for (QString filename : files) {
-//		QByteArray fileNameSize = convertionNumber(filename.size());
-//		message.append(" " + fileNameSize + " " + filename.toUtf8());
-//	}
-	//******************************************************************************************************
-
-	//******************************************* Versione dtest senza DB***********************************
-	int nFiles = 2;
-	std::list<std::pair<QString, bool>> files;                                /* files fantoccio */
-	files.push_back(std::make_pair("file1", true));
-	files.push_back(std::make_pair("file2", false));
-
+	QString username = usernames[soc->socketDescriptor()];
+	QList<std::pair<QString, bool>> files = DB.getFiles(username);
+	int nFiles = files.size();
 	QByteArray message(LIST_OF_FILE);
-
 	QByteArray numFiles = convertionNumber(nFiles);
+
 	message.append(" " + numFiles);
 
 	for (std::pair<QString, bool> file : files) {
-        QByteArray fileNameByteArray = convertionQString(file.first);
-        QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
-		QByteArray shared;
-		shared.setNum(file.second ? 1 : 0);
-		message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
+		QByteArray fileNameSize = convertionNumber(file.first.size());
+		QByteArray owner;
+		owner.setNum(file.second ? 1 : 0);
+		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + owner);
 	}
-
-	qDebug() << "                                " << message;
-	qDebug() << ""; // newLine
-	//******************************************************************************************************
 
 	writeMessage(soc, message);
 	if (nFiles == 0)
@@ -349,8 +327,17 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		/* file not yet open */
 		qDebug() << "                               New thread for file name: " << fileName;
 		qDebug() << ""; // newLine
-		CRDT *crdt = new CRDT();
-		Thread *thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
+
+		// First try to open requested file, else create a new one
+		CRDT loadedCrdt;
+		Thread *thread;
+		if (!loadedCrdt.loadCRDT(fileName)) {
+			qDebug() << "File need to be created";
+			CRDT *crdt = new CRDT();
+			DB.createFile(fileName, usernames[socketDescriptor]);
+			thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
+		} else
+			thread = new Thread(this, &loadedCrdt, fileName, this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
 						  usernames[socketDescriptor]);                            /* socket transition to secondary thread */
@@ -517,35 +504,34 @@ bool Server::readShareCode(QTcpSocket *soc) {
 	qDebug() << shareCodeSize << shareCode;
 	QString filename;
 
-	if (handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)){
+	if (handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)) {
 		sendAddFile(soc, filename);
 		return true;
-	}else{
+	} else {
 		writeErrMessage(soc, SHARE_CODE);
 		return false;
 	}
 }
 
-bool Server::handleShareCode(QString username, QString shareCode, QString &filename){
-    std::pair<QString, QString> pair = getInfoFromShareCode(shareCode);
-    QString usernameOwner = pair.first; 					// TODO check problem in DB structure
-    filename = pair.second;
+bool Server::handleShareCode(QString username, QString shareCode, QString &filename) {
+	std::pair<QString, QString> pair = getInfoFromShareCode(shareCode);
+	QString usernameOwner = pair.first;                    // TODO check problem in DB structure
+	filename = pair.second;
 
-    if (DB.addPermission(filename,usernameOwner,username)) {
-        return true;
-    } else {
-        return false;
-    }
+	if (DB.addPermission(filename, usernameOwner, username)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 	QByteArray message(ADD_FILE);
 
-    QByteArray fileNameByteArray = convertionQString(filename);
-	QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
-	QByteArray shared;
-	shared.setNum(0);
-	message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
+	QByteArray fileNameSize = convertionNumber(filename.size());
+	QByteArray owner;
+	owner.setNum(0);
+	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + owner);
 
 	if (!writeMessage(soc, message)) {
 		return false;

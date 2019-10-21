@@ -11,7 +11,7 @@
 #include <QDebug>
 
 CRDT::CRDT() {
-	this->structure = { };
+	//this->structure = { };
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {
@@ -323,7 +323,7 @@ void CRDT::read(const QJsonObject &json) {
 		for (int vectorIndex = 0; vectorIndex < vectorVectors.size(); vectorIndex++) {
 			QJsonArray vectorChars = vectorVectors[vectorIndex].toArray();
 			structure[vectorIndex].clear();
-			structure[vectorIndex].reserve(vectorChars.size());
+			//structure[vectorIndex].reserve(vectorChars.size());
 			std::vector<Character> innerVector;
 			for (int indexChar = 0; indexChar < vectorChars.size(); ++indexChar) {
 				QJsonObject charObject = vectorChars[indexChar].toObject();

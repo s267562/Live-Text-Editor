@@ -29,9 +29,9 @@ private:
     QString filename;
     QTimer *saveTimer;
     Server *server;
-    int saveInterval = 2 * 60 * 1000; // 2 min (in ms) // TODO decidere intervallo
+    int saveInterval = 2 * /*60 **/ 1000; // 2 min (in ms) // TODO decidere intervallo
     bool needToSaveFile = false;
-    bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
+    bool timerStarted = false;
 
 public:
     explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);

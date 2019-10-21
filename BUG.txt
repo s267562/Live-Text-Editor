@@ -13,3 +13,5 @@ BUG:
 02.) schermata "Loading" rimane aperta (non sempre) quando si aprono/chiudono file (non ho ben capito quando si verifica di preciso).
 03.) nel textEdit bisogna settare uno stile e un dimensione del carattere, perchè all'inizio quando si scrive qualcosa e poi si cancella lo stile e la dimensione cambiano.
 04.) impostare anche l'esensione ai caratteri speciali anche per il login e per la registrazione.
+
+- tasto di share all'interno dell editor fa crashare il client
