@@ -471,6 +471,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!queryUsers.exec()) {
 		qDebug() << "Error change username:\n" << queryUsers.lastError();
+		db.close();
+		return false;
 	}
 
 	QSqlQuery queryFiles;
@@ -480,7 +482,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!queryFiles.exec()) {
 		qDebug() << "Error change username:\n" << queryFiles.lastError();
-		result = false;
+		db.close();
+		return false;
 	}
 
 	QSqlQuery querySharing1;
@@ -490,7 +493,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!querySharing1.exec()) {
 		qDebug() << "Error change username:\n" << querySharing1.lastError();
-		result = false;
+		db.close();
+		return false;
 	}
 
 	QSqlQuery querySharing2;
@@ -500,7 +504,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!querySharing2.exec()) {
 		qDebug() << "Error change username:\n" << querySharing2.lastError();
-		result = false;
+		db.close();
+		return false;
 	}
 
 	db.close();
