@@ -41,6 +41,7 @@ signals:
     void disconnect();
     void loginSuccessful();
     void showRegistration();
+    void logIn(QString, QString);
 
 private:
     Ui::Login *ui;

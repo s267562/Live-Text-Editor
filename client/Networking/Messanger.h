@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QString>
+#include <QThread>
 #include <queue>
 #include "../../common/Constants.h"
 #include "../utils/Identifier.h"
@@ -15,7 +16,7 @@
 #include "../../common/commonFunctions.h"
 
 
-class Messanger: public QObject{
+class Messanger: public QThread{
     Q_OBJECT
 private:
     QString serverIP;
@@ -32,13 +33,8 @@ private:
 
 public:
     Messanger(QObject *parent = nullptr);
-    bool writeInsert(Character character);
-    bool writeStyleChanged(Character character);
-    bool writeDelete(Character character);
-    bool connectTo(QString host, QString port);    
-    bool logIn(QString username, QString passsword);
+    void run();
     bool readFileNames();
-    bool registration(QString username, QString password, QByteArray avatar);
     bool requestForFile(QString fileName);
     bool readInsert();
     bool readStyleChanged();
@@ -54,6 +50,12 @@ public:
     bool readAddFile();
 
 public slots:
+    bool connectTo(QString host, QString port);
+    bool logIn(QString username, QString passsword);
+    bool registration(QString username, QString password, QByteArray avatar);
+    bool writeInsert(Character character);
+    bool writeStyleChanged(Character character);
+    bool writeDelete(Character character);
     void onReadyRead();
     void onDisconnect();
     bool logOut();

@@ -21,6 +21,7 @@ Registration::~Registration() {
 
 void Registration::setClient(Messanger *messanger) {  //TODO: da rimuovere...
 	this->messanger = messanger;
+    connect(this, SIGNAL(registration(QString, QString, QByteArray)), this->messanger, SLOT(registration(QString, QString, QByteArray)));
 }
 
 
@@ -68,11 +69,9 @@ void Registration::on_pushButton_registration_clicked() {
 	QBuffer buffer(&byteArray);
 	avatarImage.save(&buffer, "PNG");
 
-	bool result = messanger->registration(username, password, byteArray);
+	registration(username, password, byteArray);
+	controller->startLoadingPopup();
 
-	if (result){
-		controller->startLoadingPopup();
-	}
 }
 
 void Registration::on_pushButton_login_clicked() {

@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QtCore/QBuffer>
 
-Messanger::Messanger(QObject *parent) : QObject(parent) {
+Messanger::Messanger(QObject *parent) : QThread(parent) {
     this->socket = new QTcpSocket(this);
     /* define initial state */
     reciveOkMessage = false;
@@ -15,6 +15,10 @@ Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->connectDisconnected = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
 }
 
+
+void Messanger::run() {
+    exec();
+}
 /**
  * Method for connecting with server
  * @param host
@@ -573,9 +577,14 @@ bool Messanger::writeDelete(Character character){
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
+        messages.push(message);
 
-        if (!writeMessage(socket, message)){
-            return false;
+        if (reciveOkMessage){
+            reciveOkMessage = false;
+            if (!writeMessage(socket, message)){
+                return false;
+            }
+            messages.pop();
         }
     }
     return true;

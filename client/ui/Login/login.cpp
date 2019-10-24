@@ -16,6 +16,7 @@ Login::~Login(){
 
 void Login::setClient(Messanger *messanger) {  //TODO: da rimuovere...
     this->messanger = messanger;
+    connect(this, SIGNAL(logIn(QString, QString)), this->messanger, SLOT(logIn(QString, QString)));
 }
 
 void Login::on_pushButton_clicked()

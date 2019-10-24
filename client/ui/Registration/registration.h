@@ -34,6 +34,7 @@ public slots:
 
 signals:
     void showLogin();
+    void registration(QString, QString, QByteArray);
 
 private:
     Ui::Registration *ui;

@@ -80,6 +80,17 @@ public:
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
     void startLoadingPopup();
     void stopLoadingPopup();
+
+    ~Controller();
+
+
+        signals:
+    bool connectTo(QString host, QString port);
+    /*bool logIn(QString username, QString passsword);
+    bool registration(QString username, QString password, QByteArray avatar);*/
+    bool writeInsert(Character character);
+    bool writeStyleChanged(Character character);
+    bool writeDelete(Character character);
 };
 
 

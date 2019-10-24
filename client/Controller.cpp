@@ -20,6 +20,16 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
+
+    /* */
+    messanger->start();
+    connect(this, SIGNAL(connectTo(QString, QString)), this->messanger, SLOT(connectTo(QString, QString )));
+    //connect(this, SIGNAL(logIn(QString, QString)), this->messanger, SLOT(logIn(QString, QString)));
+    //connect(this, SIGNAL(registration(QString, QString)), this->messanger, SLOT(registration(QString, QString )));
+    connect(this, SIGNAL(writeInsert(Character)), this->messanger, SLOT(writeInsert(Character)));
+    connect(this, SIGNAL(writeDelete(Character)), this->messanger, SLOT(writeDelete(Character)));
+    connect(this, SIGNAL(writeStyleChanged(Character)), this->messanger, SLOT(writeStyleChanged(Character)));
+
     now = connection;
     connection->show();
 }
@@ -70,9 +80,9 @@ void Controller::errorConnection(){
 /* CONNECTION */
 
 void Controller::connectClient(QString address, QString port) {
-    bool res = this->messanger->connectTo(address, port);
+    connectTo(address, port);
 
-    if (res) {
+    if (1) {
         now->close();
 
         /* creation login object */
@@ -179,7 +189,7 @@ void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos po
     Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
     // send insert at the server.
-    this->messanger->writeInsert(character);
+    writeInsert(character);
 }
 
 void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
@@ -188,7 +198,7 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
         Character character = crdt->getCharacter(pos);
 
         // send insert at the server.
-        this->messanger->writeStyleChanged(character);
+        writeStyleChanged(character);
     } else {
         // do nothing...
     }
@@ -198,7 +208,7 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleLocalDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        this->messanger->writeDelete(c);
+        writeDelete(c);
     }
 }
 
@@ -276,4 +286,9 @@ void Controller::shareCodeFailed(){
 void Controller::addFileNames(std::map<QString, bool> filenames){
     finder->addFile(filenames);
     stopLoadingPopup();
+}
+
+Controller::~Controller(){
+    this->messanger->quit();
+    //this->messanger->deleteLater();
 }
