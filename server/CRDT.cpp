@@ -53,9 +53,9 @@ Pos CRDT::handleInsert(Character character) {
     }
     qDebug() << ""; // newLine
 
-    auto pt=td->toPlainText();
-    auto ss=pt.toStdString();
-    qDebug() << td->toHtml();
+    //auto pt=td->toPlainText();
+    //auto ss=pt.toStdString();
+    //qDebug() << td->toHtml();
 
     return pos;
 }
@@ -123,7 +123,9 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
+        
     }
+    
 
     // if inserting a newline, split line into two lines.
     if (character.getValue() == '\n') {
@@ -218,6 +220,7 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 
     this->textCursor.setBlockFormat(f);
     
+    //this->style.insert()
     
     
 //    if (at == LEFT) {

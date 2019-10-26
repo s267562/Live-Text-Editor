@@ -131,11 +131,30 @@ Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos 
 
     const Character character = generateChar(val, textCharFormat, pos, siteId);
     insertChar(character, pos);
+
+    /*if(this->structure[pos.getLine()].size()==1) { // line==first char + \n
+        this->style.insert(this->style.begin()+pos.getLine(), std::pair<Character,int>(character, 0x4));
+    }*/
+
     //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
     // print the structure for debugging
     qDebug() << "client/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
+    
+    QDebug qDPos(QtDebugMsg);
+    qDPos << "BLOCK VECTOR SIZE: " << this->style.size() << "  STRUCTURE VECTOR SIZE: " << this->structure.size();
+
     for (int i = 0; i < structure.size(); i++) {
+
+        
+
+        qDPos << "\n\n BLOCK: " << this->style[i].first.getValue() << "  ";
+
+        std::for_each(this->style[i].first.getPosition().begin(), this->style[i].first.getPosition().end(),[&qDPos](Identifier i){
+            qDPos<<i.getDigit();
+        });
+
+
         for (int j = 0; j < structure[i].size(); j++) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
@@ -150,6 +169,7 @@ Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos 
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
+                qD << " ";
             }
         }
     }
@@ -265,13 +285,13 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
+        style.push_back(std::pair<Character,int>(character,0x4));
     }
 
     // if inserting a newline, split line into two lines.
     if (character.getValue() == '\n') {
         qDebug() << "Splitting line into two lines";
         std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
-
         if (lineAfter.size() != 0) {
             qDebug().noquote() << "There is something after the newLine inserted";
             structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
@@ -288,8 +308,12 @@ void CRDT::insertChar(Character character, Pos pos) {
             }
              */
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+            this->style.insert(this->style.begin()+pos.getLine()+1,std::pair<Character,int>(character,0x4));
+
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
+            //this->style.insert(this->style.begin()+pos.getLine(),std::pair<Character,int>(character,0x4));
+
         }
     }
 
@@ -359,6 +383,7 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
     for (int line = endPos.getLine() - 1; line > startPos.getLine(); line--) {
         chars.insert(chars.end(), structure[line].begin(), structure[line].end());
         structure.erase(structure.begin() + line );
+        style.erase(style.begin() + line );
     }
 
     chars.insert(chars.end(), structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
@@ -475,7 +500,9 @@ void CRDT::removeEmptyLines() {
     for (int line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].size() == 0) {
             this->structure.erase(this->structure.begin() + line);
+            this->style.erase(this->style.begin()+line);
             line--;
+            
         }
     }
 }
@@ -485,6 +512,7 @@ void CRDT::mergeLines(int line) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
         //qDebug() << "EREASING line" << line + 1 << " line size:" << structure[line+1].size();
         structure.erase(structure.begin() + line + 1);
+        style.erase(style.begin()+line+1);
     }
 }
 
@@ -553,6 +581,36 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
     return pos;
+}
+
+void CRDT::insertBlock(Character character, Pos position) {
+
+
+
+
+   /* if( position.getLine()==this->style.size() ) {
+        this->style.push_back(std::pair<Character, int>());
+    }*/
+    if( position.getCh()==0 ){
+        Pos blockPos(0,position.getLine());
+
+        this->style.insert(
+                this->style.begin()+position.getLine(),std::pair<Character,int>(generateChar('-',character.getTextCharFormat(),blockPos,character.getSiteId()),
+                                                                                0x4));
+    }
+
+
+
+    if (character.getValue() == '\n') {
+        Pos blockPos(0,position.getLine()+1);
+        this->style.insert(
+                this->style.begin()+position.getLine(),std::pair<Character,int>(generateChar('-',character.getTextCharFormat(),blockPos,character.getSiteId()),
+                                                                                0x4));
+    }
+
+
+
+
 }
 
 

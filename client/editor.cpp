@@ -67,6 +67,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
 
+
     m_shadowEffect1 = new QGraphicsDropShadowEffect(this);
     m_shadowEffect1->setColor(QColor(0, 0, 0, 255 * 0.1));
     m_shadowEffect1->setXOffset(0);
@@ -582,11 +583,13 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
     //qDebug() << "italic" << format.isItalic();
     int oldCursorPos = textCursor.position();
 
+
     textCursor.movePosition(QTextCursor::Start);
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
 
     QTextDocument *doc = textEdit->document();
+
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
@@ -789,8 +792,9 @@ void Editor::removeUser(QString user) {
 
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
-  //  this->otherCursors[user]->hide();//TODO: ???
- //   this->otherCursors.remove(user);
+    
+    this->otherCursors[user]->hide();//TODO: ???
+    this->otherCursors.remove(user);
 
   //  qDebug() << "After: " << this->otherCursors.size();
 
@@ -887,3 +891,5 @@ void Editor::showError(){
 void Editor::setFilename(QString *filename){
     this->filename = filename;
 }
+
+

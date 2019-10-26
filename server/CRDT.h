@@ -41,6 +41,8 @@ private:
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
     //TODO: Maybe better remove
+	std::vector<std::pair<Character,int>> style;
+	
 
 	QTextDocument *td;
 	QTextCursor textCursor;

@@ -36,6 +36,8 @@ private:
     std::vector<std::vector<Character>> structure;
     std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
+    std::vector<std::pair<Character,int>> style;
+
 
     // insert
     const Character generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId);
@@ -57,6 +59,8 @@ private:
     void removeEmptyLines();
 
     void mergeLines(int line);
+
+    void insertBlock(Character character, Pos position);
 
 };
 
