@@ -43,6 +43,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
         loadingMovie->start();
         ui->editAccount->close();
         ui->loading->show();
+        connect(ui->editAccount, SIGNAL(clicked()), this, SLOT(editAccountClicked()));
     #endif
 
 
@@ -506,6 +507,9 @@ void Editor::onCursorPositionChanged() {
 
 void Editor::on_actionNew_File_triggered() {
     QMessageBox::information(this, "File", "File!");
+    CreateFile *createFile = new CreateFile(this);
+    connect(createFile, SIGNAL(createFile(QString)), this->controller, SLOT(requestForFile(QString)));
+    createFile->show();
 }
 
 void Editor::on_actionShare_file_triggered() {
@@ -640,6 +644,7 @@ void Editor::setUsers(QStringList users) {
             ui->loading->close();
             loadingFlag = false;
             ui->editAccount->show();
+            connect(ui->editAccount, SIGNAL(clicked()), this, SLOT(editAccountClicked()));
         }
     #else
     QPixmap pix;
@@ -706,4 +711,11 @@ void Editor::showError(){
 
 void Editor::setFilename(QString filename){
     this->filename = filename;
+}
+
+void Editor::editAccountClicked(){
+    EditAccount *editA = new EditAccount(this, controller->getUser());
+    connect(editA, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
+                    SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
+    editA->show();
 }

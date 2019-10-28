@@ -32,8 +32,8 @@ void Registration::on_label_clicked() {
 
 		if (valid) {
 			QPixmap pix(QPixmap::fromImage(image));
-			int w = ui->label->width();
-			int h = ui->label->height();
+			int w = pix.width();
+			int h = pix.height();
 			ui->label->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
 		}
 	}

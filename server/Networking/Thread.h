@@ -51,6 +51,8 @@ private:
     void sendFile(QTcpSocket *soc);
     bool readShareCode(QTcpSocket *soc);
     bool sendAddFile(QTcpSocket *soc, QString filename);
+    bool readEditAccount(QTcpSocket *soc);
+    bool sendUser(QTcpSocket *soc);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

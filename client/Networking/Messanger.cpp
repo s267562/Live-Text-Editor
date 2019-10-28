@@ -411,6 +411,7 @@ bool Messanger::requestForFile(QString fileName){
             return false;
         }
 
+        state = WAITING_LIST_OF_ONLINE_USERS;
         return true;
     }else{
         return false;

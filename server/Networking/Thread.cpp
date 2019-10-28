@@ -86,19 +86,19 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
             writeErrMessage(soc, DELETE_MESSAGE);
         }
         readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == REQUEST_FILE_MESSAGE){
+    } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
         readSpace(soc);
         int fileNameSize = readNumberFromSocket(soc);
         readSpace(soc);
 
         QString fileName;
 
-        if (!readQString(soc, fileName, fileNameSize)){
+        if (!readQString(soc, fileName, fileNameSize)) {
             writeErrMessage(soc, REQUEST_FILE_MESSAGE);
             return;
         }
 
-        if (fileName == this->filename){
+        if (fileName == this->filename) {
             sendListOfUsers(soc);
             return;
         }
@@ -108,21 +108,36 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         delete connectReadyRead;
         delete connectDisconnected;
         std::shared_ptr<Thread> thread = server->getThread(fileName);
-        if (thread.get() == nullptr){
+
+        sendRemoveUser(soc->socketDescriptor(), usernames[soc->socketDescriptor()]);
+        if (thread.get() == nullptr) {
             /* thread doesn't exist */
-            thread = server->addThread(fileName);
+            thread = server->addThread(fileName, soc);
+            thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+            thread->start();
+        } else {
+            thread->addSocket(soc, usernames[soc->socketDescriptor()]);
         }
 
-        qDebug() << soc->socketDescriptor() << " " <<usernames[soc->socketDescriptor()];
-        sendRemoveUser(soc->socketDescriptor(),usernames[soc->socketDescriptor()]);
-        thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+        qDebug() << soc->socketDescriptor() << " " << usernames[soc->socketDescriptor()];
         usernames.erase(soc->socketDescriptor());
         sockets.erase(soc->socketDescriptor());
-    }else if (data.toStdString() == SHARE_CODE) {
+    } else if (data.toStdString() == SHARE_CODE) {
         if (!readShareCode(soc)) {
             writeErrMessage(soc, DELETE_MESSAGE);
         }
         readyRead(soc, connectReadyRead, connectDisconnected);
+    } else if (data.toStdString() == EDIT_ACCOUNT){
+        QString oldUsername = usernames[soc->socketDescriptor()];
+        if (readEditAccount(soc)) {
+            sendUser(soc);
+            if (oldUsername != usernames[soc->socketDescriptor()]){
+                sendRemoveUser(soc->socketDescriptor(), oldUsername);
+                sendNewUser(soc);
+            }
+        } else {
+            writeErrMessage(soc, EDIT_ACCOUNT);
+        }
     }else{
         writeErrMessage(soc);
     }
@@ -438,6 +453,116 @@ bool Thread::sendAddFile(QTcpSocket *soc, QString filename) {
     QByteArray shared;
     shared.setNum(0);
     message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
+
+    if (!writeMessage(soc, message)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Thread::readEditAccount(QTcpSocket *soc) {
+    qDebug() << "Server.cpp - readEditAccount()     ---------- READ EDIT ACCOUNT ----------";
+    if (soc == nullptr) {
+        return false;
+    }
+    readSpace(soc);
+    int newUsernameSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    //username
+    QString newUsername;
+    if (!readQString(soc, newUsername, newUsernameSize)) {
+        return false;
+    }
+    readSpace(soc);
+
+    int newPasswordSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    //password
+    QString newPassword;
+    if (!readQString(soc, newPassword, newPasswordSize)) {
+        return false;
+    }
+    readSpace(soc);
+
+    int oldPasswordSize = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    //password
+    QString oldPassword;
+    if (!readQString(soc, oldPassword, oldPasswordSize)) {
+        return false;
+    }
+    readSpace(soc);
+
+
+    int sizeAvatar = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    qDebug() << "                                username: " << newUsername << " size: " << newUsernameSize;
+    qDebug() << "                                password: " << newPassword << " size: " << newPasswordSize;
+    qDebug() << "                                password: " << oldPassword << " size: " << oldPasswordSize;
+    qDebug() << "                                avatar size: " << sizeAvatar;
+
+    //avatar
+    QByteArray avatarDef;
+
+    if (!readChunck(soc, avatarDef, sizeAvatar)) {
+        return false;
+    }
+
+    qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
+
+    qDebug() << ""; // newLine
+
+    if (server->DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+        if (newUsernameSize != 0) {
+            if (server->DB.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+                usernames[soc->socketDescriptor()] = newUsername;
+            } else {
+                qDebug() << "Err1";
+                return false;
+            }
+        }
+
+        if (newPasswordSize != 0) {
+            if (server->DB.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+                qDebug() << "Err2";
+                return false;
+            }
+        }
+
+        if (sizeAvatar != 0) {
+            if (!server->DB.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+                qDebug() << "Err3";
+                return false;
+            }
+        }
+    } else {
+        qDebug() << "Err4";
+        return false;
+    }
+
+    return true;
+}
+
+bool Thread::sendUser(QTcpSocket *soc) {
+    qDebug() << "Server.cpp - sendUser()     ---------- SEND USER ----------";
+    QByteArray message(AVATAR_MESSAGE);
+    QByteArray image;
+    //image = "image";
+    QString username;
+    username = usernames[soc->socketDescriptor()];
+    image = server->DB.getAvatar(username);
+    QByteArray imageSize = convertionNumber(image.size());
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+
+    message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
+
+    qDebug() << message;
 
     if (!writeMessage(soc, message)) {
         return false;

@@ -281,10 +281,11 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 	message.append(" " + numFiles);
 
 	for (std::pair<QString, bool> file : files) {
-		QByteArray fileNameSize = convertionNumber(file.first.size());
 		QByteArray owner;
 		owner.setNum(file.second ? 1 : 0);
-		message.append(" " + fileNameSize + " " + file.first.toUtf8() + " " + owner);
+		QByteArray filenameByteArray = convertionQString(file.first);
+        QByteArray fileNameSize = convertionNumber(filenameByteArray.size());
+		message.append(" " + fileNameSize + " " + filenameByteArray + " " + owner);
 	}
 
 	writeMessage(soc, message);
@@ -301,14 +302,14 @@ bool Server::sendFileNames(QTcpSocket *soc) {
  * @return result of reading from socket
  */
 bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
-	std::lock_guard<std::mutex> lg(mutexThread);
+	//std::lock_guard<std::mutex> lg(mutexThread);
 	qDebug() << "Server.cpp - readFileName()     ---------- REQUEST FOR FILE ----------";
 	readSpace(soc);
 	int fileNameSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
-	QByteArray fileName;
-	if (!readChunck(soc, fileName, fileNameSize)) {
+	QString fileName;
+	if (!readQString(soc, fileName, fileNameSize)) {
 		return false;
 	}
 
@@ -340,7 +341,9 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 			thread = new Thread(this, &loadedCrdt, fileName, this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
-						  usernames[socketDescriptor]);                            /* socket transition to secondary thread */
+						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
+		/*std::shared_ptr<Thread> thread = this->addThread(key, soc);
+        thread->addSocket(soc, usernames[socketDescriptor]);*/
 		thread->start();
 	}
 
@@ -360,12 +363,12 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 		return false;
 	}
 	readSpace(soc);
-	int sizeUsername = readNumberFromSocket(soc);
+	int newUsernameSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//username
-    QString username;
-    if (!readQString(soc, username, sizeUsername)) {
+    QString newUsername;
+    if (!readQString(soc, newUsername, newUsernameSize)) {
         return false;
     }
 	readSpace(soc);
@@ -394,7 +397,7 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	int sizeAvatar = readNumberFromSocket(soc);
 	readSpace(soc);
 
-	qDebug() << "                                username: " << username << " size: " << sizeUsername;
+	qDebug() << "                                username: " << newUsername << " size: " << newUsernameSize;
 	qDebug() << "                                password: " << newPassword << " size: " << newPasswordSize;
 	qDebug() << "                                password: " << oldPassword << " size: " << oldPasswordSize;
 	qDebug() << "                                avatar size: " << sizeAvatar;
@@ -411,9 +414,9 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	if (DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
-		if (sizeUsername != 0) {
-			if (DB.changeUsername(usernames[soc->socketDescriptor()], username)) {
-				usernames[soc->socketDescriptor()] = username;
+		if (newUsernameSize != 0) {
+			if (DB.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+				usernames[soc->socketDescriptor()] = newUsername;
 			} else {
 				qDebug() << "Err1";
 				return false;
@@ -476,11 +479,19 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  * @param fileName
  * @return new Thread
  */
-std::shared_ptr<Thread> Server::addThread(QString fileName) {
-	std::lock_guard<std::mutex> lg(mutexThread);
-	CRDT *crdt = new CRDT();
-	std::shared_ptr<Thread> thread = std::make_shared<Thread>(this, crdt, fileName,
-															  this);                        /* create new thread */
+std::shared_ptr<Thread> Server::addThread(QString fileName, QTcpSocket *soc) {
+    std::lock_guard<std::mutex> lg(mutexThread);
+    CRDT loadedCrdt;
+
+    std::shared_ptr<Thread> thread;                        /* create new thread */
+    if (!loadedCrdt.loadCRDT(fileName)) {
+        qDebug() << "File need to be created";
+        CRDT *crdt = new CRDT();
+        DB.createFile(fileName, usernames[soc->socketDescriptor()]);
+        thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
+    } else {
+        thread = std::make_shared<Thread>(this, &loadedCrdt, fileName, this);                        /* create new thread */
+    }
 	threads[fileName] = thread;
 	return thread;
 }

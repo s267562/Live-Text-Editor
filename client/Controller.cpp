@@ -236,6 +236,7 @@ void Controller::newMessage(Message message) {
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure) {
     crdt->setStructure(initialStructure);
     this->editor->replaceText(this->crdt->toText());
+    /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
 }
 
 void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){

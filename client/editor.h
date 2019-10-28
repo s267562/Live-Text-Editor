@@ -48,6 +48,7 @@ public slots:
     void removeUser(QString user);
     void setUsers(QStringList user);
     void showError();
+    void editAccountClicked();
 
 signals:
     void logout();

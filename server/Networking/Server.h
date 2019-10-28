@@ -26,7 +26,7 @@ public:
     explicit Server(QObject *parent = nullptr);
     bool startServer(quint16 port);
     std::shared_ptr<Thread> getThread(QString fileName);
-    std::shared_ptr<Thread> addThread(QString fileName);
+    std::shared_ptr<Thread> addThread(QString fileName, QTcpSocket *soc);
     bool handleShareCode(QString username, QString shareCode, QString &filename);
 
 private:
