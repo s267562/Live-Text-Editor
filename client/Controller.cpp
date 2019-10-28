@@ -169,6 +169,10 @@ void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos po
     // insert into the model
     Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
+    QTextCharFormat tcf=character.getTextCharFormat();
+    tcf.setBackground(Qt::transparent);
+    this->editor->changeStyle(pos,tcf);
+
     // send insert at the server.
     this->messanger->writeInsert(character);
 }
@@ -211,14 +215,31 @@ void Controller::newMessage(Message message) {
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
 
+
+        Pos posOldChar=this->crdt->getPosLastChar(this->editor->otherCursors[message.getSender()]->lastChar);
+
+        if( posOldChar ) {
+            QTextCharFormat tcfOld=character.getTextCharFormat();
+            tcfOld.setBackground(Qt::transparent);
+            this->editor->changeStyle(posOldChar, tcfOld);
+        }
+
+        this->editor->otherCursors[message.getSender()]->lastChar=character;
+        qDebug() << "Char under other cursor (INSERT): " << this->editor->otherCursors[message.getSender()]->lastChar.getValue();
+
+
         Pos pos = this->crdt->handleRemoteInsert(character);
+
+
+        QTextCharFormat tcfNew=character.getTextCharFormat();
+        tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
 
         if(character.getSiteId() == this->crdt->getSiteId()) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             qDebug() << message.getSender();
-            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, message.getSender());
+            this->editor->insertChar(character.getValue(), tcfNew, pos, message.getSender());
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
@@ -235,12 +256,39 @@ void Controller::newMessage(Message message) {
     }
     else if(message.getType() == DELETE) {
         Character character=message.getCharacter();
+
+        Pos posOldChar=this->crdt->getPosLastChar(this->editor->otherCursors[message.getSender()]->lastChar);
+        qDebug() << "Last char (DELETE): " << this->editor->otherCursors[message.getSender()]->lastChar.getValue();
+
         Pos pos = this->crdt->handleRemoteDelete(character);
+
+
+        if( posOldChar ) {
+            QTextCharFormat tcfOld=this->editor->otherCursors[message.getSender()]->lastChar.getTextCharFormat();
+            tcfOld.setBackground(Qt::transparent);
+            this->editor->changeStyle(posOldChar, tcfOld);
+            qDebug() << "Entered";
+        }
 
         if(pos) {
             // delete from the editor.
             this->editor->deleteChar(pos, message.getSender());
+
+            Pos posNewChar(this->editor->otherCursors[message.getSender()]->getOtherCursor().positionInBlock(), this->editor->otherCursors[message.getSender()]->getOtherCursor().blockNumber());
+
+            Character c=this->crdt->getCharacter(posNewChar); // TODO: Check of out of bound error
+
+
+            this->editor->otherCursors[message.getSender()]->lastChar=c;
+            qDebug() << "Char under other cursor (DELETE): " << this->editor->otherCursors[message.getSender()]->lastChar.getValue();
+
+            QTextCharFormat tcfNew=c.getTextCharFormat();
+            tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
+            this->editor->changeStyle(posNewChar, tcfNew);
+
         }
+
+        qDebug() << "Here";
     }
 }
 

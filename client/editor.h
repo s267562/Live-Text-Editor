@@ -94,9 +94,10 @@ private:
     QMovie *loadingMovie;
     bool loadingFlag = true;
 
-
-    QHash<QString, QPointer<OtherCursor>> otherCursors;
-
+public: //TODO : just to try
+    QHash<QString, OtherCursor*> otherCursors;
+    
+private:
     std::vector<QString> colors;
 
 

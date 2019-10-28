@@ -22,7 +22,7 @@
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller),
-                                                                          colors({"#B22222","#DC143C","#FF0000","#FF6347","#FF7F50","#CD5C5C","#F08080","#E9967A","#FA8072","#FFA07A","#FF4500","#FF8C00","#FFA500","#FFD700","#B8860B","#DAA520","#EEE8AA","#BDB76B","#F0E68C","#808000","#FFFF00","#9ACD32","#556B2F","#6B8E23","#7CFC00","#7FFF00","#ADFF2F","#006400","#008000","#228B22","#00FF00","#32CD32","#8FBC8F","#00FA9A","#00FF7F","#2E8B57","#66CDAA","#3CB371","#20B2AA","#2F4F4F","#008080","#008B8B","#00FFFF","#00FFFF","#00CED1","#40E0D0","#48D1CC","#AFEEEE","#7FFFD4","#5F9EA0","#4682B4","#6495ED","#00BFFF","#1E90FF","#87CEEB","#87CEFA","#191970","#000080","#00008B","#0000CD","#0000FF","#4169E1","#8A2BE2","#4B0082","#483D8B","#6A5ACD","#7B68EE","#9370DB","#8B008B","#9400D3","#9932CC","#BA55D3","#800080","#DDA0D","#EE82EE","#FF00FF","#DA70D6","#C71585","#DB7093","#FF1493","#FF69B4","#8B4513","#A0522D","#D2691E","#CD853F","#F4A460","#DEB887","#D2B48C","#BC8F8F","#708090","#778899","#B0C4DE","#E6E6FA",
+                                                                          colors({"#B22222",/*"#DC143C","#FF0000","#FF6347","#FF7F50","#CD5C5C","#F08080","#E9967A","#FA8072","#FFA07A","#FF4500","#FF8C00","#FFA500","#FFD700","#B8860B","#DAA520","#EEE8AA","#BDB76B","#F0E68C","#808000","#FFFF00","#9ACD32","#556B2F","#6B8E23","#7CFC00","#7FFF00","#ADFF2F","#006400","#008000","#228B22","#00FF00","#32CD32","#8FBC8F","#00FA9A","#00FF7F","#2E8B57","#66CDAA","#3CB371","#20B2AA","#2F4F4F","#008080","#008B8B","#00FFFF","#00FFFF","#00CED1","#40E0D0","#48D1CC","#AFEEEE","#7FFFD4","#5F9EA0","#4682B4","#6495ED","#00BFFF","#1E90FF","#87CEEB","#87CEFA","#191970","#000080","#00008B","#0000CD","#0000FF","#4169E1","#8A2BE2","#4B0082","#483D8B","#6A5ACD","#7B68EE","#9370DB","#8B008B","#9400D3","#9932CC","#BA55D3","#800080","#DDA0D","#EE82EE","#FF00FF","#DA70D6","#C71585","#DB7093","#FF1493","#FF69B4","#8B4513","#A0522D","#D2691E","#CD853F","#F4A460","#DEB887","#D2B48C","#BC8F8F","#708090","#778899","#B0C4DE",*/"#E6E6FA",
                                                                                  }){
 
     ui->setupUi(this);
@@ -497,7 +497,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     // select char
                     cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
                     QTextCharFormat charFormat = cursor.charFormat();
-
+                    
                     this->controller->localInsert(chars.at(i), charFormat, startPos);
                 }
             }
@@ -535,16 +535,24 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
                this, &Editor::onTextChanged);
 
     textCursor.insertText(QString{character});
+
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+
+    qDebug() << "Pos text cursor (after insert): " << textCursor.position();
+    qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getOtherCursor().position();
+
+
     textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
 
+
     qDebug()<<siteId;
-    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
-
-    Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
-
-    this->updateCursor(coord, siteId);
+//    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+//
+//    Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
+//
+//    this->updateCursor(coord, siteId);
 
     //qDebug() << "Position of OTHER CURSOR: " << otherTextCursor.position();
 
@@ -565,11 +573,11 @@ void Editor::updateCursor(Pos position, QString siteId){
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, position.getLine());
     textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, position.getCh());
 
-    QRect coord=this->textEdit->cursorRect(textCursor);
-
-    this->otherCursors[siteId]->move(coord.topRight().x()+7,coord.topRight().y()-10);
-
-    this->otherCursors[siteId]->show();
+//    QRect coord=this->textEdit->cursorRect(textCursor);
+//
+//    this->otherCursors[siteId]->move(coord.topRight().x()+7,coord.topRight().y()-10);
+//
+//    this->otherCursors[siteId]->show();
 
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
@@ -621,19 +629,29 @@ void Editor::deleteChar(Pos pos, QString siteId) {
                this, &Editor::onTextChanged);
 
     textCursor.deleteChar();
+    
+    if( (textCursor.position()-1)<0 ) {
+        this->otherCursors[siteId]->setOtherCursorPosition( 0 );
+    }
+    else{
+        this->otherCursors[siteId]->setOtherCursorPosition( textCursor.position()-1 );
+    }
+    
+    qDebug() << "Pos text cursor (after delete): " << textCursor.position();
+    qDebug() << "Pos other text cursor (after delete): " << this->otherCursors[siteId]->getOtherCursor().position();
 
     qDebug() << siteId;
 
-    if(!this->otherCursors[siteId].isNull()) {
-        this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
-
-
-//    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
-        Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
-
-        this->updateCursor(coord, siteId);
-
-    }
+//    if(!this->otherCursors[siteId].isNull()) {
+//        this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+//
+//
+////    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
+//        Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
+//
+//        this->updateCursor(coord, siteId);
+//
+//    }
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -793,8 +811,7 @@ void Editor::removeUser(QString user) {
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
     
-    this->otherCursors[user]->hide();//TODO: ???
-    this->otherCursors.remove(user);
+
 
   //  qDebug() << "After: " << this->otherCursors.size();
 
@@ -823,12 +840,10 @@ void Editor::setUsers(QStringList users) {
     controller->stopLoadingPopup();
 
     std::for_each( users.begin(), users.end(), [this](QString user){
-        otherCursors.insert(user, new OtherCursor(user, this->textEdit));
-        int colorIndex=qHash(user)%91;
+        int colorIndex=qHash(user)%2;
         QColor color(colors[colorIndex]);
         color.setAlpha(128); // opacity
-        otherCursors[user]->setStyleSheet("background-color : " + color.name(QColor::HexArgb) + ";");
-        otherCursors[user]->hide();
+        otherCursors.insert(user, new OtherCursor(this->textDocument, color, Character()));
     });
 
     qDebug() << this->otherCursors.size();

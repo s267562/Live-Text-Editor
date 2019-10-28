@@ -8,14 +8,18 @@
 
 #include <QLabel>
 #include <QTextCursor>
+#include "Character.h"
 
-class OtherCursor : public QLabel{
-Q_OBJECT
+class OtherCursor {
+
+public: //TODO: Remove public in the end
 
     QTextCursor textCursor;
+    QColor color;
+    Character lastChar;
 
-public:
-    OtherCursor(QString userName, QWidget *parent);
+
+    OtherCursor(QTextDocument *doc, QColor color, Character character);
 
     const QTextCursor &getOtherCursor() const;
 

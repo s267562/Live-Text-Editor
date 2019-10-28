@@ -5,7 +5,7 @@
 #include "OtherCursor.h"
 
 
-OtherCursor::OtherCursor(QString userName, QWidget *parent): QLabel(userName,parent) {
+OtherCursor::OtherCursor(QTextDocument *doc, QColor color, Character character): textCursor(doc), color(color), lastChar(character) {
 
     textCursor.setPosition(0);
 
