@@ -93,6 +93,7 @@ private:
     QStringList users;
     QMovie *loadingMovie;
     bool loadingFlag = true;
+    int colorIndex;
 
 public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;

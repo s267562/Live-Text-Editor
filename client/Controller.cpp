@@ -242,11 +242,26 @@ void Controller::newMessage(Message message) {
             this->editor->insertChar(character.getValue(), tcfNew, pos, message.getSender());
         }
     } else if(message.getType() == STYLE_CHANGED) {
-        Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
+        Character character=message.getCharacter();
+        Pos pos = this->crdt->handleRemoteStyleChanged(character);
 
+        Pos posOldChar=this->crdt->getPosLastChar(this->editor->otherCursors[message.getSender()]->lastChar);
+
+        if( posOldChar ) {
+            QTextCharFormat tcfOld=character.getTextCharFormat();
+            tcfOld.setBackground(Qt::transparent);
+            this->editor->changeStyle(posOldChar, tcfOld);
+        }
+
+        this->editor->otherCursors[message.getSender()]->lastChar=character;
+        
         if(pos) {
             // delete from the editor.
-            this->editor->changeStyle(pos, message.getCharacter().getTextCharFormat());
+            QTextCharFormat tcf =  message.getCharacter().getTextCharFormat();
+            tcf.setBackground(this->editor->otherCursors[message.getSender()]->color);
+            
+            this->editor->changeStyle(pos, tcf);
+            
         }
     } else if(message.getType() == ALIGNMENT_CHANGED) {
         this->editor->remoteAlignmentChanged(message.getAlignmentType(), message.getBlockNumber());
@@ -283,6 +298,7 @@ void Controller::newMessage(Message message) {
             qDebug() << "Char under other cursor (DELETE): " << this->editor->otherCursors[message.getSender()]->lastChar.getValue();
 
             QTextCharFormat tcfNew=c.getTextCharFormat();
+            tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
             tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
             this->editor->changeStyle(posNewChar, tcfNew);
 
