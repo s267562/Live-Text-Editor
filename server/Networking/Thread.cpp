@@ -112,7 +112,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         sendRemoveUser(soc->socketDescriptor(), usernames[soc->socketDescriptor()]);
         if (thread.get() == nullptr) {
             /* thread doesn't exist */
-            thread = server->addThread(fileName, soc);
+            thread = server->addThread(fileName, usernames[soc->socketDescriptor()]);
             thread->addSocket(soc, usernames[soc->socketDescriptor()]);
             thread->start();
         } else {

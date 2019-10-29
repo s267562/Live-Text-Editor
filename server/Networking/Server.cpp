@@ -479,7 +479,7 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  * @param fileName
  * @return new Thread
  */
-std::shared_ptr<Thread> Server::addThread(QString fileName, QTcpSocket *soc) {
+std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
     std::lock_guard<std::mutex> lg(mutexThread);
     CRDT loadedCrdt;
 
@@ -487,7 +487,7 @@ std::shared_ptr<Thread> Server::addThread(QString fileName, QTcpSocket *soc) {
     if (!loadedCrdt.loadCRDT(fileName)) {
         qDebug() << "File need to be created";
         CRDT *crdt = new CRDT();
-        DB.createFile(fileName, usernames[soc->socketDescriptor()]);
+        DB.createFile(fileName, username);
         thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
     } else {
         thread = std::make_shared<Thread>(this, &loadedCrdt, fileName, this);                        /* create new thread */

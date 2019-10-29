@@ -20,13 +20,14 @@ private:
     std::map<qintptr, SocketState> socketsState;
     std::map<qintptr, QString> usernames;
     QTcpSocket *socket;
+public:
     Database DB;
 
 public:
     explicit Server(QObject *parent = nullptr);
     bool startServer(quint16 port);
     std::shared_ptr<Thread> getThread(QString fileName);
-    std::shared_ptr<Thread> addThread(QString fileName, QTcpSocket *soc);
+    std::shared_ptr<Thread> addThread(QString fileName, QString username);
     bool handleShareCode(QString username, QString shareCode, QString &filename);
 
 private:
