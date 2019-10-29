@@ -613,7 +613,7 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
 
 
 
-void Editor::deleteChar(Pos pos, QString siteId) {
+QChar Editor::deleteChar(Pos pos, QString siteId) {
 
     //TODO: il siteId non è di chi manda il messaggio ma di chi ha inserito il carattere
 
@@ -627,7 +627,7 @@ void Editor::deleteChar(Pos pos, QString siteId) {
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    //Character deletedChar=textEdit->document()->characterAt(textCursor.position());
+    QChar deletedChar=textEdit->document()->characterAt(textCursor.position());
     textCursor.deleteChar();
 
     if( (textCursor.position()-1)<0 ) {
@@ -657,6 +657,7 @@ void Editor::deleteChar(Pos pos, QString siteId) {
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+    return deletedChar;
 }
 
 void Editor::setFormat(CharFormat charFormat) {

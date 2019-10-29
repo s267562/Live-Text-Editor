@@ -29,7 +29,17 @@ void CRDT::setSiteId(const QString &siteId) {
 }
 
 const Character CRDT::getCharacter(Pos pos) {
-    return this->structure[pos.getLine()][pos.getCh()];
+    
+    int line=pos.getLine();
+    int ch=pos.getCh();
+    
+    if( line>=0 && line<this->structure.size() ){ // TODO: Extend this check to the server too
+        
+        if( ch>=0 && ch<this->structure[line].size() ){
+            return this->structure[line][ch];
+        }
+    }
+    return Character(); // Default character
 }
 
 // remote insert
@@ -572,8 +582,60 @@ bool CRDT::styleChanged(QTextCharFormat textCharFormat, Pos pos) {
     }
 }
 
-Pos CRDT::getPosLastChar(const Character &character) {
-    return findPosition(character);
+Pos CRDT::getPosLastChar(Character character) {
+    Pos pos(-1,-1);
+    // check if struct is empty or char is less than first char
+    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
+        return Pos {-1, -1}; // false obj
+    }
+
+    int minLine = 0;
+    int totalLines = this->structure.size();
+    int maxLine = totalLines - 1;
+    std::vector<Character> lastLine = this->structure[maxLine];
+
+    Character lastChar = lastLine[lastLine.size() - 1];
+
+    // char is greater than all existing chars (insert at end)
+    if (character.compareTo(lastChar) > 0) {
+        return Pos {-1, -1}; // false obj
+    }
+
+    // binary search
+    while (minLine + 1 < maxLine) {
+        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+        std::vector<Character> currentLine = this->structure[midLine];
+        lastChar = currentLine[currentLine.size() - 1];
+
+        if (character.compareTo(lastChar) == 0) {
+            return Pos { (int) currentLine.size() - 1, midLine };
+        } else if (character.compareTo(lastChar) < 0) {
+            maxLine = midLine;
+        } else {
+            minLine = midLine;
+        }
+    }
+
+    // Check between min and max line.
+    std::vector<Character> minCurrentLine = this->structure[minLine];
+    Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
+    std::vector<Character> maxCurrentLine = this->structure[maxLine];
+    Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
+
+
+    if (character.compareTo(minLastChar) <= 0) {
+        int charIdx = this->findIndexInLine(character, minCurrentLine);
+        pos = Pos { charIdx, minLine };
+    } else {
+        int charIdx = this->findIndexInLine(character, maxCurrentLine);
+        pos = Pos { charIdx, maxLine };
+    }
+
+    if(this->structure[pos.getLine()][pos.getCh()].compareTo(character)==0){
+        return pos;
+    }else{
+        return Pos(-1,-1);
+    }
 }
 // remote style changed
 Pos CRDT::handleRemoteStyleChanged(const Character &character) {

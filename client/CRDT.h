@@ -31,8 +31,8 @@ public:
     bool styleChanged(QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteStyleChanged(const Character &character);
 
-    Pos getPosLastChar(const Character &character);
-    
+    Pos getPosLastChar(Character character);
+
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;

@@ -248,20 +248,20 @@ void Controller::newMessage(Message message) {
         Pos posOldChar=this->crdt->getPosLastChar(this->editor->otherCursors[message.getSender()]->lastChar);
 
         if( posOldChar ) {
-            QTextCharFormat tcfOld=character.getTextCharFormat();
+            QTextCharFormat tcfOld=this->editor->otherCursors[message.getSender()]->lastChar.getTextCharFormat();
             tcfOld.setBackground(Qt::transparent);
             this->editor->changeStyle(posOldChar, tcfOld);
         }
 
         this->editor->otherCursors[message.getSender()]->lastChar=character;
-        
+
         if(pos) {
             // delete from the editor.
             QTextCharFormat tcf =  message.getCharacter().getTextCharFormat();
             tcf.setBackground(this->editor->otherCursors[message.getSender()]->color);
-            
+
             this->editor->changeStyle(pos, tcf);
-            
+
         }
     } else if(message.getType() == ALIGNMENT_CHANGED) {
         this->editor->remoteAlignmentChanged(message.getAlignmentType(), message.getBlockNumber());
@@ -287,24 +287,30 @@ void Controller::newMessage(Message message) {
 
         if(pos) {
             // delete from the editor.
-            this->editor->deleteChar(pos, message.getSender());
+            QChar removedChar=this->editor->deleteChar(pos, message.getSender());
 
             Pos posNewChar(this->editor->otherCursors[message.getSender()]->getOtherCursor().positionInBlock(), this->editor->otherCursors[message.getSender()]->getOtherCursor().blockNumber());
 
+            // Take adiacent character if exist
             Character c=this->crdt->getCharacter(posNewChar); // TODO: Check of out of bound error
 
+            if ( c.compareTo(Character())!=0 ){
+                QTextCharFormat tcfNew=c.getTextCharFormat();
+                tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
+                tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
+                this->editor->changeStyle(posNewChar, tcfNew);
+            }
 
-            this->editor->otherCursors[message.getSender()]->lastChar=c;
+            this->editor->otherCursors[message.getSender()]->lastChar=c; // Validalso if "c" is the "special" character
             qDebug() << "Char under other cursor (DELETE): " << this->editor->otherCursors[message.getSender()]->lastChar.getValue();
 
-            QTextCharFormat tcfNew=c.getTextCharFormat();
-            tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
-            tcfNew.setBackground(this->editor->otherCursors[message.getSender()]->color);
-            this->editor->changeStyle(posNewChar, tcfNew);
 
+
+            qDebug() << "Want remove: "<< character.getValue();
+            qDebug() << "Actually removed: " << removedChar;
         }
 
-        qDebug() << "Here";
+
     }
 }
 
