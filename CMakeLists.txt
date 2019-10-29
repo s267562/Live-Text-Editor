@@ -89,6 +89,39 @@ add_executable(client2
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/addfile.ui client/ui/addfile.cpp client/utils/OtherCursor.cpp client/utils/OtherCursor.h)
 
+
+add_executable(client3
+        client/textEditor.qrc
+        client/ui/login.ui
+        client/ui/login.cpp
+        client/main.cpp
+        client/resource.qrc
+        client/editor.ui
+        client/editor.cpp client/editor.h
+        client/CRDT.cpp client/CRDT.h
+        client/utils/Character.cpp client/utils/Character.h
+        client/utils/CharFormat.h
+        client/utils/Pos.cpp client/utils/Pos.h
+        client/utils/Identifier.cpp client/utils/Identifier.h
+        client/Controller.cpp client/Controller.h
+        client/Networking/Messanger.h
+        client/Networking/Messanger.cpp
+        client/utils/Constants.h
+        client/ui/connection.cpp client/ui/connection.ui
+        client/ui/registration.ui client/ui/registration.cpp client/ui/registration.h client/ui/resources.qrc
+        client/ui/clickablelabel.cpp client/ui/clickablelabel.h
+        client/ui/showFiles.cpp client/ui/showFiles.ui
+        client/ui/customwidget.cpp client/ui/customwidget.ui
+        client/ui/sharefile.cpp client/ui/sharefile.ui
+        client/ui/createfile.cpp  client/ui/createfile.ui
+        client/ui/editaccount.cpp client/ui/editaccount.ui
+        client/ui/loading.cpp client/ui/loading.ui
+        client/Networking/common/commonFunctions.h
+        client/Networking/common/commonFunctions.cpp
+        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
+        client/ui/addfile.ui client/ui/addfile.cpp client/utils/OtherCursor.cpp client/utils/OtherCursor.h)
+
+
 add_executable(server
         server/main.cpp
         server/DB/Database.cpp
@@ -114,4 +147,5 @@ add_executable(server
 
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(client2 ${LIBRARIES})
+target_link_libraries(client3 ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})

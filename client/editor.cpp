@@ -21,7 +21,7 @@
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller),
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller), label("Ciao", this->textEdit->viewport()),
                                                                           colors({"#ff4500","#7fffd4","#deb887","#00ffff","#ff7f50","#0000ff","#9932cc","#ff1493","#ffd700","#a52a2a","#1e90ff","#9370db","#006400","#ff0000","#008080"}){
 
     ui->setupUi(this);
@@ -35,6 +35,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     colorIndex=0;
     //this->otherCursor.setStyleSheet("background-color : " + color.name(QColor::HexArgb) + ";");
 
+    label.show();
 
     // TODO: from QByteArray to QPixMap
 
@@ -535,6 +536,10 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 
     textCursor.insertText(QString{character});
 
+    QRect coord=this->textEdit->cursorRect(textCursor);
+
+    this->label.move(coord.topRight());
+
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
     qDebug() << "Pos text cursor (after insert): " << textCursor.position();
@@ -629,6 +634,9 @@ QChar Editor::deleteChar(Pos pos, QString siteId) {
 
     QChar deletedChar=textEdit->document()->characterAt(textCursor.position());
     textCursor.deleteChar();
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+    this->label.move(coord.topRight());
 
     if( (textCursor.position()-1)<0 ) {
         this->otherCursors[siteId]->setOtherCursorPosition( 0 );

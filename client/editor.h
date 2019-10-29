@@ -94,6 +94,8 @@ private:
     QMovie *loadingMovie;
     bool loadingFlag = true;
     int colorIndex;
+    
+    QLabel label;
 
 public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;
