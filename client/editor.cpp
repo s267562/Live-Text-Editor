@@ -21,7 +21,7 @@
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller), label("Ciao", this->textEdit->viewport()),
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller), label(this->textEdit->viewport()),
                                                                           colors({"#ff4500","#7fffd4","#deb887","#00ffff","#ff7f50","#0000ff","#9932cc","#ff1493","#ffd700","#a52a2a","#1e90ff","#9370db","#006400","#ff0000","#008080"}){
 
     ui->setupUi(this);
@@ -35,6 +35,8 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     colorIndex=0;
     //this->otherCursor.setStyleSheet("background-color : " + color.name(QColor::HexArgb) + ";");
 
+    label.setStyleSheet("color: red; font-size:20pt; background:green;");
+    label.setFixedWidth(2);
     label.show();
 
     // TODO: from QByteArray to QPixMap
@@ -537,8 +539,16 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     textCursor.insertText(QString{character});
 
     QRect coord=this->textEdit->cursorRect(textCursor);
+    int width=this->textEdit->cursorWidth();
+
+    qDebug() << "Cursor width: " << width;
+    int height=this->textEdit->cursorRect().height();
+    qDebug() << "Cursor height: " << height;
 
     this->label.move(coord.topRight());
+    this->label.setToolTip("u1");
+    this->label.setFixedHeight(height);
+    this->label.setFixedWidth(this->textEdit->cursorRect().width());
 
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
