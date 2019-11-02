@@ -538,11 +538,11 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
 
 bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 	QByteArray message(ADD_FILE);
-
-	QByteArray fileNameSize = convertionNumber(filename.size());
+    QByteArray filenameByteArray = convertionQString(filename);
+	QByteArray fileNameSize = convertionNumber(filenameByteArray.size());
 	QByteArray owner;
 	owner.setNum(0);
-	message.append(" " + fileNameSize + " " + filename.toUtf8() + " " + owner);
+	message.append(" " + fileNameSize + " " + filenameByteArray + " " + owner);
 
 	if (!writeMessage(soc, message)) {
 		return false;
