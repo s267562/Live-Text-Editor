@@ -23,6 +23,7 @@ public:
     void addFiles(std::map<QString, bool> l);
     void addFile(std::map<QString, bool> l);
     void closeEditAccount();
+    QString getFile(QString filename);
 
 public slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
@@ -31,6 +32,7 @@ public slots:
     void on_actionAdd_File_triggered();
     void showError();
     void editAccount();
+    void changeImage();
 
 signals:
     void newFile(QString filename);

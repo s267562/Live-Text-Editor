@@ -124,7 +124,7 @@ void Messanger::onReadyRead(){
             if (!readUser()){
                 return;
             }
-        }else  if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == ADD_FILE){
+        }else  if (datas.toStdString() == ADD_FILE){
             if (!readAddFile()){
                 return;
             }
@@ -289,7 +289,7 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
  * This methods recives user's features
  * @return  result of reading from socket
  */
-bool Messanger::readUser(){
+bool Messanger::readUser() {
     qDebug() << "Messanger.cpp - readUser()     ---------- READUSER ----------";
     readSpace(socket);
     int usernameSize = readNumberFromSocket(socket);
@@ -309,12 +309,16 @@ bool Messanger::readUser(){
     readSpace(socket);
     QByteArray avatar;
 
-    if (!readChunck(socket, avatar, imageSize)){
+    if (!readChunck(socket, avatar, imageSize)) {
         return false;
     }
 
-    QImage image1 = QImage::fromData(avatar,"PNG");
-    QPixmap pixmap = QPixmap::fromImage(image1);
+    QImage image;
+    QPixmap pixmap;
+    if (imageSize != 0) {
+        image = QImage::fromData(avatar, "PNG");
+        pixmap = QPixmap::fromImage(image);
+    }
     User *user = new User(username, pixmap);
 
     emit reciveUser(user);
@@ -476,6 +480,13 @@ bool Messanger::readFile(){
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
     readSpace(socket);
+    int filesize = readNumberFromSocket(socket);
+    readSpace(socket);
+    QString filename;
+    if (!readQString(socket, filename, filesize)){
+        return false;
+    }
+    readSpace(socket);
     int numLines = readNumberFromSocket(socket);
 
     for (int i = 0; i < numLines; i++){
@@ -501,7 +512,7 @@ bool Messanger::readFile(){
         file.push_back(line);
     }
 
-    emit fileRecive(file);
+    emit fileRecived(filename, file);
     return true;
 }
 

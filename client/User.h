@@ -26,6 +26,7 @@ public:
     const QPixmap &getAvatar() const;
     void setAvatar(const QPixmap &avatar);
     std::map<QString, bool> getFileList() const;
+    void addFile(QString file);
 };
 
 

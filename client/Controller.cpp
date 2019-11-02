@@ -12,7 +12,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(messanger, SIGNAL(fileRecived(QString, std::vector<std::vector<Character>>)), this, SLOT(openFile(QString, std::vector<std::vector<Character>>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
@@ -52,6 +52,7 @@ void Controller::reciveUser(User *user){
         stopLoadingPopup();
         this->finder->closeEditAccount();
     }
+    emit userRecived();
 }
 
 User* Controller::getUser(){
@@ -233,10 +234,16 @@ void Controller::newMessage(Message message) {
     }
 }
 
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure) {
+void Controller::openFile(QString filename, std::vector<std::vector<Character>> initialStructure) {
     crdt->setStructure(initialStructure);
     this->editor->replaceText(this->crdt->toText());
     /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
+    auto result = this->user->getFileList().find(filename);
+
+    if (result != this->user->getFileList().end()){
+        this->user->addFile(filename);
+        this->finder->addFiles(this->user->getFileList());
+    }
 }
 
 void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){

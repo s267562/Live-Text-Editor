@@ -62,7 +62,7 @@ public slots:
     /* EDITOR */
     void showEditor();
     void newMessage(Message message);
-    void openFile(std::vector<std::vector<Character>> initialStructure);
+    void openFile(QString, std::vector<std::vector<Character>> initialStructure);
 
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
@@ -70,6 +70,9 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
+
+signals:
+    void userRecived();
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);

@@ -37,3 +37,7 @@ const QPixmap &User::getAvatar() const {
 void User::setAvatar(const QPixmap &avatar) {
     User::avatar = avatar;
 }
+
+void User::addFile(QString file) {
+    fileList[file] = true;
+}

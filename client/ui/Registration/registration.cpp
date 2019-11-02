@@ -44,9 +44,9 @@ void Registration::on_toolButton_clicked() {
 }
 
 void Registration::setDefaultProfileIcon() {
-	QPixmap pix(":/icons/user_icon.jpg");
-	int w = ui->label->width();
-	int h = ui->label->height();
+	QPixmap pix(":/rec/img/user.png");
+	int w = pix.width();
+	int h = pix.height();
 	ui->label->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
 }
 

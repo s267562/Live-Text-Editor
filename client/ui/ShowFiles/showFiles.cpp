@@ -13,10 +13,11 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 		ui(new Ui::ShowFiles) {
 	ui->setupUi(this);
 
+	connect(this->controller, SIGNAL(userRecived()), this, SLOT(changeImage()));
+
 	ui->newFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
 	ui->addFile->setPixmap(QPixmap(":/rec/img/addfile.png"));
 	ui->logout->setPixmap(QPixmap(":/rec/img/logout.png"));
-	ui->avatar->setPixmap(QPixmap(":/rec/img/user.png"));
 	connect(ui->newFile, SIGNAL(clicked()), this, SLOT(on_actionNew_File_triggered()));
 	connect(ui->addFile, SIGNAL(clicked()), this, SLOT(on_actionAdd_File_triggered()));
 	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
@@ -138,4 +139,11 @@ void ShowFiles::closeEvent(QCloseEvent *event){
 	if (createFile != nullptr){
 		createFile->close();
 	}
+}
+
+void ShowFiles::changeImage(){
+    QPixmap pix = controller->getUser()->getAvatar();
+    int w = pix.width();
+    int h = pix.height();
+    ui->avatar->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
 }

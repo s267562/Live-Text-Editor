@@ -397,9 +397,11 @@ void Thread::sendFile(QTcpSocket *soc){
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
     QByteArray message(SENDING_FILE);
     const std::vector<std::vector<Character>> file = crdt->getStructure();
+    QByteArray filenameByteArray = convertionQString(filename);
+    QByteArray filenameSize = convertionNumber(filenameByteArray.size());
     QByteArray numLines = convertionNumber(file.size());
 
-    message.append(" " + numLines);
+    message.append(" " + filenameSize + " " + filenameByteArray + " " + numLines);
 
     for (int i = 0; i < file.size(); i++){
         std::vector<Character> line = file[i];

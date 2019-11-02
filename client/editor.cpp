@@ -29,9 +29,6 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
-
-    // TODO: from QByteArray to QPixMap
-
     #if UI
         QPixmap pix = controller->getUser()->getAvatar();
         int w=ui->avatar->width();
@@ -44,6 +41,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
         ui->editAccount->close();
         ui->loading->show();
         connect(ui->editAccount, SIGNAL(clicked()), this, SLOT(editAccountClicked()));
+        connect(this->controller, SIGNAL(userRecived()), this, SLOT(changeUser()));
     #endif
 
 
@@ -506,7 +504,6 @@ void Editor::onCursorPositionChanged() {
 }
 
 void Editor::on_actionNew_File_triggered() {
-    QMessageBox::information(this, "File", "File!");
     CreateFile *createFile = new CreateFile(this);
     connect(createFile, SIGNAL(createFile(QString)), this->controller, SLOT(requestForFile(QString)));
     createFile->show();
@@ -644,7 +641,6 @@ void Editor::setUsers(QStringList users) {
             ui->loading->close();
             loadingFlag = false;
             ui->editAccount->show();
-            connect(ui->editAccount, SIGNAL(clicked()), this, SLOT(editAccountClicked()));
         }
     #else
     QPixmap pix;
@@ -718,4 +714,12 @@ void Editor::editAccountClicked(){
     connect(editA, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
                     SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
     editA->show();
+}
+
+void Editor::changeUser(){
+    QPixmap pix = controller->getUser()->getAvatar();
+    int w=ui->avatar->width();
+    int h=ui->avatar->height();
+    ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->username->setText(controller->getUser()->getUsername());
 }

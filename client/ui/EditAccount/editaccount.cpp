@@ -28,8 +28,8 @@ void EditAccount::on_label_clicked() {
 
         if (valid) {
             QPixmap pix(QPixmap::fromImage(image));
-            int w = ui->avatar->width();
-            int h = ui->avatar->height();
+            int w = pix.width();
+            int h = pix.height();
             ui->avatar->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
         }
     }
