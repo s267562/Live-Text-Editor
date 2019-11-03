@@ -251,6 +251,7 @@ void Thread::writeInsert(QTcpSocket *soc, Character character){
             writeMessage(socket.second, message);
         }
     }
+    writeOkMessage(soc);
 }
 
 void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
@@ -300,6 +301,7 @@ void Thread::writeDelete(QTcpSocket *soc, Character character){
             writeMessage(socket.second, message);
         }
     }
+    writeOkMessage(soc);
 }
 
 /**

@@ -114,7 +114,7 @@ void Messanger::onReadyRead(){
             if (!readRemoveUser()){
                 return;
             }
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE){
+        }else if (datas.toStdString() == OK_MESSAGE){
             reciveOkMessage = true;
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS){
             if (!readUsernames()){
