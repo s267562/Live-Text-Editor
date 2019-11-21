@@ -571,3 +571,7 @@ std::pair<QString, QString> Server::getInfoFromShareCode(QString shareCode) {
 	else
 		return std::pair<QString, QString>(fields[0], fields[1]);
 }
+
+Database Server::getDb() const {
+    return DB;
+}

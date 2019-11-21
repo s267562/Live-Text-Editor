@@ -519,9 +519,9 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 
     qDebug() << ""; // newLine
 
-    if (server->DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+    if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
         if (newUsernameSize != 0) {
-            if (server->DB.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+            if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
                 usernames[soc->socketDescriptor()] = newUsername;
             } else {
                 qDebug() << "Err1";
@@ -530,14 +530,14 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
         }
 
         if (newPasswordSize != 0) {
-            if (server->DB.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+            if (server->getDb().changePassword(usernames[soc->socketDescriptor()], newPassword)) {
                 qDebug() << "Err2";
                 return false;
             }
         }
 
         if (sizeAvatar != 0) {
-            if (!server->DB.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+            if (!server->getDb().changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
                 qDebug() << "Err3";
                 return false;
             }
@@ -557,7 +557,7 @@ bool Thread::sendUser(QTcpSocket *soc) {
     //image = "image";
     QString username;
     username = usernames[soc->socketDescriptor()];
-    image = server->DB.getAvatar(username);
+    image = server->getDb().getAvatar(username);
     QByteArray imageSize = convertionNumber(image.size());
     QByteArray usernameByteArray = convertionQString(username);
     QByteArray usernameSize = convertionNumber(usernameByteArray.size());

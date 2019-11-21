@@ -20,7 +20,6 @@ private:
     std::map<qintptr, SocketState> socketsState;
     std::map<qintptr, QString> usernames;
     QTcpSocket *socket;
-public:
     Database DB;
 
 public:
@@ -29,6 +28,7 @@ public:
     std::shared_ptr<Thread> getThread(QString fileName);
     std::shared_ptr<Thread> addThread(QString fileName, QString username);
     bool handleShareCode(QString username, QString shareCode, QString &filename);
+    Database getDb() const;
 
 private:
     void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);
