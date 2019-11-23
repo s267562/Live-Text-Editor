@@ -131,7 +131,7 @@ bool Server::logIn(QTcpSocket *soc) {
 	readSpace(soc);
 
 	/* username */
-    QString username;
+	QString username;
 	if (!readQString(soc, username, usernameSize)) {
 		return false;
 	}
@@ -143,9 +143,9 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << "                         passwordSize: " << passwordSize;
 
 	QString password;
-    if (!readQString(soc, password, passwordSize)) {
-        return false;
-    }
+	if (!readQString(soc, password, passwordSize)) {
+		return false;
+	}
 
 	qDebug() << "                         username: " << username << " password: " << password;
 	qDebug() << ""; // newLine
@@ -180,20 +180,20 @@ bool Server::registration(QTcpSocket *soc) {
 	readSpace(soc);
 
 	//username
-    QString username;
-    if (!readQString(soc, username, usernameSize)) {
-        return false;
-    }
+	QString username;
+	if (!readQString(soc, username, usernameSize)) {
+		return false;
+	}
 	readSpace(soc);
 
 	int passwordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-    QString password;
-    if (!readQString(soc, password, passwordSize)) {
-        return false;
-    }
+	QString password;
+	if (!readQString(soc, password, passwordSize)) {
+		return false;
+	}
 	readSpace(soc);
 
 	/*QDataStream in(soc);
@@ -247,8 +247,8 @@ bool Server::sendUser(QTcpSocket *soc) {
 	username = usernames[soc->socketDescriptor()];
 	image = DB.getAvatar(username);
 	QByteArray imageSize = convertionNumber(image.size());
-    QByteArray usernameByteArray = convertionQString(username);
-    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+	QByteArray usernameByteArray = convertionQString(username);
+	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 
 	message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
 
@@ -284,7 +284,7 @@ bool Server::sendFileNames(QTcpSocket *soc) {
 		QByteArray owner;
 		owner.setNum(file.second ? 1 : 0);
 		QByteArray filenameByteArray = convertionQString(file.first);
-        QByteArray fileNameSize = convertionNumber(filenameByteArray.size());
+		QByteArray fileNameSize = convertionNumber(filenameByteArray.size());
 		message.append(" " + fileNameSize + " " + filenameByteArray + " " + owner);
 	}
 
@@ -316,14 +316,14 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 	qDebug() << "                               " << fileName;
 
 	QString key = fileName;                           /* file name */
+	QString username = usernames[socketDescriptor];
 	auto result = threads.find(key);
 
 	if (result != threads.end()) {
 		/* file already open */
 		qDebug() << "                               thread for file name aready exist " << fileName;
 		qDebug() << ""; // newLine
-		threads[key]->addSocket(soc,
-								usernames[socketDescriptor]);                       /* socket transition to secondary thread */
+		threads[key]->addSocket(soc, username);                       /* socket transition to secondary thread */
 	} else {
 		/* file not yet open */
 		qDebug() << "                               New thread for file name: " << fileName;
@@ -332,13 +332,15 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		// First try to open requested file, else create a new one
 		CRDT loadedCrdt;
 		Thread *thread;
-		if (!loadedCrdt.loadCRDT(fileName)) {
+		QString jsonFileName = username + "%_##$$$##_%" + fileName;
+		if (!loadedCrdt.loadCRDT(jsonFileName)) {
 			qDebug() << "File need to be created";
 			CRDT *crdt = new CRDT();
 			DB.createFile(fileName, usernames[socketDescriptor]);
-			thread = new Thread(this, crdt, fileName, this);                        /* create new thread */
+			thread = new Thread(this, crdt, fileName, username, this);                        /* create new thread */
 		} else
-			thread = new Thread(this, &loadedCrdt, fileName, this);                        /* create new thread */
+			thread = new Thread(this, &loadedCrdt, fileName, username,
+								this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
 						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
@@ -367,30 +369,30 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	readSpace(soc);
 
 	//username
-    QString newUsername;
-    if (!readQString(soc, newUsername, newUsernameSize)) {
-        return false;
-    }
+	QString newUsername;
+	if (!readQString(soc, newUsername, newUsernameSize)) {
+		return false;
+	}
 	readSpace(soc);
 
 	int newPasswordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-    QString newPassword;
-    if (!readQString(soc, newPassword, newPasswordSize)) {
-        return false;
-    }
+	QString newPassword;
+	if (!readQString(soc, newPassword, newPasswordSize)) {
+		return false;
+	}
 	readSpace(soc);
 
 	int oldPasswordSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
 	//password
-    QString oldPassword;
-    if (!readQString(soc, oldPassword, oldPasswordSize)) {
-        return false;
-    }
+	QString oldPassword;
+	if (!readQString(soc, oldPassword, oldPasswordSize)) {
+		return false;
+	}
 	readSpace(soc);
 
 
@@ -480,18 +482,20 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  * @return new Thread
  */
 std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
-    std::lock_guard<std::mutex> lg(mutexThread);
-    CRDT loadedCrdt;
+	std::lock_guard<std::mutex> lg(mutexThread);
+	CRDT loadedCrdt;
 
-    std::shared_ptr<Thread> thread;                        /* create new thread */
-    if (!loadedCrdt.loadCRDT(fileName)) {
-        qDebug() << "File need to be created";
-        CRDT *crdt = new CRDT();
-        DB.createFile(fileName, username);
-        thread = std::make_shared<Thread>(this, crdt, fileName, this);                        /* create new thread */
-    } else {
-        thread = std::make_shared<Thread>(this, &loadedCrdt, fileName, this);                        /* create new thread */
-    }
+	std::shared_ptr<Thread> thread;                        /* create new thread */
+	if (!loadedCrdt.loadCRDT(fileName)) {
+		qDebug() << "File need to be created";
+		CRDT *crdt = new CRDT();
+		DB.createFile(fileName, username);
+		/* create new thread */
+		thread = std::make_shared<Thread>(this, crdt, fileName, username, this);
+	} else {
+		/* create new thread */
+		thread = std::make_shared<Thread>(this, &loadedCrdt, fileName, username, this);
+	}
 	threads[fileName] = thread;
 	return thread;
 }
@@ -538,7 +542,7 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
 
 bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 	QByteArray message(ADD_FILE);
-    QByteArray filenameByteArray = convertionQString(filename);
+	QByteArray filenameByteArray = convertionQString(filename);
 	QByteArray fileNameSize = convertionNumber(filenameByteArray.size());
 	QByteArray owner;
 	owner.setNum(0);
@@ -573,5 +577,5 @@ std::pair<QString, QString> Server::getInfoFromShareCode(QString shareCode) {
 }
 
 Database Server::getDb() const {
-    return DB;
+	return DB;
 }

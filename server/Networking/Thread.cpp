@@ -5,7 +5,9 @@ class Identifier;
 
 class Character;
 
-Thread::Thread(QObject *parent, CRDT *crdt, QString filename, Server* server) : QThread(parent), crdt(crdt), filename(filename), server(server) {
+Thread::Thread(QObject *parent, CRDT *crdt, QString filename, QString usernameOwner, Server *server) :
+		QThread(parent), crdt(crdt), filename(filename), usernameOwner(usernameOwner), server(server) {
+
 	// Create new timer
 	saveTimer = new QTimer(this);
 
@@ -23,134 +25,140 @@ void Thread::run() {
  * @param username
  */
 void Thread::addSocket(QTcpSocket *soc, QString username) {
-    std::lock_guard<std::mutex> lg(mutexSockets);
+	std::lock_guard<std::mutex> lg(mutexSockets);
 	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = soc;
 	usernames[socketDescriptor] = username;
-    qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
+	qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
-    QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
-    QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
+	QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
+	QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
 
 	/* connect socket and signal */
-	*connectReadyRead = connect(soc, &QAbstractSocket::readyRead, this, [this, connectReadyRead, connectDisconnected,soc]() {
-        qDebug() << "                             " << soc;
-		Thread::readyRead(soc, connectReadyRead, connectDisconnected);
-	}, Qt::DirectConnection);
+	*connectReadyRead = connect(soc, &QAbstractSocket::readyRead, this,
+								[this, connectReadyRead, connectDisconnected, soc]() {
+									qDebug() << "                             " << soc;
+									Thread::readyRead(soc, connectReadyRead, connectDisconnected);
+								}, Qt::DirectConnection);
 
-	*connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this, [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
-        qDebug() << "                             " << soc;
-		Thread::disconnected(soc, socketDescriptor, connectReadyRead, connectDisconnected);
-	}, Qt::DirectConnection);
+	*connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this,
+								   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
+									   qDebug() << "                             " << soc;
+									   Thread::disconnected(soc, socketDescriptor, connectReadyRead,
+															connectDisconnected);
+								   }, Qt::DirectConnection);
 
-    sendFile(soc);
-    sendListOfUsers(soc);
-    sendNewUser(soc);
+	sendFile(soc);
+	sendListOfUsers(soc);
+	sendNewUser(soc);
 
-    qDebug() << "                             " << socketDescriptor << " Messanger connected" << soc;
-    qDebug() << ""; // newLine
+	qDebug() << "                             " << socketDescriptor << " Messanger connected" << soc;
+	qDebug() << ""; // newLine
 }
 
 /**
  * This method allows to start reading from socket and calls different methods
  * that handles different type of message.
  */
-void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected) {
-    if (soc->bytesAvailable() == 0) {
-        return;
-    }
-    QByteArray data;
-    if (!readChunck(soc, data, 5)) {
-        /* eccezione */
-        writeErrMessage(soc);
-        return;
-    }
-    qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
-    qDebug() << ""; // newLine
+void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead,
+					   QMetaObject::Connection *connectDisconnected) {
+	if (soc->bytesAvailable() == 0) {
+		return;
+	}
+	QByteArray data;
+	if (!readChunck(soc, data, 5)) {
+		/* eccezione */
+		writeErrMessage(soc);
+		return;
+	}
+	qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
+	qDebug() << ""; // newLine
 
-    if (data.toStdString() == INSERT_MESSAGE) {
-        if (!readInsert(soc)) {
-            writeErrMessage(soc, INSERT_MESSAGE);
-        }
-        writeOkMessage(soc);
-        readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == STYLE_CAHNGED_MESSAGE) {
-        if (!readStyleChanged(soc)) {
-            writeErrMessage(soc);
-        }
-        writeOkMessage(soc);
-        readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == DELETE_MESSAGE) {
-        if (!readDelete(soc)) {
-            writeErrMessage(soc, DELETE_MESSAGE);
-        }
-        readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
-        readSpace(soc);
-        int fileNameSize = readNumberFromSocket(soc);
-        readSpace(soc);
+	if (data.toStdString() == INSERT_MESSAGE) {
+		if (!readInsert(soc)) {
+			writeErrMessage(soc, INSERT_MESSAGE);
+		}
+		writeOkMessage(soc);
+		readyRead(soc, connectReadyRead, connectDisconnected);
+	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE) {
+		if (!readStyleChanged(soc)) {
+			writeErrMessage(soc);
+		}
+		writeOkMessage(soc);
+		readyRead(soc, connectReadyRead, connectDisconnected);
+	} else if (data.toStdString() == DELETE_MESSAGE) {
+		if (!readDelete(soc)) {
+			writeErrMessage(soc, DELETE_MESSAGE);
+		}
+		readyRead(soc, connectReadyRead, connectDisconnected);
+	} else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
+		readSpace(soc);
+		int fileNameSize = readNumberFromSocket(soc);
+		readSpace(soc);
 
-        QString fileName;
+		QString fileName;
 
-        if (!readQString(soc, fileName, fileNameSize)) {
-            writeErrMessage(soc, REQUEST_FILE_MESSAGE);
-            return;
-        }
+		if (!readQString(soc, fileName, fileNameSize)) {
+			writeErrMessage(soc, REQUEST_FILE_MESSAGE);
+			return;
+		}
 
-        if (fileName == this->filename) {
-            sendListOfUsers(soc);
-            return;
-        }
+		if (fileName == this->filename) {
+			sendListOfUsers(soc);
+			return;
+		}
 
-        disconnect(*connectReadyRead);
-        disconnect(*connectDisconnected);
-        delete connectReadyRead;
-        delete connectDisconnected;
-        std::shared_ptr<Thread> thread = server->getThread(fileName);
+		disconnect(*connectReadyRead);
+		disconnect(*connectDisconnected);
+		delete connectReadyRead;
+		delete connectDisconnected;
+		std::shared_ptr<Thread> thread = server->getThread(fileName);
 
-        sendRemoveUser(soc->socketDescriptor(), usernames[soc->socketDescriptor()]);
-        if (thread.get() == nullptr) {
-            /* thread doesn't exist */
-            thread = server->addThread(fileName, usernames[soc->socketDescriptor()]);
-            thread->addSocket(soc, usernames[soc->socketDescriptor()]);
-            thread->start();
-        } else {
-            thread->addSocket(soc, usernames[soc->socketDescriptor()]);
-        }
+		sendRemoveUser(soc->socketDescriptor(), usernames[soc->socketDescriptor()]);
+		if (thread.get() == nullptr) {
+			/* thread doesn't exist */
+			thread = server->addThread(fileName, usernames[soc->socketDescriptor()]);
+			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+			thread->start();
+		} else {
+			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+		}
 
-        qDebug() << soc->socketDescriptor() << " " << usernames[soc->socketDescriptor()];
-        usernames.erase(soc->socketDescriptor());
-        sockets.erase(soc->socketDescriptor());
-    } else if (data.toStdString() == SHARE_CODE) {
-        if (!readShareCode(soc)) {
-            writeErrMessage(soc, DELETE_MESSAGE);
-        }
-        readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == EDIT_ACCOUNT){
-        QString oldUsername = usernames[soc->socketDescriptor()];
-        if (readEditAccount(soc)) {
-            sendUser(soc);
-            if (oldUsername != usernames[soc->socketDescriptor()]){
-                sendRemoveUser(soc->socketDescriptor(), oldUsername);
-                sendNewUser(soc);
-            }
-        } else {
-            writeErrMessage(soc, EDIT_ACCOUNT);
-        }
-    }else{
-        writeErrMessage(soc);
-    }
+		qDebug() << soc->socketDescriptor() << " " << usernames[soc->socketDescriptor()];
+		usernames.erase(soc->socketDescriptor());
+		sockets.erase(soc->socketDescriptor());
+	} else if (data.toStdString() == SHARE_CODE) {
+		if (!readShareCode(soc)) {
+			writeErrMessage(soc, DELETE_MESSAGE);
+		}
+		readyRead(soc, connectReadyRead, connectDisconnected);
+	} else if (data.toStdString() == EDIT_ACCOUNT) {
+		QString oldUsername = usernames[soc->socketDescriptor()];
+		if (readEditAccount(soc)) {
+			sendUser(soc);
+			if (oldUsername != usernames[soc->socketDescriptor()]) {
+				sendRemoveUser(soc->socketDescriptor(), oldUsername);
+				sendNewUser(soc);
+			}
+		} else {
+			writeErrMessage(soc, EDIT_ACCOUNT);
+		}
+	} else {
+		writeErrMessage(soc);
+	}
 }
 
 /**
  * Save CRDT to a file
  */
 void Thread::saveCRDTToFile() {
-    if (needToSaveFile)
-    	qDebug() << "Saving CRDT";
-        crdt->saveCRDT(filename);
-        needToSaveFile=false;
+	QString jsonFileName = usernameOwner + "%_##$$$##_%" + filename;
+	if (needToSaveFile) {
+		qDebug() << "Saving CRDT for file: " + jsonFileName;
+		crdt->saveCRDT(jsonFileName);
+		needToSaveFile = false;
+	}
 }
 
 /**
@@ -158,25 +166,25 @@ void Thread::saveCRDTToFile() {
  * @param soc
  * @return result of reading from socket
  */
-bool Thread::readInsert(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
+bool Thread::readInsert(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - readInsert()     ---------- READ INSERT ----------";
 
-    readSpace(soc);
-    int messageSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	readSpace(soc);
+	int messageSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QByteArray characterByteFormat;
-    if (!readChunck(soc, characterByteFormat, messageSize)){
-        return false;
-    }
+	QByteArray characterByteFormat;
+	if (!readChunck(soc, characterByteFormat, messageSize)) {
+		return false;
+	}
 
-    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacter(jsonDocument);
+	QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+	Character character = Character::toCharacter(jsonDocument);
 
-    crdt->handleInsert(character);
+	crdt->handleInsert(character);
 
-    // broadcast
-    this->writeInsert(soc, character);
+	// broadcast
+	this->writeInsert(soc, character);
 
 	needToSaveFile = true;
 	if (!timerStarted) {
@@ -186,32 +194,32 @@ bool Thread::readInsert(QTcpSocket *soc){
 	return true;
 }
 
-bool Thread::readStyleChanged(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
+bool Thread::readStyleChanged(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
 
-    readSpace(soc);
-    int messageSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	readSpace(soc);
+	int messageSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QByteArray characterByteFormat;
-    if (!readChunck(soc, characterByteFormat, messageSize)){
-        return false;
-    }
+	QByteArray characterByteFormat;
+	if (!readChunck(soc, characterByteFormat, messageSize)) {
+		return false;
+	}
 
-    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacter(jsonDocument);
+	QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+	Character character = Character::toCharacter(jsonDocument);
 
-    crdt->handleStyleChanged(character);
+	crdt->handleStyleChanged(character);
 
-    // broadcast
-    this->writeStyleChanged(soc, character);
+	// broadcast
+	this->writeStyleChanged(soc, character);
 
-    needToSaveFile = true;
-    if (!timerStarted) {
-        saveTimer->start(saveInterval);
-        timerStarted = true;
-    }
-    return true;
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
+	return true;
 }
 
 /**
@@ -219,32 +227,32 @@ bool Thread::readStyleChanged(QTcpSocket *soc){
  * @param soc
  * @return result of reading from socket
  */
-bool Thread::readDelete(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
+bool Thread::readDelete(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - readDelete()     ---------- READ DELETE ----------";
 
-    readSpace(soc);
-    int messageSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	readSpace(soc);
+	int messageSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QByteArray characterByteFormat;
-    if (!readChunck(soc, characterByteFormat, messageSize)){
-        return false;
-    }
+	QByteArray characterByteFormat;
+	if (!readChunck(soc, characterByteFormat, messageSize)) {
+		return false;
+	}
 
-    QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-    Character character = Character::toCharacter(jsonDocument);
+	QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+	Character character = Character::toCharacter(jsonDocument);
 
-    crdt->handleDelete(character);
+	crdt->handleDelete(character);
 
-    // broadcast
-    this->writeDelete(soc, character);
+	// broadcast
+	this->writeDelete(soc, character);
 
-    needToSaveFile = true;
-    if (!timerStarted) {
-        saveTimer->start(saveInterval);
-        timerStarted = true;
-    }
-    return true;
+	needToSaveFile = true;
+	if (!timerStarted) {
+		saveTimer->start(saveInterval);
+		timerStarted = true;
+	}
+	return true;
 }
 
 /**
@@ -252,47 +260,47 @@ bool Thread::readDelete(QTcpSocket *soc){
  * @param character
  * @return result of writing on socket
  */
-void Thread::writeInsert(QTcpSocket *soc, Character character){
-    qDebug() << "Thread.cpp - writeInsert()     ---------- WRITE INSERT ----------";
+void Thread::writeInsert(QTcpSocket *soc, Character character) {
+	qDebug() << "Thread.cpp - writeInsert()     ---------- WRITE INSERT ----------";
 
-    QByteArray message(INSERT_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArray();
-    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+	QByteArray message(INSERT_MESSAGE);
+	QByteArray characterByteFormat = character.toQByteArray();
+	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+	message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
+	qDebug() << "                         " << message;
+	qDebug() << ""; // newLine
 
-    //broadcast
-    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        if(socket.first != soc->socketDescriptor()) {
-            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
-            writeMessage(socket.second, message);
-        }
-    }
+	//broadcast
+	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
+		if (socket.first != soc->socketDescriptor()) {
+			//qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+			writeMessage(socket.second, message);
+		}
+	}
 }
 
-void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
-    qDebug() << "Thread.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
+void Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
+	qDebug() << "Thread.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
 
-    QByteArray message(STYLE_CAHNGED_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArray();
-    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+	QByteArray message(STYLE_CAHNGED_MESSAGE);
+	QByteArray characterByteFormat = character.toQByteArray();
+	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+	message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
+	qDebug() << "                         " << message;
+	qDebug() << ""; // newLine
 
-    //broadcast
-    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
-        if(socket.first != soc->socketDescriptor()) {
-            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
-            writeMessage(socket.second, message);
-        }
-    }
+	//broadcast
+	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
+		// qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+		if (socket.first != soc->socketDescriptor()) {
+			//qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+			writeMessage(socket.second, message);
+		}
+	}
 }
 
 /**
@@ -300,73 +308,73 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
  * @param character
  * @return result of writing on socket
  */
-void Thread::writeDelete(QTcpSocket *soc, Character character){
-    qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
+void Thread::writeDelete(QTcpSocket *soc, Character character) {
+	qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
-    QByteArray message(DELETE_MESSAGE);
-    QByteArray characterByteFormat = character.toQByteArray();
-    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+	QByteArray message(DELETE_MESSAGE);
+	QByteArray characterByteFormat = character.toQByteArray();
+	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-    message.append(" " + sizeOfMessage + " " + characterByteFormat);
+	message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
+	qDebug() << "                         " << message;
+	qDebug() << ""; // newLine
 
-    //broadcast
-    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
-        if(socket.first != soc->socketDescriptor()) {
-            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
-            writeMessage(socket.second, message);
-        }
-    }
+	//broadcast
+	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
+		// qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+		if (socket.first != soc->socketDescriptor()) {
+			//qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+			writeMessage(socket.second, message);
+		}
+	}
 }
 
 /**
  * This method sends the list of users, that are working on this file
  * @param soc
  */
-void Thread::sendListOfUsers(QTcpSocket *soc){
-    QByteArray message(LIST_OF_USERS);
-    if (usernames.size() - 1 == 0){
-        QByteArray usernamesSize = convertionNumber(0);
-        message.append(usernamesSize);
-    }else{
-        QByteArray usernamesSize = convertionNumber(usernames.size() - 1);
-        message.append(" " + usernamesSize);
-        for (auto u : usernames){
-            if (u.first != soc->socketDescriptor()){
-                QByteArray usernameByteArray = convertionQString(u.second);
-                QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+void Thread::sendListOfUsers(QTcpSocket *soc) {
+	QByteArray message(LIST_OF_USERS);
+	if (usernames.size() - 1 == 0) {
+		QByteArray usernamesSize = convertionNumber(0);
+		message.append(usernamesSize);
+	} else {
+		QByteArray usernamesSize = convertionNumber(usernames.size() - 1);
+		message.append(" " + usernamesSize);
+		for (auto u : usernames) {
+			if (u.first != soc->socketDescriptor()) {
+				QByteArray usernameByteArray = convertionQString(u.second);
+				QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 
-                message.append(" " + usernameSize + " " + usernameByteArray);
-            }
-        }
-    }
+				message.append(" " + usernameSize + " " + usernameByteArray);
+			}
+		}
+	}
 
-    if (!writeMessage(soc,message)){
-        return;
-    }
+	if (!writeMessage(soc, message)) {
+		return;
+	}
 }
 
 /**
  * This method sends the new username, which has just been added
  * @param soc
  */
-void Thread::sendNewUser(QTcpSocket *soc){
-    QByteArray message(LIST_OF_USERS);
-    QByteArray usernamesSize = convertionNumber(1);
-    QByteArray usernameByteArray = convertionQString(usernames[soc->socketDescriptor()]);
-    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
-    message.append(" " + usernamesSize + " " + usernameSize + " " + usernameByteArray);
+void Thread::sendNewUser(QTcpSocket *soc) {
+	QByteArray message(LIST_OF_USERS);
+	QByteArray usernamesSize = convertionNumber(1);
+	QByteArray usernameByteArray = convertionQString(usernames[soc->socketDescriptor()]);
+	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+	message.append(" " + usernamesSize + " " + usernameSize + " " + usernameByteArray);
 
-    for (auto s : sockets){
-        if (soc->socketDescriptor() != s.second->socketDescriptor()){
-            if (!writeMessage(s.second, message)){
-                return;
-            }
-        }
-    }
+	for (auto s : sockets) {
+		if (soc->socketDescriptor() != s.second->socketDescriptor()) {
+			if (!writeMessage(s.second, message)) {
+				return;
+			}
+		}
+	}
 }
 
 /**
@@ -374,218 +382,219 @@ void Thread::sendNewUser(QTcpSocket *soc){
  * @param socketDescriptor
  * @param username
  */
-void Thread::sendRemoveUser(qintptr socketDescriptor, QString username){
-    QByteArray message(REMOVE_USER);
-    QByteArray usernameByteArray = convertionQString(username);
-    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
-    message.append(" " + usernameSize + " " + usernameByteArray);
+void Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
+	QByteArray message(REMOVE_USER);
+	QByteArray usernameByteArray = convertionQString(username);
+	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+	message.append(" " + usernameSize + " " + usernameByteArray);
 
-    for (auto s : sockets){
-        if (socketDescriptor != s.first) {
-            if (!writeMessage(s.second, message)) {
-                return;
-            }
-        }
-    }
+	for (auto s : sockets) {
+		if (socketDescriptor != s.first) {
+			if (!writeMessage(s.second, message)) {
+				return;
+			}
+		}
+	}
 }
 
 /**
  * This method sends all file to user
  * @param soc
  */
-void Thread::sendFile(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
-    QByteArray message(SENDING_FILE);
-    const std::vector<std::vector<Character>> file = crdt->getStructure();
-    QByteArray filenameByteArray = convertionQString(filename);
-    QByteArray filenameSize = convertionNumber(filenameByteArray.size());
-    QByteArray numLines = convertionNumber(file.size());
+void Thread::sendFile(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
+	QByteArray message(SENDING_FILE);
+	const std::vector<std::vector<Character>> file = crdt->getStructure();
+	QByteArray filenameByteArray = convertionQString(filename);
+	QByteArray filenameSize = convertionNumber(filenameByteArray.size());
+	QByteArray numLines = convertionNumber(file.size());
 
-    message.append(" " + filenameSize + " " + filenameByteArray + " " + numLines);
+	message.append(" " + filenameSize + " " + filenameByteArray + " " + numLines);
 
-    for (int i = 0; i < file.size(); i++){
-        std::vector<Character> line = file[i];
-        QByteArray numChar = convertionNumber(file[i].size());
+	for (int i = 0; i < file.size(); i++) {
+		std::vector<Character> line = file[i];
+		QByteArray numChar = convertionNumber(file[i].size());
 
-        message.append(" " + numChar);
-        for (int j = 0; j < line.size(); j++){
-            Character character = line[j];
-            QByteArray characterByteFormat = character.toQByteArray();
-            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+		message.append(" " + numChar);
+		for (int j = 0; j < line.size(); j++) {
+			Character character = line[j];
+			QByteArray characterByteFormat = character.toQByteArray();
+			QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-            message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        }
-    }
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
+			message.append(" " + sizeOfMessage + " " + characterByteFormat);
+		}
+	}
+	qDebug() << "                         " << message;
+	qDebug() << ""; // newLine
 
-    if (!writeMessage(soc,message)){
-        return;
-    }
+	if (!writeMessage(soc, message)) {
+		return;
+	}
 }
 
-bool Thread::readShareCode(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readShareCode()     ---------- READ SHARECODE ----------";
-    readSpace(soc);
-    int shareCodeSize = readNumberFromSocket(soc);
-    readSpace(soc);
+bool Thread::readShareCode(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - readShareCode()     ---------- READ SHARECODE ----------";
+	readSpace(soc);
+	int shareCodeSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QString shareCode;
-    if (!readQString(soc, shareCode, shareCodeSize)){
-        return false;
-    }
+	QString shareCode;
+	if (!readQString(soc, shareCode, shareCodeSize)) {
+		return false;
+	}
 
-    qDebug() << shareCodeSize << shareCode;
-    QString filename;
+	qDebug() << shareCodeSize << shareCode;
+	QString filename;
 
-    if (server->handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)){
-        sendAddFile(soc, filename);
-    }else{
-        writeErrMessage(soc, SHARE_CODE);
-    }
+	if (server->handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)) {
+		sendAddFile(soc, filename);
+	} else {
+		writeErrMessage(soc, SHARE_CODE);
+	}
 
-    return true;
+	return true;
 }
 
 bool Thread::sendAddFile(QTcpSocket *soc, QString filename) {
-    QByteArray message(ADD_FILE);
+	QByteArray message(ADD_FILE);
 
-    QByteArray fileNameByteArray = convertionQString(filename);
-    QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
-    QByteArray shared;
-    shared.setNum(0);
-    message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
+	QByteArray fileNameByteArray = convertionQString(filename);
+	QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
+	QByteArray shared;
+	shared.setNum(0);
+	message.append(" " + fileNameSize + " " + fileNameByteArray + " " + shared);
 
-    if (!writeMessage(soc, message)) {
-        return false;
-    }
+	if (!writeMessage(soc, message)) {
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 bool Thread::readEditAccount(QTcpSocket *soc) {
-    qDebug() << "Server.cpp - readEditAccount()     ---------- READ EDIT ACCOUNT ----------";
-    if (soc == nullptr) {
-        return false;
-    }
-    readSpace(soc);
-    int newUsernameSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	qDebug() << "Server.cpp - readEditAccount()     ---------- READ EDIT ACCOUNT ----------";
+	if (soc == nullptr) {
+		return false;
+	}
+	readSpace(soc);
+	int newUsernameSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    //username
-    QString newUsername;
-    if (!readQString(soc, newUsername, newUsernameSize)) {
-        return false;
-    }
-    readSpace(soc);
+	//username
+	QString newUsername;
+	if (!readQString(soc, newUsername, newUsernameSize)) {
+		return false;
+	}
+	readSpace(soc);
 
-    int newPasswordSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	int newPasswordSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    //password
-    QString newPassword;
-    if (!readQString(soc, newPassword, newPasswordSize)) {
-        return false;
-    }
-    readSpace(soc);
+	//password
+	QString newPassword;
+	if (!readQString(soc, newPassword, newPasswordSize)) {
+		return false;
+	}
+	readSpace(soc);
 
-    int oldPasswordSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	int oldPasswordSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    //password
-    QString oldPassword;
-    if (!readQString(soc, oldPassword, oldPasswordSize)) {
-        return false;
-    }
-    readSpace(soc);
+	//password
+	QString oldPassword;
+	if (!readQString(soc, oldPassword, oldPasswordSize)) {
+		return false;
+	}
+	readSpace(soc);
 
 
-    int sizeAvatar = readNumberFromSocket(soc);
-    readSpace(soc);
+	int sizeAvatar = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    qDebug() << "                                username: " << newUsername << " size: " << newUsernameSize;
-    qDebug() << "                                password: " << newPassword << " size: " << newPasswordSize;
-    qDebug() << "                                password: " << oldPassword << " size: " << oldPasswordSize;
-    qDebug() << "                                avatar size: " << sizeAvatar;
+	qDebug() << "                                username: " << newUsername << " size: " << newUsernameSize;
+	qDebug() << "                                password: " << newPassword << " size: " << newPasswordSize;
+	qDebug() << "                                password: " << oldPassword << " size: " << oldPasswordSize;
+	qDebug() << "                                avatar size: " << sizeAvatar;
 
-    //avatar
-    QByteArray avatarDef;
+	//avatar
+	QByteArray avatarDef;
 
-    if (!readChunck(soc, avatarDef, sizeAvatar)) {
-        return false;
-    }
+	if (!readChunck(soc, avatarDef, sizeAvatar)) {
+		return false;
+	}
 
-    qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
+	qDebug() << "                                avatar size: " << sizeAvatar << " size read" << avatarDef.size();
 
-    qDebug() << ""; // newLine
+	qDebug() << ""; // newLine
 
-    if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
-        if (newUsernameSize != 0) {
-            if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
-                usernames[soc->socketDescriptor()] = newUsername;
-            } else {
-                qDebug() << "Err1";
-                return false;
-            }
-        }
+	if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+		if (newUsernameSize != 0) {
+			if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+				usernames[soc->socketDescriptor()] = newUsername;
+			} else {
+				qDebug() << "Err1";
+				return false;
+			}
+		}
 
-        if (newPasswordSize != 0) {
-            if (server->getDb().changePassword(usernames[soc->socketDescriptor()], newPassword)) {
-                qDebug() << "Err2";
-                return false;
-            }
-        }
+		if (newPasswordSize != 0) {
+			if (server->getDb().changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+				qDebug() << "Err2";
+				return false;
+			}
+		}
 
-        if (sizeAvatar != 0) {
-            if (!server->getDb().changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
-                qDebug() << "Err3";
-                return false;
-            }
-        }
-    } else {
-        qDebug() << "Err4";
-        return false;
-    }
+		if (sizeAvatar != 0) {
+			if (!server->getDb().changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+				qDebug() << "Err3";
+				return false;
+			}
+		}
+	} else {
+		qDebug() << "Err4";
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 bool Thread::sendUser(QTcpSocket *soc) {
-    qDebug() << "Server.cpp - sendUser()     ---------- SEND USER ----------";
-    QByteArray message(AVATAR_MESSAGE);
-    QByteArray image;
-    //image = "image";
-    QString username;
-    username = usernames[soc->socketDescriptor()];
-    image = server->getDb().getAvatar(username);
-    QByteArray imageSize = convertionNumber(image.size());
-    QByteArray usernameByteArray = convertionQString(username);
-    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+	qDebug() << "Server.cpp - sendUser()     ---------- SEND USER ----------";
+	QByteArray message(AVATAR_MESSAGE);
+	QByteArray image;
+	//image = "image";
+	QString username;
+	username = usernames[soc->socketDescriptor()];
+	image = server->getDb().getAvatar(username);
+	QByteArray imageSize = convertionNumber(image.size());
+	QByteArray usernameByteArray = convertionQString(username);
+	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 
-    message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
+	message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
 
-    qDebug() << message;
+	qDebug() << message;
 
-    if (!writeMessage(soc, message)) {
-        return false;
-    }
+	if (!writeMessage(soc, message)) {
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
-void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected){
-    std::lock_guard<std::mutex> lg(mutexSockets);
-    qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
-    qDebug() << ""; // newLine
-    disconnect(*connectReadyRead);
-    disconnect(*connectDisconnected);
-    delete connectReadyRead;
-    delete connectDisconnected;
-    QTcpSocket socket;
-    socket.setSocketDescriptor(socketDescriptor);
-    socket.deleteLater();
-    sockets.erase(socketDescriptor);
-    sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
-    usernames.erase(socketDescriptor);
-    qDebug() << usernames;
+void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead,
+						  QMetaObject::Connection *connectDisconnected) {
+	std::lock_guard<std::mutex> lg(mutexSockets);
+	qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
+	qDebug() << ""; // newLine
+	disconnect(*connectReadyRead);
+	disconnect(*connectDisconnected);
+	delete connectReadyRead;
+	delete connectDisconnected;
+	QTcpSocket socket;
+	socket.setSocketDescriptor(socketDescriptor);
+	socket.deleteLater();
+	sockets.erase(socketDescriptor);
+	sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
+	usernames.erase(socketDescriptor);
+	qDebug() << usernames;
 }
