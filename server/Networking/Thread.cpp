@@ -211,7 +211,9 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
     readSpace(soc);
 
     int sizeBlockId = readNumberFromSocket(soc);
-
+    
+    readSpace(soc);
+    
     QByteArray characterByteFormat;
     if (!readChunck(soc, characterByteFormat, sizeBlockId)){
         return false;

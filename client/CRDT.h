@@ -33,6 +33,7 @@ public:
 
     int getRow(Character blockId);
     Character getBlockIdentifier(int blockNumber);
+    void printStructures();
 
 private:
     QString siteId;

@@ -767,6 +767,8 @@ bool Messanger::readAlignmentChanged(){
 
     int sizeBlockId = readNumberFromSocket(socket);
 
+    readSpace(socket);
+    
     QByteArray characterByteFormat;
     if (!readChunck(socket, characterByteFormat, sizeBlockId)){
         return false;

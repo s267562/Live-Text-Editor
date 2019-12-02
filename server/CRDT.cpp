@@ -31,9 +31,20 @@ Pos CRDT::handleInsert(Character character) {
     this->insertIntoTextDocument(character.getValue(),character.getTextCharFormat(),pos);
 
     // print the structure for debugging
-    qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
+    QDebug qDPos(QtDebugMsg);
+    qDPos << "BLOCK VECTOR SIZE: " << this->style.size() << "  STRUCTURE VECTOR SIZE: " << this->structure.size();
+
     for (int i = 0; i < structure.size(); i++) {
-       // qDebug() << "                                ---> line:" << i << "  alignment: " << line[i];
+
+
+
+        qDPos << "\n\n BLOCK: " << this->style[i].first.getValue() << "  ";
+
+        std::for_each(this->style[i].first.getPosition().begin(), this->style[i].first.getPosition().end(),[&qDPos](Identifier i){
+            qDPos<<i.getDigit();
+        });
+
+
         for (int j = 0; j < structure[i].size(); j++) {
             QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
@@ -48,6 +59,7 @@ Pos CRDT::handleInsert(Character character) {
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
                 qD << id.getDigit();
+                qD << " ";
             }
         }
     }
@@ -85,7 +97,7 @@ Pos CRDT::findInsertPosition(Character character) {
         lastChar = currentLine[currentLine.size() - 1];
 
         if (character.compareTo(lastChar) == 0) {
-            return Pos{ midLine, (int) currentLine.size() - 1 };
+            return Pos{ (int) currentLine.size() - 1,midLine };
         } else if (character.compareTo(lastChar) < 0) {
             maxLine = midLine;
         } else {
