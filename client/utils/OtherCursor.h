@@ -10,20 +10,24 @@
 #include <QTextCursor>
 #include "Character.h"
 
-class OtherCursor {
+class OtherCursor : public QObject {
+Q_OBJECT
 
 public: //TODO: Remove public in the end
 
     QTextCursor textCursor;
     QColor color;
-    Character lastChar;
+    QLabel cursorLabel;
+    QLabel username;
 
 
-    OtherCursor(QTextDocument *doc, QColor color, Character character);
+    OtherCursor(QString name, QTextDocument *doc, QColor color, QWidget *parent=nullptr);
 
     const QTextCursor &getOtherCursor() const;
 
     void setOtherCursorPosition(int position);
+
+    void move(QRect coordinates, int width, int height);
 
 };
 

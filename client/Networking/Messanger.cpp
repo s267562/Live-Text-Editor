@@ -895,3 +895,4 @@ void Messanger::onDisconnect(){
     soc.deleteLater();
     emit errorConnection();
 }
+

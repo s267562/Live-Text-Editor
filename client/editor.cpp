@@ -21,7 +21,7 @@
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller), label(this->textEdit->viewport()),
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller),
                                                                           colors({"#ff4500","#7fffd4","#deb887","#00ffff","#ff7f50","#0000ff","#9932cc","#ff1493","#ffd700","#a52a2a","#1e90ff","#9370db","#006400","#ff0000","#008080"}){
 
     ui->setupUi(this);
@@ -33,11 +33,6 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
     colorIndex=0;
-    //this->otherCursor.setStyleSheet("background-color : " + color.name(QColor::HexArgb) + ";");
-
-    label.setStyleSheet("color: red; font-size:20pt; background:green;");
-    label.setFixedWidth(2);
-    label.show();
 
     // TODO: from QByteArray to QPixMap
 
@@ -216,6 +211,7 @@ void Editor::setupTextActions() {
     //QFont dFont(QString("Al Bayan"), 12);
 
    // this->textEdit->document()->setDefaultFont(dFont);
+    qDebug() << "QFont default" << this->textEdit->textCursor().charFormat().font();
 
 }
 
@@ -506,7 +502,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         }
 
         restoreCursor();
-        onCursorPositionChanged();
+       // onCursorPositionChanged();
     } else {
         qDebug() << " "; // new Line
         //qDebug() << "INVALID SIGNAL";
@@ -536,19 +532,19 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &Editor::onCursorPositionChanged);
+
     textCursor.insertText(QString{character});
 
     QRect coord=this->textEdit->cursorRect(textCursor);
-    int width=this->textEdit->cursorWidth();
+    int width=this->textEdit->cursorRect().width();
 
     qDebug() << "Cursor width: " << width;
     int height=this->textEdit->cursorRect().height();
     qDebug() << "Cursor height: " << height;
 
-    this->label.move(coord.topRight());
-    this->label.setToolTip("u1");
-    this->label.setFixedHeight(height);
-    this->label.setFixedWidth(this->textEdit->cursorRect().width());
+    this->otherCursors[siteId]->move(coord, width, height);
 
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
@@ -562,44 +558,20 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 
 
     qDebug()<<siteId;
-//    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
-//
-//    Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
-//
-//    this->updateCursor(coord, siteId);
 
-    //qDebug() << "Position of OTHER CURSOR: " << otherTextCursor.position();
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
 
     textCursor.setPosition(oldCursorPos);
-}
-
-
-void Editor::updateCursor(Pos position, QString siteId){
-
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-               this, &Editor::onCursorPositionChanged);
-
-    textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, position.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, position.getCh());
-
-//    QRect coord=this->textEdit->cursorRect(textCursor);
-//
-//    this->otherCursors[siteId]->move(coord.topRight().x()+7,coord.topRight().y()-10);
-//
-//    this->otherCursors[siteId]->show();
 
     connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &Editor::onCursorPositionChanged);
-
+               this, &Editor::onCursorPositionChanged);
 
 }
 
-void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
+void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString siteId) {
     //qDebug() << "bold" << format.isBold();
     //qDebug() << "underline" << format.isUnderline();
     //qDebug() << "italic" << format.isItalic();
@@ -614,6 +586,20 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+    int width=this->textEdit->cursorRect().width();
+
+    qDebug() << "Cursor width: " << width;
+    int height=this->textEdit->cursorRect().height();
+    qDebug() << "Cursor height: " << height;
+
+    this->otherCursors[siteId]->move(coord, width, height);
+
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+
+    qDebug() << "Pos text cursor (after style change): " << textCursor.position();
+    qDebug() << "Pos other text cursor (after style change): " << this->otherCursors[siteId]->getOtherCursor().position();
 
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
@@ -646,7 +632,10 @@ QChar Editor::deleteChar(Pos pos, QString siteId) {
     textCursor.deleteChar();
 
     QRect coord=this->textEdit->cursorRect(textCursor);
-    this->label.move(coord.topRight());
+    int width=this->textEdit->cursorRect().width();
+    int height=this->textEdit->cursorRect().height();
+
+    this->otherCursors[siteId]->move(coord,width,height);
 
     if( (textCursor.position()-1)<0 ) {
         this->otherCursors[siteId]->setOtherCursorPosition( 0 );
@@ -686,10 +675,11 @@ void Editor::setFormat(CharFormat charFormat) {
 
 void Editor::onCursorPositionChanged() {
     QTextCursor cursor = textEdit->textCursor();
+    qDebug() << "Cursor Position: " << cursor.position();
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
-            setFormat(CharFormat()); // defaul character
+            setFormat(CharFormat()); // defaul character TODO: Default font is problem in not ubuntu users. We should find a more general default font
         } else if(cursorPos > 0) {
             cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
             QTextCharFormat textCharFormat = cursor.charFormat();
@@ -699,8 +689,11 @@ void Editor::onCursorPositionChanged() {
                                  textCharFormat.foreground().color(),
                                  textCharFormat.font().family(),
                                  textCharFormat.fontPointSize()));
+            //this->controller->cursorChanged(cursor);
         }
+
     }
+   // this->controller->cursorChanged(cursor);
 }
 
 void Editor::on_actionNew_File_triggered() {
@@ -861,7 +854,7 @@ void Editor::setUsers(QStringList users) {
     std::for_each( users.begin(), users.end(), [this](QString user){
         QColor color(colors[colorIndex]);
         color.setAlpha(128); // opacity
-        otherCursors.insert(user, new OtherCursor(this->textDocument, color, Character()));
+        otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
         colorIndex++;
         if(colorIndex==14){
             colorIndex=0;

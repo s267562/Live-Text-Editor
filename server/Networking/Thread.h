@@ -58,7 +58,6 @@ private:
     void writeAlignmentChanged(QTcpSocket *soc, int alignment,int blockNumber);
 
 
-
 signals:
     void error(QTcpSocket::SocketError socketerror);
     void newMessage();

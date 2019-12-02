@@ -58,6 +58,7 @@ public:
 
     bool readAlignmentChanged();
 
+
     User *user = nullptr;
 
 public slots:
@@ -84,6 +85,8 @@ signals:
     void okEditAccount();
     void shareCodeFailed();
     void addFileNames(std::map<QString, bool> fileList);
+
+
 };
 
 #endif // MESSANGER_H

@@ -34,7 +34,7 @@ public:
 
     void setController(Controller *controller);
     void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
-    void changeStyle(Pos pos, const QTextCharFormat&format);
+    void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
     QChar deleteChar(Pos pos, QString siteId);
     void reset();
     void replaceText(const QString initialText);
@@ -44,7 +44,7 @@ public:
     void remoteAlignmentChanged(int alignment, int blockNumber);
     void formatText(std::vector<int> styleBlocks);
 
-    void updateCursor(Pos position, QString siteId);
+
 
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
@@ -94,8 +94,7 @@ private:
     QMovie *loadingMovie;
     bool loadingFlag = true;
     int colorIndex;
-    
-    QLabel label;
+
 
 public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;

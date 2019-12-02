@@ -81,7 +81,6 @@ public:
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
     void startLoadingPopup();
     void stopLoadingPopup();
-
 };
 
 

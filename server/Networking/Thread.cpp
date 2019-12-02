@@ -593,3 +593,4 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
     usernames.erase(socketDescriptor);
     qDebug() << usernames;
 }
+
