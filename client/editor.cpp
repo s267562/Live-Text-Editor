@@ -299,7 +299,6 @@ void Editor::textAlign(QAction *a)
         qDebug() << alCode;
     }
 
-    int oldCursorPos = this->textCursor.position();
     int start=this->startSelection;
     int end=this->endSelection;
 

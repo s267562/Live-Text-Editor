@@ -28,13 +28,14 @@ public:
 	bool saveCRDT(QString filename);
 	const std::vector<std::vector<Character>> &getStructure() const;
 
-	void handleAlignmentChanged(int alignment,int blockNumber);
+	void handleAlignmentChanged(int alignment, int blockNumber);
 	void insertIntoTextDocument(char character, QTextCharFormat charFormat, Pos pos);
 	void deleteFromTextDocument(Pos pos);
 	void changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat);
 	//void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
 
 	QTextDocument* getTextDocument();
+	int getRow(Character blockId);
 
 private:
     std::vector<std::vector<Character>> structure;
@@ -42,7 +43,6 @@ private:
     static const int base = 32;
     //TODO: Maybe better remove
 	std::vector<std::pair<Character,int>> style;
-	
 
 	QTextDocument *td;
 	QTextCursor textCursor;

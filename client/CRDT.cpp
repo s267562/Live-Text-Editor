@@ -318,7 +318,7 @@ void CRDT::insertChar(Character character, Pos pos) {
             }
              */
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-            this->style.insert(this->style.begin()+pos.getLine()+1,std::pair<Character,int>(character,0x4));
+            this->style.insert(this->style.begin()+pos.getLine()+1, std::pair<Character,int>(character,0x4));
 
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
@@ -582,61 +582,7 @@ bool CRDT::styleChanged(QTextCharFormat textCharFormat, Pos pos) {
     }
 }
 
-Pos CRDT::getPosLastChar(Character character) {
-    Pos pos(-1,-1);
-    // check if struct is empty or char is less than first char
-    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
-        return Pos {-1, -1}; // false obj
-    }
 
-    int minLine = 0;
-    int totalLines = this->structure.size();
-    int maxLine = totalLines - 1;
-    std::vector<Character> lastLine = this->structure[maxLine];
-
-    Character lastChar = lastLine[lastLine.size() - 1];
-
-    // char is greater than all existing chars (insert at end)
-    if (character.compareTo(lastChar) > 0) {
-        return Pos {-1, -1}; // false obj
-    }
-
-    // binary search
-    while (minLine + 1 < maxLine) {
-        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
-        std::vector<Character> currentLine = this->structure[midLine];
-        lastChar = currentLine[currentLine.size() - 1];
-
-        if (character.compareTo(lastChar) == 0) {
-            return Pos { (int) currentLine.size() - 1, midLine };
-        } else if (character.compareTo(lastChar) < 0) {
-            maxLine = midLine;
-        } else {
-            minLine = midLine;
-        }
-    }
-
-    // Check between min and max line.
-    std::vector<Character> minCurrentLine = this->structure[minLine];
-    Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
-    std::vector<Character> maxCurrentLine = this->structure[maxLine];
-    Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
-
-
-    if (character.compareTo(minLastChar) <= 0) {
-        int charIdx = this->findIndexInLine(character, minCurrentLine);
-        pos = Pos { charIdx, minLine };
-    } else {
-        int charIdx = this->findIndexInLine(character, maxCurrentLine);
-        pos = Pos { charIdx, maxLine };
-    }
-
-    if(this->structure[pos.getLine()][pos.getCh()].compareTo(character)==0){
-        return pos;
-    }else{
-        return Pos(-1,-1);
-    }
-}
 // remote style changed
 Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     Pos pos = findPosition(character);
@@ -647,9 +593,6 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
 }
 
 void CRDT::insertBlock(Character character, Pos position) {
-
-
-
 
    /* if( position.getLine()==this->style.size() ) {
         this->style.push_back(std::pair<Character, int>());
@@ -667,8 +610,7 @@ void CRDT::insertBlock(Character character, Pos position) {
     if (character.getValue() == '\n') {
         Pos blockPos(0,position.getLine()+1);
         this->style.insert(
-                this->style.begin()+position.getLine(),std::pair<Character,int>(generateChar('-',character.getTextCharFormat(),blockPos,character.getSiteId()),
-                                                                                0x4));
+                this->style.begin()+position.getLine(),std::pair<Character,int>(generateChar('-',character.getTextCharFormat(),blockPos,character.getSiteId()), 0x4));
     }
 
 
@@ -676,4 +618,42 @@ void CRDT::insertBlock(Character character, Pos position) {
 
 }
 
+Character CRDT::getBlockIdentifier(int blockNumber) {
+    return this->style[blockNumber].first;
+}
+
+
+int CRDT::getRow(Character blockId) {
+    if (this->style.empty() || blockId.compareTo(this->style[0].first) < 0) {
+        return -1;
+    }
+
+    int minLine = 0;
+    int totalLines = this->structure.size();
+    int maxLine = totalLines - 1;
+
+    Character lastBlockId = style[maxLine].first;
+
+    // char is greater than all existing chars (insert at end)
+    if (blockId.compareTo(lastBlockId) > 0) {
+        return -1;
+    }
+
+    // binary search
+    while (minLine + 1 < maxLine) {
+        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+
+        lastBlockId = style[midLine].first;
+
+        if (blockId.compareTo(lastBlockId) == 0) {
+            return midLine;
+        } else if (blockId.compareTo(lastBlockId) < 0) {
+            maxLine = midLine;
+        } else {
+            minLine = midLine;
+        }
+    }
+
+    return -1;
+}
 

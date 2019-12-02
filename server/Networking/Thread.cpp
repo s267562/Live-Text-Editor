@@ -210,32 +210,23 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
     int alignType = readNumberFromSocket(soc);
     readSpace(soc);
 
-    int blockNumber = readNumberFromSocket(soc);
+    int sizeBlockId = readNumberFromSocket(soc);
 
-//    int at=0;
-//
-//    switch (alignType){
-//        case 0:
-//            at=LEFT;
-//            break;
-//        case 1:
-//            at=CENTER;
-//            break;
-//        case 2:
-//            at=RIGHT;
-//            break;
-//        case 3:
-//            at=JUSTIFY;
-//            break;
-//    }
+    QByteArray characterByteFormat;
+    if (!readChunck(soc, characterByteFormat, sizeBlockId)){
+        return false;
+    }
 
-    //QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(alignTypeByteFormat);
+    QJsonDocument jsonFormatBlockId = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character blockId = Character::toCharacter(jsonFormatBlockId);
 
-   // alignment_type (alignTypeByteFormat.toInt());
+    int row=this->crdt->getRow(blockId);
 
-    crdt->handleAlignmentChanged(alignType,blockNumber);
+    if (!row) return false;
 
-    this->writeAlignmentChanged(soc,alignType,blockNumber);
+    crdt->handleAlignmentChanged(alignType, row);
+
+    this->writeAlignmentChanged(soc, alignType, blockId);
 
     return true;
 }
@@ -336,19 +327,22 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character){
 }
 
 
-void Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, int blockNumber){
+void Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId){
 
     qDebug() << "Thread.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
     QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
+
     QByteArray alignmentByteFormat=convertionNumber(alignment);
-    QByteArray blockNumberByteFormat=convertionNumber(blockNumber);
+    QByteArray blockIdByteFormat=blockId.toQByteArray();
     //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
-    //QByteArray sizeOfMessageBlockNumber = convertionNumber(blockNumberByteFormat.size());
+    QByteArray sizeBlockId = convertionNumber(blockIdByteFormat.size());
 
 
     message.append(" " + alignmentByteFormat);
-    message.append(" " + blockNumberByteFormat);
+    message.append(" " + sizeBlockId);
+    message.append(" " + blockIdByteFormat);
+
 
     QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
     QByteArray sizeOfSender=convertionNumber(username.size());

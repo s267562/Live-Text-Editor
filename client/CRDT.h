@@ -31,7 +31,8 @@ public:
     bool styleChanged(QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteStyleChanged(const Character &character);
 
-    Pos getPosLastChar(Character character);
+    int getRow(Character blockId);
+    Character getBlockIdentifier(int blockNumber);
 
 private:
     QString siteId;

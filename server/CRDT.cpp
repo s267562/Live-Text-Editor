@@ -123,7 +123,7 @@ void CRDT::insertChar(Character character, Pos pos) {
 
     if (pos.getLine() == structure.size()) {
         structure.push_back(std::vector<Character> {}); // pushing a new line.
-        
+        style.push_back(std::pair<Character,int>(character,0x4));
     }
     
 
@@ -145,8 +145,9 @@ void CRDT::insertChar(Character character, Pos pos) {
                 structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
             }
              */
+            this->structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+            this->style.insert(this->style.begin()+pos.getLine()+1, std::pair<Character,int>(character,0x4));
 
-            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
         }
@@ -208,6 +209,7 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 
     QTextBlockFormat f=this->textCursor.blockFormat();
     this->textCursor.movePosition(QTextCursor::Start);
+
     this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
 
     int cursorPos = this->textCursor.position();
@@ -381,6 +383,7 @@ void CRDT::removeEmptyLines() {
     for (int line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].size() == 0) {
             this->structure.erase(this->structure.begin() + line);
+            this->style.erase(this->style.begin()+line);
             line--;
         }
     }
@@ -390,6 +393,7 @@ void CRDT::mergeLines(int line) {
     if(structure.size() > line + 1 && structure[line + 1].size() > 0) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
         structure.erase(structure.begin() + line + 1);
+        style.erase(style.begin()+line+1);
     }
 }
 
@@ -477,4 +481,39 @@ bool CRDT::loadCRDT(QString filename) {
 	QJsonDocument loadDocument(QJsonDocument::fromJson(savedData));
 	read(loadDocument.object());
 	return true;
+}
+
+int CRDT::getRow(Character blockId) {
+
+    if (this->style.empty() || blockId.compareTo(this->style[0].first) < 0) {
+        return -1;
+    }
+
+    int minLine = 0;
+    int totalLines = this->structure.size();
+    int maxLine = totalLines - 1;
+
+    Character lastBlockId = style[maxLine].first;
+
+
+    if (blockId.compareTo(lastBlockId) > 0) {
+        return -1;
+    }
+
+    // binary search
+    while (minLine + 1 < maxLine) {
+        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+
+        lastBlockId = style[midLine].first;
+
+        if (blockId.compareTo(lastBlockId) == 0) {
+            return midLine;
+        } else if (blockId.compareTo(lastBlockId) < 0) {
+            maxLine = midLine;
+        } else {
+            minLine = midLine;
+        }
+    }
+
+    return -1;
 }

@@ -630,19 +630,20 @@ bool Messanger::writeStyleChanged(Character character){
     return true;
 }
 
-bool Messanger::writeAlignmentChanged(int alignment_type, int blockNumber){
+bool Messanger::writeAlignmentChanged(int alignment_type, Character blockId){
     qDebug() << "Messanger.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
         QByteArray alignmentByteFormat=convertionNumber(alignment_type);
-        QByteArray blockNumberByteFormat=convertionNumber(blockNumber);
+        QByteArray blockIdByteFormat=blockId.toQByteArray();
         //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
-        //QByteArray sizeOfMessageBlockNumber = convertionNumber(blockNumberByteFormat.size());
+        QByteArray sizeBlockId = convertionNumber(blockIdByteFormat.size());
 
 
         message.append(" " + alignmentByteFormat);
-        message.append(" " + blockNumberByteFormat);
+        message.append(" " + sizeBlockId);
+        message.append(" " + blockIdByteFormat);
         messages.push(message);
 
         qDebug() << "                         " << message;
@@ -764,24 +765,15 @@ bool Messanger::readAlignmentChanged(){
     int alignType = readNumberFromSocket(socket);
     readSpace(socket);
 
-    int blockNumber = readNumberFromSocket(socket);
+    int sizeBlockId = readNumberFromSocket(socket);
 
-//    alignment_type at;
-//
-//    switch (alignType){
-//        case 0:
-//            at=LEFT;
-//            break;
-//        case 1:
-//            at=CENTER;
-//            break;
-//        case 2:
-//            at=RIGHT;
-//            break;
-//        case 3:
-//            at=JUSTIFY;
-//            break;
-//    }
+    QByteArray characterByteFormat;
+    if (!readChunck(socket, characterByteFormat, sizeBlockId)){
+        return false;
+    }
+
+    QJsonDocument jsonFormatBlockId = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character blockId = Character::toCharacter(jsonFormatBlockId);
 
     readSpace(socket);
     int sizeOfsender = readNumberFromSocket(socket);
@@ -796,12 +788,9 @@ bool Messanger::readAlignmentChanged(){
 
     qDebug() << "Read username: " << username;
 
-    //TODO: Continuare l'implementazione
-    /*QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-*/
-    Character character;
 //TODO: Remove " "
-    Message message(character, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType,blockNumber);
+
+    Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
     emit newMessage(message);
 

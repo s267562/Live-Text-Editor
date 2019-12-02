@@ -37,7 +37,7 @@ public:
     bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
     bool writeDelete(Character character);
-    bool writeAlignmentChanged(int alignment_type, int blockNumber);
+    bool writeAlignmentChanged(int alignment_type, Character blockId);
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();

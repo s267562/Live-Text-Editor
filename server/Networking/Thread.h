@@ -55,7 +55,7 @@ private:
     bool sendAddFile(QTcpSocket *soc, QString filename);
 
     bool readAlignmentChanged(QTcpSocket *soc);
-    void writeAlignmentChanged(QTcpSocket *soc, int alignment,int blockNumber);
+    void writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
 
 
 signals:
