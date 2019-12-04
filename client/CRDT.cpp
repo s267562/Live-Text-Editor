@@ -614,7 +614,7 @@ void CRDT::printStructures() {
             value += val_line;
         }
 
-        qD << "\tLINE ID:\tvalue:" << value << "\tposition: ";
+        qD << "\n\tLINE ID:\tvalue:" << value << "\tposition: ";
         std::vector<Identifier> line = style[i].first.getPosition();
         for (Identifier id : line) {
             qD << id.getDigit();

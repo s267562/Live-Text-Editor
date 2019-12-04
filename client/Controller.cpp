@@ -208,7 +208,9 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
 }
 
 void Controller::newMessage(Message message) {
-    // Message message = this->messanger->getMessage();
+
+    qDebug() << "\nController.cpp - newMessage()";
+
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
@@ -243,15 +245,34 @@ void Controller::newMessage(Message message) {
 
     }
     else if(message.getType() == DELETE) {
-        Character character=message.getCharacter();
-        Pos pos = this->crdt->handleRemoteDelete(character);
 
+        QDebug qD(QtDebugMsg);
 
-        if(pos) {
-            // delete from the editor.
-            QChar removedChar=this->editor->deleteChar(pos, message.getSender());
+        QString sender = message.getSender();
+        Character character = message.getCharacter();
+
+        //TODO: Fix print
+
+        qD << "\n\t\tMESSAGE:\tDELETE";
+        qD << "\n\t\tSENDER:\t" << sender;
+        qD << "\n\t\tCHAR TO REMOVE:\t\tValue:\t" << character.getValue()+"\tCounter:\t" << character.getCounter() << "\tsiteId:\t" + character.getSiteId() + "\tPosition:\t";
+
+        for (Identifier id : character.getPosition()) {
+            qD << id.getDigit();
         }
 
+
+        Pos pos = this->crdt->handleRemoteDelete(character);
+        if(pos) {
+            // delete from the editor.
+            QChar removedChar=this->editor->deleteChar(pos,sender);
+
+            qD << "\n\t\tChar removed correctly";
+            //TODO: If an error occurs?
+
+        }else{ // Skip in case char doesn't exist
+            qD << "\n\t\tThe char has already been removed";
+        }
 
     }
 }

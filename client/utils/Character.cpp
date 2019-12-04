@@ -190,3 +190,8 @@ CharFormat Character::generateCharFormat(QTextCharFormat textCharFormat) {
 
     return format;
 }
+
+
+
+
+

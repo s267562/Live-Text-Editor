@@ -613,11 +613,17 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 
 
 
-QChar Editor::deleteChar(Pos pos, QString siteId) {
+QChar Editor::deleteChar(Pos pos, QString sender) {
 
-    //TODO: il siteId non è di chi manda il messaggio ma di chi ha inserito il carattere
+    qDebug() << "\nEditor.cpp - deleteChar():";
+    qDebug() << "\t\tDelete char at:\n";
+    qDebug() << "\t\t\tline:\t"<< pos.getLine() << "\n\t\t\tch:\t"<< pos.getCh();
+    qDebug() << "\n\t\tInserted by:\t" << siteId;
+
 
     int oldCursorPos = textCursor.position();
+
+    qDebug() << "\n\t\tInitial cursor position:\t" << oldCursorPos;
 
     textCursor.movePosition(QTextCursor::Start);
     textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
@@ -628,41 +634,32 @@ QChar Editor::deleteChar(Pos pos, QString siteId) {
                this, &Editor::onTextChanged);
 
     QChar deletedChar=textEdit->document()->characterAt(textCursor.position());
+
     textCursor.deleteChar();
+
+    qDebug() << "\n\t\tDeleted char:\t" << deletedChar;
 
     QRect coord=this->textEdit->cursorRect(textCursor);
     int width=this->textEdit->cursorRect().width();
     int height=this->textEdit->cursorRect().height();
 
-    this->otherCursors[siteId]->move(coord,width,height);
 
-    if( (textCursor.position()-1)<0 ) {
-        this->otherCursors[siteId]->setOtherCursorPosition( 0 );
-    }
-    else{
-        this->otherCursors[siteId]->setOtherCursorPosition( textCursor.position()-1 );
-    }
+    this->otherCursors[sender]->move(coord,width,height);
 
-    qDebug() << "Pos text cursor (after delete): " << textCursor.position();
-    qDebug() << "Pos other text cursor (after delete): " << this->otherCursors[siteId]->getOtherCursor().position();
-
-    qDebug() << siteId;
-
-//    if(!this->otherCursors[siteId].isNull()) {
-//        this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
-//
-//
-////    qDebug() << "Position OTHER CURSOR " << this->otherCursors[siteId]->getOtherCursor().position();
-//        Pos coord(textCursor.positionInBlock(), textCursor.blockNumber());
-//
-//        this->updateCursor(coord, siteId);
-//
+//    if( (textCursor.position()-1)<0 ) {
+//        this->otherCursors[siteId]->setOtherCursorPosition( 0 );
+//    }
+//    else{
+//        this->otherCursors[siteId]->setOtherCursorPosition( textCursor.position()-1 );
 //    }
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+
+    qDebug() << "\n\t\tFinal cursor position:\t" << textCursor.position();
+
     return deletedChar;
 }
 
@@ -674,7 +671,7 @@ void Editor::setFormat(CharFormat charFormat) {
 
 void Editor::onCursorPositionChanged() {
     QTextCursor cursor = textEdit->textCursor();
-    qDebug() << "Cursor Position: " << cursor.position();
+   // qDebug() << "Cursor Position: " << cursor.position();
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
@@ -812,6 +809,9 @@ void Editor::resizeEvent(QResizeEvent *event) {
 }
 
 void Editor::removeUser(QString user) {
+    qDebug() << "\nEditor.cpp - removeUsers():\n";
+    qDebug() << "\t\tUSER REMOVED:\t" << user;
+
     users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
         return s == user;
     }));
@@ -821,16 +821,12 @@ void Editor::removeUser(QString user) {
 
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
-    
-
-
-  //  qDebug() << "After: " << this->otherCursors.size();
-
-
-
+    this->otherCursors.remove(user);
 }
 
 void Editor::setUsers(QStringList users) {
+    qDebug() << "\nEditor.cpp - setUsers(): ";
+
     #if UI
         if (loadingFlag){
             loadingMovie->stop();
@@ -860,8 +856,6 @@ void Editor::setUsers(QStringList users) {
         }
 
     });
-
-    qDebug() << this->otherCursors.size();
 }
 
 void Editor::saveCursor() {

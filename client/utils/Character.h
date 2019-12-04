@@ -32,6 +32,7 @@ public:
 	static Character toCharacter(QJsonDocument jsonDocument);
 	static CharFormat generateCharFormat(QTextCharFormat textCharFormat);
 
+
 private:
     char value;
     QTextCharFormat textCharFormat;
