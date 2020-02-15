@@ -419,10 +419,10 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 charsAdded--;
             }
             QTextCursor cursor = textEdit->textCursor();
-            
-           
+
+
             qDebug() << "Cursor position STYLE CHANGE" << cursor.position();
-            
+
             if(this->cursorPos!=this->startSelection){ // Selection forward
 
                 for(int i=0; i<charsAdded; i++) {
@@ -439,7 +439,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     this->controller->styleChange(textCharFormat, pos);
                 }
             }
-            else{ // backward
+            else{ // Selection backward
                 for(int i=charsAdded-1; i>=0; i--) {
                     // for each char added
                     cursor.setPosition(position + i);
