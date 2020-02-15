@@ -1,4 +1,2 @@
 - bloccare doppio accesso ad un client
-- allineamento testo
 - testare reale utilizzo in rete (no locale)
--anzichè disconnettere e connettere i segnali, provare blockSignal
