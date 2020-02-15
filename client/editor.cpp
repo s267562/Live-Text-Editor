@@ -514,14 +514,18 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         }
     }
 
-    /**
-     * 
-     * UPDATE CURSORS
-     * 
-     * */
+    this->updateOtherCursorPosition();
+    
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &Editor::onCursorPositionChanged);
+
+    qDebug() << this->textEdit->document()->blockCount();
+}
+
+void Editor::updateOtherCursorPosition(){
     QHash<QString, OtherCursor*>::const_iterator i;
 
-   
+
     int width=this->textEdit->cursorRect().width();
     int height=this->textEdit->cursorRect().height();
 
@@ -530,17 +534,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         QRect coord=this->textEdit->cursorRect(i.value()->textCursor);
         i.value()->move(coord, width, height);
     }
-
-    /**
-     * 
-     * 
-     * */
-    
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &Editor::onCursorPositionChanged);
-
-    qDebug() << this->textEdit->document()->blockCount();
 }
+
 
 void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
     int oldCursorPos = textCursor.position();
@@ -580,7 +575,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 
 
     qDebug()<<siteId;
-    
+
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 

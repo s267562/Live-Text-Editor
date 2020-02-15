@@ -44,7 +44,7 @@ public:
     void remoteAlignmentChanged(int alignment, int blockNumber);
     void formatText(std::vector<int> styleBlocks);
 
-
+    void updateOtherCursorPosition();
 
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
