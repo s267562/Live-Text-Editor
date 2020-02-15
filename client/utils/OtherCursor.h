@@ -13,8 +13,7 @@
 class OtherCursor : public QObject {
 Q_OBJECT
 
-private: //TODO: Remove public in the end
-
+private:
     QTextCursor textCursor;
     QColor color;
     QLabel cursorLabel;
