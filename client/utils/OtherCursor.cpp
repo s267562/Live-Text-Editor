@@ -11,9 +11,6 @@ OtherCursor::OtherCursor(QString name, QTextDocument *doc, QColor color, QWidget
 
 }
 
-const QTextCursor &OtherCursor::getOtherCursor() const {
-    return textCursor;
-}
 
 void OtherCursor::setOtherCursorPosition(int position) {
     textCursor.setPosition(position);
@@ -30,4 +27,20 @@ void OtherCursor::move(QRect coordinates, int width, int height) {
     this->username.move(coordinates.right(),coordinates.top()-5);
     this->username.setStyleSheet("background-color: "+this->color.name(QColor::HexArgb));
 
+}
+
+const QTextCursor &OtherCursor::getTextCursor() const {
+    return textCursor;
+}
+
+const QColor &OtherCursor::getColor() const {
+    return color;
+}
+
+const QLabel &OtherCursor::getCursorLabel() const {
+    return cursorLabel;
+}
+
+const QLabel &OtherCursor::getUsername() const {
+    return username;
 }

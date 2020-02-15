@@ -685,13 +685,6 @@ QChar Editor::deleteChar(Pos pos, QString sender) {
 
     this->otherCursors[sender]->move(coord,width,height);
 
-//    if( (textCursor.position()-1)<0 ) {
-//        this->otherCursors[siteId]->setOtherCursorPosition( 0 );
-//    }
-//    else{
-//        this->otherCursors[siteId]->setOtherCursorPosition( textCursor.position()-1 );
-//    }
-
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
