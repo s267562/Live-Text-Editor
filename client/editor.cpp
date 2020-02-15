@@ -419,20 +419,42 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 charsAdded--;
             }
             QTextCursor cursor = textEdit->textCursor();
+            
+           
+            qDebug() << "Cursor position STYLE CHANGE" << cursor.position();
+            
+            if(this->cursorPos!=this->startSelection){ // Selection forward
 
-            for(int i=0; i<charsAdded; i++) {
-                // for each char added
-                cursor.setPosition(position + i);
-                int line = cursor.blockNumber();
-                int ch = cursor.positionInBlock();
-                Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-                // select char
-                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                for(int i=0; i<charsAdded; i++) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
 
-                QTextCharFormat textCharFormat = cursor.charFormat();
+                    QTextCharFormat textCharFormat = cursor.charFormat();
 
-                this->controller->styleChange(textCharFormat, pos);
+                    this->controller->styleChange(textCharFormat, pos);
+                }
             }
+            else{ // backward
+                for(int i=charsAdded-1; i>=0; i--) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    QTextCharFormat textCharFormat = cursor.charFormat();
+
+                    this->controller->styleChange(textCharFormat, pos);
+                }
+            }
+
         } else {
             if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
                 // correction when paste something in first position.
@@ -515,7 +537,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     }
 
     this->updateOtherCursorPosition();
-    
+
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
 
