@@ -552,8 +552,8 @@ void Editor::updateOtherCursorPosition(){
     int height=this->textEdit->cursorRect().height();
 
     for (i = this->otherCursors.constBegin() ; i != this->otherCursors.constEnd(); ++i) {
-        qDebug() << i.key() << ':' << i.value()->textCursor.position();
-        QRect coord=this->textEdit->cursorRect(i.value()->textCursor);
+        qDebug() << i.key() << ':' << i.value()->getTextCursor().position();
+        QRect coord=this->textEdit->cursorRect(i.value()->getTextCursor());
         i.value()->move(coord, width, height);
     }
 }
@@ -588,7 +588,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
     qDebug() << "Pos text cursor (after insert): " << textCursor.position();
-    qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getOtherCursor().position();
+    qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
 
 
     textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
@@ -637,7 +637,7 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
     this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
     qDebug() << "Pos text cursor (after style change): " << textCursor.position();
-    qDebug() << "Pos other text cursor (after style change): " << this->otherCursors[siteId]->getOtherCursor().position();
+    qDebug() << "Pos other text cursor (after style change): " << this->otherCursors[siteId]->getTextCursor().position();
 
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
@@ -714,7 +714,7 @@ void Editor::onCursorPositionChanged() {
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
-            setFormat(CharFormat()); // defaul character TODO: Default font is problem in not ubuntu users. We should find a more general default font
+            setFormat(CharFormat()); // defaul character TODO: Default font is problem in non ubuntu users. We should find a more general default font
         } else if(cursorPos > 0) {
             cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
             QTextCharFormat textCharFormat = cursor.charFormat();
