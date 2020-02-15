@@ -168,7 +168,7 @@ void Controller::showEditor(){
 void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     // insert into the model
     Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
-
+    
     QTextCharFormat tcf=character.getTextCharFormat();
 
     // send insert at the server.
@@ -222,6 +222,8 @@ void Controller::newMessage(Message message) {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             qDebug() << message.getSender();
             this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, message.getSender());
+            //this->editor->otherCursors[message.getSender()]->setChar(character);
+
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Character character=message.getCharacter();

@@ -513,6 +513,29 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             restoreCursor();
         }
     }
+
+    /**
+     * 
+     * UPDATE CURSORS
+     * 
+     * */
+    QHash<QString, OtherCursor*>::const_iterator i;
+
+   
+    int width=this->textEdit->cursorRect().width();
+    int height=this->textEdit->cursorRect().height();
+
+    for (i = this->otherCursors.constBegin() ; i != this->otherCursors.constEnd(); ++i) {
+        qDebug() << i.key() << ':' << i.value()->textCursor.position();
+        QRect coord=this->textEdit->cursorRect(i.value()->textCursor);
+        i.value()->move(coord, width, height);
+    }
+
+    /**
+     * 
+     * 
+     * */
+    
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
 
@@ -557,8 +580,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 
 
     qDebug()<<siteId;
-
-
+    
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
