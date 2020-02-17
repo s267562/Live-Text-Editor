@@ -403,7 +403,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
     saveCursor();
 
-    if(validSignal(position, charsAdded, charsRemoved)) {
+   if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
@@ -684,6 +684,7 @@ QChar Editor::deleteChar(Pos pos, QString sender) {
 
 
     this->otherCursors[sender]->move(coord,width,height);
+
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);

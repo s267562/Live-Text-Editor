@@ -193,9 +193,11 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
 void Controller::alignChange(int alignment_type, int blockNumber) {
 
     // send insert at the server.
+    //TODO Check this
     Character blockId=this->crdt->getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
-    this->messanger->writeAlignmentChanged(alignment_type,blockId);
-
+    //if(blockId.getSiteId()!=-1){
+        this->messanger->writeAlignmentChanged(alignment_type,blockId);
+    //}
 }
 
 
@@ -238,7 +240,7 @@ void Controller::newMessage(Message message) {
         }
     } else if(message.getType() == ALIGNMENT_CHANGED) {
         int row = this->crdt->getRow(message.getCharacter());
-        if(row){
+        if(row>=0){
             this->editor->remoteAlignmentChanged(message.getAlignmentType(), row);
         }
         

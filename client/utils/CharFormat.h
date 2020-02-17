@@ -16,8 +16,7 @@ public:
                 bool italic = false,
                 bool underline = false,
                 QColor color = QColor("black"),
-                QFont font = QFont("Ubuntu"),
-                qreal fontSize = 11) : bold(bold), italic(italic), underline(underline), color(color), font(font), fontSize(fontSize) { };
+                QFont font = QFont("Ubuntu"),qreal fontSize = 11) : bold(bold), italic(italic), underline(underline), color(color), font(font), fontSize(fontSize) { };
 
     bool isBold() const { return bold; }
     void setBold(bool bold) { CharFormat::bold = bold; }

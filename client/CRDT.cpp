@@ -285,13 +285,16 @@ void CRDT::insertChar(Character character, Pos pos) {
                 structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
             }
              */
+
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-            this->style.insert(this->style.begin()+pos.getLine()+1, std::pair<Character,int>(character,0x4));
+            this->style.insert(this->style.begin() + pos.getLine()+1, std::pair<Character,int>(character,0x4));
 
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
-            //this->style.insert(this->style.begin()+pos.getLine(),std::pair<Character,int>(character,0x4));
-
+            // this->style.insert(this->style.begin()+pos.getLine(),std::pair<Character,int>(character,0x4));
+            // style.push_back(std::pair<Character,int>(character,0x4));
+            //structure.push_back(std::vector<Character> {}); // pushing a new line.
+            //style.push_back(std::pair<Character,int>(character,0x4));
         }
     }
 
@@ -559,6 +562,7 @@ void CRDT::insertBlock(Character character, Pos position) {
 }
 
 Character CRDT::getBlockIdentifier(int blockNumber) {
+
     return this->style[blockNumber].first;
 }
 
@@ -580,17 +584,17 @@ int CRDT::getRow(Character blockId) {
     }
 
     // binary search
-    while (minLine + 1 < maxLine) {
-        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+    while (minLine <= maxLine) {
+        int midLine = std::floor((minLine + maxLine) / 2);
 
         lastBlockId = style[midLine].first;
 
         if (blockId.compareTo(lastBlockId) == 0) {
             return midLine;
         } else if (blockId.compareTo(lastBlockId) < 0) {
-            maxLine = midLine;
+            maxLine = midLine-1;
         } else {
-            minLine = midLine;
+            minLine = midLine+1;
         }
     }
 
