@@ -291,10 +291,7 @@ void CRDT::insertChar(Character character, Pos pos) {
 
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
-            // this->style.insert(this->style.begin()+pos.getLine(),std::pair<Character,int>(character,0x4));
-            // style.push_back(std::pair<Character,int>(character,0x4));
-            //structure.push_back(std::vector<Character> {}); // pushing a new line.
-            //style.push_back(std::pair<Character,int>(character,0x4));
+            style.push_back(std::pair<Character,int>(character,0x4));
         }
     }
 
@@ -573,7 +570,7 @@ int CRDT::getRow(Character blockId) {
     }
 
     int minLine = 0;
-    int totalLines = this->structure.size();
+    int totalLines = this->style.size();
     int maxLine = totalLines - 1;
 
     Character lastBlockId = style[maxLine].first;
