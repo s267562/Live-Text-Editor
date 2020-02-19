@@ -651,7 +651,7 @@ void Editor::setUsers(QStringList users) {
     ui->username->setText("Debug");
 #endif
     this->users = users;
-    ui->userListWidget->addItems(users);
+//ui->userListWidget->addItems(users);
     controller->stopLoadingPopup();
 }
 

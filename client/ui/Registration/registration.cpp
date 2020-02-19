@@ -50,6 +50,10 @@ void Registration::setDefaultProfileIcon() {
 	ui->label->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
 }
 
+void Registration::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        on_pushButton_registration_clicked();
+}
 
 void Registration::on_pushButton_registration_clicked() {
 	QString username = ui->username->text();
@@ -82,6 +86,7 @@ void Registration::on_pushButton_login_clicked() {
 
 void Registration::registrationFailed() {
 	QMessageBox::warning(this, "Registration", "Username and/or password is not correct, try again!");
+	controller->stopLoadingPopup();
 }
 
 void Registration::reset() {

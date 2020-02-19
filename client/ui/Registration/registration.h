@@ -38,8 +38,10 @@ signals:
 private:
     Ui::Registration *ui;
     Messanger *messanger;
-    void resizeEvent(QResizeEvent *event);
     Controller *controller;
+
+    void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // REGISTRATION_H

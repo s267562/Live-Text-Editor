@@ -1,6 +1,6 @@
 #include "connection.h"
 #include "ui_connection.h"
-
+#include <QDebug>
 Connection::Connection(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Connection)
@@ -15,6 +15,11 @@ Connection::Connection(QWidget *parent) :
 Connection::~Connection()
 {
     delete ui;
+}
+
+void Connection::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        connectButtonClicked();
 }
 
 void Connection::connectButtonClicked() {

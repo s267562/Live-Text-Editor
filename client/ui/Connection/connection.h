@@ -2,6 +2,7 @@
 #define CONNECTION_H
 
 #include <QMainWindow>
+#include <QKeyEvent>
 
 namespace Ui {
 class Connection;
@@ -20,6 +21,7 @@ private:
     QString address;
 
     void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 private slots:
     void connectButtonClicked();

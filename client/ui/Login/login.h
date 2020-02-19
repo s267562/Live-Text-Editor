@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QKeyEvent>
 #include "../../Networking/Messanger.h"
 #include "../../Controller.h"
 #include "Registration/registration.h"
@@ -25,6 +26,11 @@ public:
     void reset();
     ~Login();
 
+private:
+    void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+
 public slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
@@ -33,9 +39,6 @@ public slots:
    // void loginDone();
    // void onOkButtonClicked();
 
-protected:
-    void closeEvent(QCloseEvent *event);
-    void resizeEvent(QResizeEvent *event);
 
 signals:
     void disconnect();

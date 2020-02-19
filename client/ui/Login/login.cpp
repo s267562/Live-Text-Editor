@@ -18,8 +18,12 @@ void Login::setClient(Messanger *messanger) {  //TODO: da rimuovere...
     this->messanger = messanger;
 }
 
-void Login::on_pushButton_clicked()
-{
+void Login::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        on_pushButton_clicked();
+}
+
+void Login::on_pushButton_clicked(){
     QString username = ui->username->text();
     QString password = ui->password->text();
 
