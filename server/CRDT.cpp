@@ -318,11 +318,11 @@ void CRDT::read(const QJsonObject &json) {
 	//TODO READ VECTOR OF CHARACTERS
 	if (json.contains("structure") && json["structure"].isArray()) {
 		QJsonArray vectorVectors = json["structure"].toArray();
-		structure.clear();
+		//structure.clear();
 		structure.reserve(vectorVectors.size());
 		for (int vectorIndex = 0; vectorIndex < vectorVectors.size(); vectorIndex++) {
 			QJsonArray vectorChars = vectorVectors[vectorIndex].toArray();
-			structure[vectorIndex].clear();
+			//structure[vectorIndex].clear();
 			//structure[vectorIndex].reserve(vectorChars.size());
 			std::vector<Character> innerVector;
 			for (int indexChar = 0; indexChar < vectorChars.size(); ++indexChar) {

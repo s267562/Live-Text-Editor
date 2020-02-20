@@ -314,9 +314,11 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 	}
 
 	qDebug() << "                               " << fileName;
-
-	QString key = fileName;                           /* file name */
+	
 	QString username = usernames[socketDescriptor];
+    QString jsonFileName = username + "%_##$$$##_%" + fileName;
+    QString key = jsonFileName;                           /* file name */
+
 	auto result = threads.find(key);
 
 	if (result != threads.end()) {
@@ -330,16 +332,16 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		qDebug() << ""; // newLine
 
 		// First try to open requested file, else create a new one
-		CRDT loadedCrdt;
+		CRDT* loadedCrdt = new CRDT();
 		Thread *thread;
-		QString jsonFileName = username + "%_##$$$##_%" + fileName;
-		if (!loadedCrdt.loadCRDT(jsonFileName)) {
+
+		if (!loadedCrdt->loadCRDT(jsonFileName)) {
 			qDebug() << "File need to be created";
 			CRDT *crdt = new CRDT();
 			DB.createFile(fileName, usernames[socketDescriptor]);
 			thread = new Thread(this, crdt, fileName, username, this);                        /* create new thread */
 		} else
-			thread = new Thread(this, &loadedCrdt, fileName, username,
+			thread = new Thread(this, loadedCrdt, fileName, username,
 								this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
