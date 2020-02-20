@@ -39,7 +39,6 @@ ShowFiles::~ShowFiles() {
 
 void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
 	QString filename = item->text();
-
 	emit newFile(filename);
 }
 
@@ -130,9 +129,15 @@ QString ShowFiles::getShareCode(const QString &username, const QString &filename
 }
 
 void ShowFiles::on_actionAdd_File_triggered(){
-	auto *addFile = new AddFile(this);
-	connect(addFile, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
-	addFile->show();
+	addFile1 = new AddFile(this);
+	connect(addFile1, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
+    addFile1->show();
+}
+
+void ShowFiles::closeAddFile(){
+    if (addFile1 != nullptr){
+        addFile1->close();
+    }
 }
 
 void ShowFiles::closeEvent(QCloseEvent *event){

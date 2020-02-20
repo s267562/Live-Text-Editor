@@ -51,6 +51,7 @@ void Controller::reciveUser(User *user){
         this->user->setAvatar(user->getAvatar());
         stopLoadingPopup();
         this->finder->closeEditAccount();
+        this->editor->closeEditAccount();
     }
     emit userRecived();
 }
@@ -283,5 +284,6 @@ void Controller::shareCodeFailed(){
 
 void Controller::addFileNames(std::map<QString, bool> filenames){
     finder->addFile(filenames);
+    finder->closeAddFile();
     stopLoadingPopup();
 }

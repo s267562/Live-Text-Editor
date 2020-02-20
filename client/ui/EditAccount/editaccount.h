@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "../../User.h"
+#include <QKeyEvent>
 
 namespace Ui {
 class EditAccount;
@@ -26,6 +27,7 @@ signals:
 private:
     Ui::EditAccount *ui;
     User *user;
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // EDITACCOUNT_H

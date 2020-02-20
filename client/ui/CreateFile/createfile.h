@@ -2,6 +2,7 @@
 #define CREATEFILE_H
 
 #include <QDialog>
+#include <QKeyEvent>
 
 namespace Ui {
 class CreateFile;
@@ -23,6 +24,7 @@ signals:
 
 private:
     Ui::CreateFile *ui;
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // CREATEFILE_H

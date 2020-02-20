@@ -2,6 +2,7 @@
 #define ADDFILE_H
 
 #include <QDialog>
+#include <QKeyEvent>
 
 namespace Ui {
 class AddFile;
@@ -23,6 +24,7 @@ signals:
 
 private:
     Ui::AddFile *ui;
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // ADDFILE_H

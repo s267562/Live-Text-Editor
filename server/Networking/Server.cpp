@@ -533,6 +533,10 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
 	QString usernameOwner = pair.first;                    // TODO check problem in DB structure
 	filename = pair.second;
 
+	if (filename == "ERROR"){
+	    return false;
+	}
+
 	if (DB.addPermission(filename, usernameOwner, username)) {
 		return true;
 	} else {

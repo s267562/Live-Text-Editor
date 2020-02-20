@@ -13,7 +13,13 @@ CreateFile::~CreateFile()
     delete ui;
 }
 
+void CreateFile::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        on_pushButton_clicked();
+}
+
 void CreateFile::on_pushButton_clicked()
 {
-    emit createFile(ui->fileName->text());
+    if (ui->fileName->text() != "")
+        emit createFile(ui->fileName->text());
 }

@@ -35,6 +35,11 @@ void EditAccount::on_label_clicked() {
     }
 }
 
+void EditAccount::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        sendEdit();
+}
+
 void EditAccount::sendEdit(){
     if (ui->username->text() == user->getUsername() && ui->newPassword->text() == ""
                     && ui->avatar->pixmap()->toImage() == user->getAvatar().toImage()){

@@ -6,6 +6,8 @@
 #include "../../Controller.h"
 #include "EditAccount/editaccount.h"
 #include "CreateFile/createfile.h"
+#include "AddFile/addfile.h"
+#include <QKeyEvent>
 
 namespace Ui {
 class ShowFiles;
@@ -33,6 +35,7 @@ public slots:
     void showError();
     void editAccount();
     void changeImage();
+    void closeAddFile();
 
 signals:
     void newFile(QString filename);
@@ -44,6 +47,7 @@ private:
     Controller *controller = nullptr;
     CreateFile *createFile = nullptr;
     EditAccount *editAcc = nullptr;
+    AddFile *addFile1 = nullptr;
 
     void resizeEvent(QResizeEvent *event);
 

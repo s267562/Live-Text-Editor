@@ -710,10 +710,16 @@ void Editor::setFilename(QString filename){
 }
 
 void Editor::editAccountClicked(){
-    EditAccount *editA = new EditAccount(this, controller->getUser());
+    editA = new EditAccount(this, controller->getUser());
     connect(editA, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
                     SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
     editA->show();
+}
+
+void Editor::closeEditAccount() {
+    if (this->editA != nullptr){
+        editA->close();
+    }
 }
 
 void Editor::changeUser(){

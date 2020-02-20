@@ -15,6 +15,7 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QGraphicsDropShadowEffect>
+#include "EditAccount/editaccount.h"
 
 
 class Controller;
@@ -37,6 +38,7 @@ public:
     void replaceText(const QString initialText);
     ~Editor();
     void setFilename(QString filename);
+    void closeEditAccount();
 
 
 public slots:
@@ -86,6 +88,7 @@ private:
     QStringList users;
     QMovie *loadingMovie;
     bool loadingFlag = true;
+    EditAccount *editA = nullptr;
 
     void setFormat(CharFormat charFormat);
     void undo();

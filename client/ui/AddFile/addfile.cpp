@@ -13,7 +13,12 @@ AddFile::~AddFile()
     delete ui;
 }
 
+void AddFile::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == 16777220)           // Kenter Key is pressed
+        on_pushButton_clicked();
+}
 void AddFile::on_pushButton_clicked()
 {
-    emit sendShareCode(ui->shareCode->text());
+    if (ui->shareCode->text() != "")
+        emit sendShareCode(ui->shareCode->text());
 }
