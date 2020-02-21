@@ -19,5 +19,8 @@
         <file>img/align-right.png</file>
         <file>img/align-left.png</file>
         <file>img/align-center.png</file>
+        <file>img/document_2.png</file>
+        <file>img/user singolo.png</file>
+        <file>img/menu_2.png</file>
     </qresource>
 </RCC>

@@ -97,28 +97,37 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		int fileNameSize = readNumberFromSocket(soc);
 		readSpace(soc);
 
-		QString fileName;
+		QString jsonFileName;
 
-		if (!readQString(soc, fileName, fileNameSize)) {
+		if (!readQString(soc, jsonFileName, fileNameSize)) {
 			writeErrMessage(soc, REQUEST_FILE_MESSAGE);
 			return;
 		}
 
-		if (fileName == this->filename) {
+		if (jsonFileName == this->filename) {
 			sendListOfUsers(soc);
 			return;
 		}
+
+        QStringList fields = jsonFileName.split("%_##$$$##_%");
+
+        if (fields.size() < 2) {
+            QString owner = usernames[soc->socketDescriptor()];
+            jsonFileName = owner + "%_##$$$##_%" + fields[0];
+        } else{
+            QString owner = fields[0];
+        }
 
 		disconnect(*connectReadyRead);
 		disconnect(*connectDisconnected);
 		delete connectReadyRead;
 		delete connectDisconnected;
-		std::shared_ptr<Thread> thread = server->getThread(fileName);
+		std::shared_ptr<Thread> thread = server->getThread(jsonFileName);
 
 		sendRemoveUser(soc->socketDescriptor(), usernames[soc->socketDescriptor()]);
 		if (thread.get() == nullptr) {
 			/* thread doesn't exist */
-			thread = server->addThread(fileName, usernames[soc->socketDescriptor()]);
+			thread = server->addThread(jsonFileName, usernames[soc->socketDescriptor()]);
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 			thread->start();
 		} else {
@@ -153,7 +162,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
  * Save CRDT to a file
  */
 void Thread::saveCRDTToFile() {
-	QString jsonFileName = usernameOwner + "%_##$$$##_%" + filename;
+	QString jsonFileName = /*usernameOwner + "%_##$$$##_%" +*/ filename;
 	if (needToSaveFile) {
 		qDebug() << "Saving CRDT for file: " + jsonFileName;
 		crdt->saveCRDT(jsonFileName);

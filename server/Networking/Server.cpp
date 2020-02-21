@@ -308,27 +308,36 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 	int fileNameSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
-	QString fileName;
-	if (!readQString(soc, fileName, fileNameSize)) {
+	QString jsonFileName;
+	if (!readQString(soc, jsonFileName, fileNameSize)) {
 		return false;
 	}
 
-	qDebug() << "                               " << fileName;
-	
+	qDebug() << "                               " << jsonFileName;
+
+    QStringList fields = jsonFileName.split("%_##$$$##_%");
+
+    if (fields.size() < 2) {
+        QString owner = usernames[socketDescriptor];
+        jsonFileName = owner + "%_##$$$##_%" + fields[0];
+    } else{
+        QString owner = fields[0];
+        //fileName = fields[1];
+    }
+
 	QString username = usernames[socketDescriptor];
-    QString jsonFileName = username + "%_##$$$##_%" + fileName;
     QString key = jsonFileName;                           /* file name */
 
 	auto result = threads.find(key);
 
 	if (result != threads.end()) {
 		/* file already open */
-		qDebug() << "                               thread for file name aready exist " << fileName;
+		qDebug() << "                               thread for file name aready exist " << jsonFileName;
 		qDebug() << ""; // newLine
 		threads[key]->addSocket(soc, username);                       /* socket transition to secondary thread */
 	} else {
 		/* file not yet open */
-		qDebug() << "                               New thread for file name: " << fileName;
+		qDebug() << "                               New thread for file name: " << jsonFileName;
 		qDebug() << ""; // newLine
 
 		// First try to open requested file, else create a new one
@@ -338,10 +347,10 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		if (!loadedCrdt->loadCRDT(jsonFileName)) {
 			qDebug() << "File need to be created";
 			CRDT *crdt = new CRDT();
-			DB.createFile(fileName, usernames[socketDescriptor]);
-			thread = new Thread(this, crdt, fileName, username, this);                        /* create new thread */
+			DB.createFile(jsonFileName, usernames[socketDescriptor]);
+			thread = new Thread(this, crdt, jsonFileName, username, this);                        /* create new thread */
 		} else
-			thread = new Thread(this, loadedCrdt, fileName, username,
+			thread = new Thread(this, loadedCrdt, jsonFileName, username,
 								this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
@@ -485,10 +494,10 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  */
 std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
 	std::lock_guard<std::mutex> lg(mutexThread);
-	CRDT loadedCrdt;
+	CRDT* loadedCrdt = new CRDT();
 
 	std::shared_ptr<Thread> thread;                        /* create new thread */
-	if (!loadedCrdt.loadCRDT(fileName)) {
+	if (!loadedCrdt->loadCRDT(fileName)) {
 		qDebug() << "File need to be created";
 		CRDT *crdt = new CRDT();
 		DB.createFile(fileName, username);
@@ -496,7 +505,7 @@ std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
 		thread = std::make_shared<Thread>(this, crdt, fileName, username, this);
 	} else {
 		/* create new thread */
-		thread = std::make_shared<Thread>(this, &loadedCrdt, fileName, username, this);
+		thread = std::make_shared<Thread>(this, loadedCrdt, fileName, username, this);
 	}
 	threads[fileName] = thread;
 	return thread;
@@ -576,10 +585,12 @@ std::pair<QString, QString> Server::getInfoFromShareCode(QString shareCode) {
 
 	QStringList fields = decrypted.split("%_##$$$##_%");
 
-	if (fields.size() != 2)
+	qDebug() << fields;
+
+	if (fields.size() != 3)
 		return std::pair<QString, QString>("ERROR", "ERROR");
 	else
-		return std::pair<QString, QString>(fields[0], fields[1]);
+		return std::pair<QString, QString>(fields[0], fields[1] + "%_##$$$##_%" + fields[2]);
 }
 
 Database Server::getDb() const {

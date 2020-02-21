@@ -12,7 +12,7 @@ class CustomWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit CustomWidget(QWidget *parent = nullptr, QString filename = "", bool owned = false, QString shareCode="ERROR");
+    explicit CustomWidget(QWidget *parent = nullptr, QString filename = "", QString owner = "", bool owned = false, QString shareCode="ERROR");
     ~CustomWidget();
 
 public slots:

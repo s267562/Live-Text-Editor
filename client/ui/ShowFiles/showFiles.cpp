@@ -53,9 +53,11 @@ void ShowFiles::addFiles(std::map<QString, bool> l) {
 			shareCode = getShareCode(username, filename.first);
 		}
 
-		CustomWidget *myItem = new CustomWidget(this, filename.first, filename.second, shareCode);
+		QString fname = filename.first.split("%_##$$$##_%")[1];
+        QString owner = filename.first.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.first.split("%_##$$$##_%")[0];
+		CustomWidget *myItem = new CustomWidget(this, fname, owner,filename.second, shareCode);
 		QListWidgetItem *item = new QListWidgetItem(filename.first);
-		item->setSizeHint(QSize(0, 40));
+		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
 		this->ui->listWidget->setItemWidget(item, myItem);
 	}
@@ -70,9 +72,11 @@ void ShowFiles::addFile(std::map<QString, bool> l) {
 			shareCode = getShareCode(username, filename.first);
 		}
 
-		CustomWidget *myItem = new CustomWidget(this, filename.first, filename.second, shareCode);
+        QString fname = filename.first.split("%_##$$$##_%")[1];
+        QString owner = filename.first.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.first.split("%_##$$$##_%")[0];
+        CustomWidget *myItem = new CustomWidget(this, fname, owner, filename.second, shareCode);
 		QListWidgetItem *item = new QListWidgetItem(filename.first);
-		item->setSizeHint(QSize(0, 40));
+		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
 		this->ui->listWidget->setItemWidget(item, myItem);
 	}
