@@ -412,14 +412,20 @@ Pos CRDT::findPosition(Character character) {
 }
 
 void CRDT::removeEmptyLines() {
-    for (int line = 0; line < this->structure.size(); line++) {
+    // TODO: Handle all possible case
+    int line=0;
+    
+    for (line = 0; line < this->structure.size()-1; line++) {
         if (this->structure[line].empty()) {
             this->structure.erase(this->structure.begin() + line);
             this->style.erase(this->style.begin()+line);
             line--;
-            
         }
     }
+    if (this->structure[line].empty()) {
+        this->structure.erase(this->structure.begin() + line);
+    }
+    
 }
 
 void CRDT::mergeLines(int line) {
