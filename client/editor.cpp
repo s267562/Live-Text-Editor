@@ -72,6 +72,10 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     m_shadowEffect1->setBlurRadius(12);
     m_shadowEffect1->setEnabled(true);
     ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
+    
+    
+    
+    //qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
 
 void Editor::setupTextActions() {
@@ -563,8 +567,8 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
 
 
     QTextDocument *doc = textEdit->document();
@@ -617,8 +621,9 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
 
     QTextDocument *doc = textEdit->document();
 
@@ -665,8 +670,9 @@ QChar Editor::deleteChar(Pos pos, QString sender) {
     qDebug() << "\n\t\tInitial cursor position:\t" << oldCursorPos;
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
 
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,

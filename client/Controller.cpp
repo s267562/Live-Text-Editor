@@ -244,9 +244,6 @@ void Controller::newMessage(Message message) {
             this->editor->remoteAlignmentChanged(message.getAlignmentType(), row);
         }
         
-
-
-
     }
     else if(message.getType() == DELETE) {
 

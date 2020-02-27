@@ -39,7 +39,7 @@ private:
     int counter;
     QString siteId;
     std::vector<Identifier> position;
-
+    QTextBlockFormat textBlockFormat;
 };
 
 
