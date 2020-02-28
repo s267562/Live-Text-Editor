@@ -52,6 +52,10 @@ public:
     bool sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
     bool sendShareCode(QString shareCode);
     bool readAddFile();
+    bool requestForUsernameList(QString fileName);
+    bool readUsernameList();
+    bool sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames);
+    bool sendDeleteFile(QString filename);
 
 public slots:
     void onReadyRead();
@@ -76,6 +80,7 @@ signals:
     void okEditAccount();
     void shareCodeFailed();
     void addFileNames(std::map<QString, bool> fileList);
+    void reciveUsernameList(QString filename, QStringList userlist);
 };
 
 #endif // MESSANGER_H

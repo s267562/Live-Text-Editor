@@ -50,12 +50,13 @@ void ShowFiles::addFiles(std::map<QString, bool> l) {
 		// If user is owner for that file create a sharecode
 		if (filename.second) {
 			QString username = controller->getUser()->getUsername();
+			qDebug() << username << filename.first;
 			shareCode = getShareCode(username, filename.first);
 		}
 
 		QString fname = filename.first.split("%_##$$$##_%")[1];
-        QString owner = filename.first.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.first.split("%_##$$$##_%")[0];
-		CustomWidget *myItem = new CustomWidget(this, fname, owner,filename.second, shareCode);
+        QString owner = filename.first.split("%_##$$$##_%")[0];
+		CustomWidget *myItem = new CustomWidget(this, fname, owner,filename.second, shareCode, this->controller);
 		QListWidgetItem *item = new QListWidgetItem(filename.first);
 		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
@@ -74,7 +75,7 @@ void ShowFiles::addFile(std::map<QString, bool> l) {
 
         QString fname = filename.first.split("%_##$$$##_%")[1];
         QString owner = filename.first.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.first.split("%_##$$$##_%")[0];
-        CustomWidget *myItem = new CustomWidget(this, fname, owner, filename.second, shareCode);
+        CustomWidget *myItem = new CustomWidget(this, fname, owner, filename.second, shareCode, this->controller);
 		QListWidgetItem *item = new QListWidgetItem(filename.first);
 		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
@@ -124,7 +125,6 @@ void ShowFiles::closeEditAccount() {
  * @return
  */
 QString ShowFiles::getShareCode(const QString &username, const QString &filename) {
-
 	SimpleCrypt crypto;
 	crypto.setKey(0xf55f15758b7e0153); // Random generated key, same must be used server side!!!
 

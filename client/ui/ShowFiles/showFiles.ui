@@ -52,7 +52,8 @@ QListWidget::item:selected
 {
 	background-color: rgb(189, 187, 191);
 	color: rgb(189, 187, 191);
-}</string>
+}
+</string>
     </property>
    </widget>
    <widget class="QWidget" name="customToolbar" native="true">
@@ -226,8 +227,6 @@ width: 40px;
    </slots>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

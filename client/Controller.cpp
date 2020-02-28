@@ -20,6 +20,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
+    connect(this->messanger,SIGNAL(reciveUsernameList(QString, QStringList)), this, SLOT(reciveUsernameList(QString, QStringList)));
     now = connection;
     connection->show();
 }
@@ -51,7 +52,8 @@ void Controller::reciveUser(User *user){
         this->user->setAvatar(user->getAvatar());
         stopLoadingPopup();
         this->finder->closeEditAccount();
-        this->editor->closeEditAccount();
+        if (this->editor != nullptr)
+            this->editor->closeEditAccount();
     }
     emit userRecived();
 }
@@ -125,19 +127,32 @@ void Controller::showRegistration(){
 
 void Controller::showFileFinder(std::map<QString, bool> fileList){
     loading->close();
-    now->close();
-    this->finder->addFiles(fileList);
+
+
+    if (now == editor){
+        /*disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+        disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+        disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));*/
+    }else{
+        now->close();
+        now = finder;
+        this->finder->addFiles(fileList);
+        this->finder->show();
+    }
 
     if (user != nullptr){
         user->setFileList(fileList);
-        now = finder;
-        this->finder->show();
     }
 }
 
 void Controller::showFileFinderOtherView(){
     now->close();
     now = finder;
+    disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+    disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+    disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
+    connect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage()));
+    this->finder->addFiles(user->getFileList());
     this->finder->show();
 }
 
@@ -161,8 +176,12 @@ void Controller::requestForFile(QString filename){
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
             connect(editor, &Editor::logout, messanger, &Messanger::logOut);
         }else{
+            connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+            connect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
             editor->reset();
         }
+        disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage()));
         editor->setFilename(filename);
         now->close();
         now = editor;
@@ -286,4 +305,27 @@ void Controller::addFileNames(std::map<QString, bool> filenames){
     finder->addFile(filenames);
     finder->closeAddFile();
     stopLoadingPopup();
+}
+
+void Controller::requestForUsernameList(QString filename, CustomWidget *customWideget){
+    // Effettua la rischiesta al server
+    this->customWidget = customWideget;
+    // Effettua la rischiesta al server
+    this->messanger->requestForUsernameList(filename);
+    startLoadingPopup();
+}
+
+void Controller::reciveUsernameList(QString filename, QStringList userlist){
+    stopLoadingPopup();
+    this->customWidget->createFileInformation(userlist);
+}
+
+void Controller::sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames){
+    this->messanger->sendFileInfomationChanges(oldFileaname, newFileaname, usernames);
+    startLoadingPopup();
+}
+
+void Controller::sendDeleteFile(QString filename){
+    this->messanger->sendDeleteFile(filename);
+    startLoadingPopup();
 }

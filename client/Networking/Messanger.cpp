@@ -132,6 +132,14 @@ void Messanger::onReadyRead(){
             if (!readError()){
                 return;
             }
+        }else if (datas.toStdString() == USERNAME_LIST_FOR_FILE){
+            if (!readUsernameList()){
+                return;
+            }
+        } else if (datas.toStdString() == LIST_OF_FILE){
+            if (!readFileNames()){
+                return;
+            }
         }
     }
 
@@ -714,4 +722,117 @@ void Messanger::onDisconnect(){
     soc.setSocketDescriptor(socketDescriptor);
     soc.deleteLater();
     emit errorConnection();
+}
+
+bool Messanger::requestForUsernameList(QString fileName){
+    qDebug() << "Messanger.cpp - requestForUsernameList()     ---------- REQUEST FOR USERNAME LIST ----------";
+
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(REQUEST_USERNAME_LIST_MESSAGE);
+        QByteArray fileNameByteArray = convertionQString(fileName);
+        QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
+
+        message.append(" " + fileNameSize + " " + fileNameByteArray);
+        qDebug() << "                                 " << message;
+        qDebug() << ""; // newLine
+
+
+        reciveOkMessage = true;
+        if (!writeMessage(socket, message)){
+            return false;
+        }
+
+        //state = WAITING_LIST_OF_ONLINE_USERS;
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool Messanger::readUsernameList(){
+    qDebug() << "Messanger.cpp - readUsernameList()     ---------- READ USERNAME LIST ----------";
+    QStringList usernames;
+    readSpace(socket);
+    int usernamesSize = readNumberFromSocket(socket);
+
+    qDebug() << usernamesSize;
+
+    if (usernamesSize != 0){
+        for (int i = 0; i < usernamesSize; i++){
+            readSpace(socket);
+            int usernameSize = readNumberFromSocket(socket);
+            qDebug() << usernameSize;
+            readSpace(socket);
+            QString username;
+            if (!readQString(socket, username, usernameSize)){
+                return false;
+            }
+            qDebug() << "                              usename: "<<username;
+            usernames.append(username);
+        }
+    }
+
+    emit reciveUsernameList("", usernames);
+    return true;
+}
+
+bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames){
+    qDebug() << "Messanger.cpp - sendFileInfomationChanges()     ---------- SEND FILE INFORMATION CHANGES ----------";
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(FILE_INFORMATION_CHANGES);
+        QByteArray oldFileNameByteArray = convertionQString(oldFilename);
+        QByteArray oldFileNameSize = convertionNumber(oldFileNameByteArray.size());
+        QByteArray newFileNameByteArray = convertionQString(newFilename);
+        QByteArray newFileNameSize = convertionNumber(newFileNameByteArray.size());
+
+        message.append(" " + oldFileNameSize + " " + oldFileNameByteArray + " " + newFileNameSize + " " + newFileNameByteArray);
+        qDebug() << "                                 " << message;
+        qDebug() << ""; // newLine
+
+        int nUsers = usernames.size();
+        QByteArray numUsers = convertionNumber(nUsers);
+
+        message.append(" " + numUsers);
+
+        for (QString username : usernames){
+            QByteArray usernameQBytearray = convertionQString(username);
+            QByteArray usernameSize = convertionNumber(usernameQBytearray.size());
+            message.append(" " + usernameSize + " " + usernameQBytearray);
+        }
+
+        reciveOkMessage = true;
+        if (!writeMessage(socket, message)){
+            return false;
+        }
+
+        //state = WAITING_LIST_OF_ONLINE_USERS;
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool Messanger::sendDeleteFile(QString filename){
+    qDebug() << "Messanger.cpp - sendDeleteFile()     ---------- SEND DELETE FILE ----------";
+
+    if (this->socket->state() == QTcpSocket::ConnectedState){
+        QByteArray message(DELETE_FILE);
+        QByteArray fileNameByteArray = convertionQString(filename);
+        QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
+
+        message.append(" " + fileNameSize + " " + fileNameByteArray);
+        qDebug() << "                                 " << message;
+        qDebug() << ""; // newLine
+
+
+        reciveOkMessage = true;
+        if (!writeMessage(socket, message)){
+            return false;
+        }
+
+        //state = WAITING_LIST_OF_ONLINE_USERS;
+        return true;
+    }else{
+        return false;
+    }
 }

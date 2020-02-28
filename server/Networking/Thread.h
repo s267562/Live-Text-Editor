@@ -25,7 +25,8 @@ Q_OBJECT
 private:
 	std::map<qintptr, QTcpSocket *> sockets;  /* TO-DO: sincronizzazione con il thread principale */
 	std::map<qintptr, QString> usernames;
-	std::mutex mutexSockets;
+	std::map<qintptr, QTcpSocket *> pendingSocket;
+    std::mutex mutexSockets;
 	std::queue<Message> messagesQueue;
 	CRDT *crdt;
 	QString filename;
@@ -35,6 +36,7 @@ private:
 	int saveInterval = 2 * /*60 **/ 1000; // 2 min (in ms) // TODO decidere intervallo
 	bool needToSaveFile = false;
 	bool timerStarted = false;
+	bool fileDeleted = false;
 
 public:
 	explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", QString usernameOwner = "",
@@ -45,6 +47,18 @@ public:
 	void addSocket(QTcpSocket *soc, QString username);
 
 	void sendListOfUsers(QTcpSocket *soc);
+
+    std::map<qintptr, QTcpSocket *> getSockets();
+
+    void changeFileName(QString filename);
+
+    void sendRemoveUser(qintptr socketDescriptor, QString username);
+
+    void addPendingSocket(qintptr socketDescriptor);
+
+    const std::map<qintptr, QString> &getUsernames() const;
+
+    void deleteFile();
 
 private:
 	bool readInsert(QTcpSocket *soc);
@@ -61,8 +75,6 @@ private:
 
 	void sendNewUser(QTcpSocket *soc);
 
-	void sendRemoveUser(qintptr socketDescriptor, QString username);
-
 	void sendFile(QTcpSocket *soc);
 
 	bool readShareCode(QTcpSocket *soc);
@@ -72,6 +84,12 @@ private:
 	bool readEditAccount(QTcpSocket *soc);
 
 	bool sendUser(QTcpSocket *soc);
+
+    bool readRequestUsernameList(QTcpSocket *soc);
+
+    bool readFileInformationChanges(QTcpSocket *soc);
+
+    bool readDeleteFile(QTcpSocket *soc);
 
 signals:
 
