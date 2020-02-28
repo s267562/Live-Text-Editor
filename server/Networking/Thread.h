@@ -23,13 +23,12 @@ class Server;
 class Thread : public QThread {
 Q_OBJECT
 private:
-	std::map<qintptr, QTcpSocket *> sockets;  /* TO-DO: sincronizzazione con il thread principale */
-	std::map<qintptr, QString> usernames;
-	std::map<qintptr, QTcpSocket *> pendingSocket;
+	std::map<qintptr, QTcpSocket *> sockets;                 // sync
+	std::map<qintptr, QString> usernames;               // sync
+	std::map<qintptr, QTcpSocket *> pendingSocket;               // sync
     std::mutex mutexSockets;
-	std::queue<Message> messagesQueue;
 	CRDT *crdt;
-	QString filename;
+	QString filename;               // sync
 	QString usernameOwner;
 	QTimer *saveTimer;
 	Server *server;
@@ -44,21 +43,21 @@ public:
 
 	void run();
 
-	void addSocket(QTcpSocket *soc, QString username);
+	void addSocket(QTcpSocket *soc, QString username);               // sync
 
-	void sendListOfUsers(QTcpSocket *soc);
+	void sendListOfUsers(QTcpSocket *soc);               // sync
 
-    std::map<qintptr, QTcpSocket *> getSockets();
+    std::map<qintptr, QTcpSocket *> getSockets();               // sync
 
-    void changeFileName(QString filename);
+    void changeFileName(QString filename);               // sync
 
-    void sendRemoveUser(qintptr socketDescriptor, QString username);
+    void sendRemoveUser(qintptr socketDescriptor, QString username);               // sync
 
-    void addPendingSocket(qintptr socketDescriptor);
+    void addPendingSocket(qintptr socketDescriptor);               // sync
 
-    const std::map<qintptr, QString> &getUsernames() const;
+    const std::map<qintptr, QString> &getUsernames() const;               // sync
 
-    void deleteFile();
+    void deleteFile();               // sync
 
 private:
 	bool readInsert(QTcpSocket *soc);
@@ -73,23 +72,23 @@ private:
 
 	void writeDelete(QTcpSocket *soc, Character character);
 
-	void sendNewUser(QTcpSocket *soc);
+	void sendNewUser(QTcpSocket *soc);               // sync
 
 	void sendFile(QTcpSocket *soc);
 
-	bool readShareCode(QTcpSocket *soc);
+	bool readShareCode(QTcpSocket *soc);               // sync
 
 	bool sendAddFile(QTcpSocket *soc, QString filename);
 
-	bool readEditAccount(QTcpSocket *soc);
+	bool readEditAccount(QTcpSocket *soc);               // sync
 
-	bool sendUser(QTcpSocket *soc);
+	bool sendUser(QTcpSocket *soc);               // sync
 
     bool readRequestUsernameList(QTcpSocket *soc);
 
-    bool readFileInformationChanges(QTcpSocket *soc);
+    bool readFileInformationChanges(QTcpSocket *soc);               // sync
 
-    bool readDeleteFile(QTcpSocket *soc);
+    bool readDeleteFile(QTcpSocket *soc);               // sync
 
 signals:
 
@@ -99,12 +98,12 @@ signals:
 
 public slots:
 
-	void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);
+	void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);                // sync
 
 	void
-	disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);
+	disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);                // sync
 
-	void saveCRDTToFile();
+	void saveCRDTToFile();                // sync
 };
 
 #endif // THREAD_H
