@@ -417,10 +417,11 @@ void CRDT::removeEmptyLines() {
     for (line = 0; line < this->structure.size()-1; line++) {
         if (this->structure[line].empty()) {
             this->structure.erase(this->structure.begin() + line);
-            this->style.erase(this->style.begin()+line);
+            this->style.erase(this->style.begin()+line+1);
             line--;
         }
     }
+
     if (this->structure[line].empty()) {
         this->structure.erase(this->structure.begin() + line);
     }
@@ -431,7 +432,6 @@ void CRDT::mergeLines(int line) {
     
     if(structure.size() > line + 1 && !structure[line + 1].empty()) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
-        //qDebug() << "EREASING line" << line + 1 << " line size:" << structure[line+1].size();
         structure.erase(structure.begin() + line + 1);
         style.erase(style.begin()+line+1);
     }
