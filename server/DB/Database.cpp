@@ -560,6 +560,11 @@ bool Database::changePassword(QString username, QString newPassword) {
 	return result;
 }
 
+/**
+ * Retrieve the list of user to whom the file is shared
+ * @param filename
+ * @return List of users
+ */
 QStringList Database::getUsers(QString filename) {
     QStringList users;
 
@@ -588,6 +593,12 @@ QStringList Database::getUsers(QString filename) {
     return users;
 }
 
+/**
+ * Function for changing the name of a file
+ * @param oldFilename
+ * @param newFilename
+ * @return
+ */
 bool Database::changeFileName(QString oldFilename, QString newFilename){
     // DB opening
     if (!db.open()) {
@@ -616,9 +627,17 @@ bool Database::changeFileName(QString oldFilename, QString newFilename){
         db.close();
         return false;
     }
+
+    // TODO Remove old json file from server?
     return true;
 }
 
+/**
+ * Remove the permission of a given user for a given filename
+ * @param filename
+ * @param username
+ * @return
+ */
 bool Database::removePermission(QString filename, QString username){
     // DB opening
     if (!db.open()) {
@@ -640,6 +659,11 @@ bool Database::removePermission(QString filename, QString username){
     return true;
 }
 
+/**
+ * Delete a file from the server
+ * @param filename
+ * @return
+ */
 bool Database::deleteFile(QString filename){
     if (!db.open()) {
         qDebug() << "Error opening DB";
