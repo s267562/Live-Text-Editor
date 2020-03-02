@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(textEditor)
 
 set(CMAKE_CXX_STANDARD 14)
-#set(CMAKE_CXX_FLAGS "-mwindows") # Uncomment whe project finished. execute application without terminat on windows
+#set(CMAKE_CXX_FLAGS "-mwindows") # Uncomment when project finished. execute application without terminal on windows
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -56,7 +56,9 @@ add_executable(client
         common/commonFunctions.h
         common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
-        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
+        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
+        client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
+        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp)
 
 add_executable(client2
         client/textEditor.qrc
@@ -87,7 +89,9 @@ add_executable(client2
         common/commonFunctions.h
         common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
-        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp)
+        client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
+        client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
+        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp)
 
 add_executable(server
         server/main.cpp
@@ -110,6 +114,11 @@ add_executable(server
         common/commonFunctions.h
         common/commonFunctions.cpp
         common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
+
+# Disable qDebug output
+target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
+target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
+target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
 
 
 target_link_libraries(client ${LIBRARIES})

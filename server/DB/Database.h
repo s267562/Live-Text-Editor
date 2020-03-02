@@ -47,11 +47,19 @@ public:
 
 	bool addPermission(QString fileID, QString owner, QString username);
 
-	QList<std::pair<QString, bool>> getFiles(QString username);
+    std::map<QString, bool> getFiles(QString username);
 
 	bool changeUsername(QString oldUsername, QString newUsername);
 
 	bool changePassword(QString username, QString newPassword);
+
+    QStringList getUsers(QString filename);
+
+    bool changeFileName(QString oldFilename, QString newFilename);
+
+    bool removePermission(QString filename, QString username);
+
+    bool deleteFile(QString filename);
 };
 
 

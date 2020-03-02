@@ -21,7 +21,11 @@
 #define EDIT_ACCOUNT "EDT\n\r"
 #define SHARE_CODE "SHR\n\r"
 #define ADD_FILE "ADD\r\n"
-
+#define REQUEST_USERNAME_LIST_MESSAGE "RUR\r\n"
+#define USERNAME_LIST_FOR_FILE "LUR\r\n"
+#define USERNAME_LIST_FOR_FILE "LUR\r\n"
+#define FILE_INFORMATION_CHANGES "FIC\r\n"
+#define DELETE_FILE "DFL\r\n"
 #define TIMEOUT 15000
 
 enum SocketState{

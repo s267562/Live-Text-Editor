@@ -513,6 +513,8 @@ void Editor::on_actionShare_file_triggered() {
     SimpleCrypt crypto;                                                    /* ATTENZIONE: Stesso codice presente in getsharecode in showfile!!!*/
     crypto.setKey(0xf55f15758b7e0153); // Random generated key, same must be used server side!!!
 
+    qDebug() << controller->getUser()->getUsername();
+    qDebug() << this->filename;
     QString shareCode = crypto.encryptToString(controller->getUser()->getUsername() + "%_##$$$##_%" + filename);
     ShareFile *shareFile = new ShareFile(this, this->filename, shareCode);
     shareFile->show();
@@ -626,9 +628,14 @@ void Editor::resizeEvent(QResizeEvent *event) {
 }
 
 void Editor::removeUser(QString user) {
+    if (user == this->controller->getUser()->getUsername()) {
+        showFinder();
+        return;
+    }
     users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
         return s == user;
     }));
+    qDebug() << user;
 
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
@@ -651,7 +658,7 @@ void Editor::setUsers(QStringList users) {
     ui->username->setText("Debug");
 #endif
     this->users = users;
-//ui->userListWidget->addItems(users);
+    ui->userListWidget->addItems(users);
     controller->stopLoadingPopup();
 }
 

@@ -30,19 +30,18 @@ Pos CRDT::handleInsert(Character character) {
     qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
     for (int i = 0; i < structure.size(); i++) {
         for (int j = 0; j < structure[i].size(); j++) {
-            QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
             QString value = ""; if(val == '\n') value += "\n"; else value += val;
             if(i == pos.getLine() && j == pos.getCh()) {
-                qD << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+				qDebug() << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             } else {
-                qD << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+				qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             }
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
-                qD << id.getDigit();
+				qDebug() << id.getDigit();
             }
         }
     }
@@ -175,15 +174,14 @@ void CRDT::handleDelete(const Character &character) {
     qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
     for (int i = 0; i < structure.size(); i++) {
         for (int j = 0; j < structure[i].size(); j++) {
-            QDebug qD(QtDebugMsg);
             char val = structure[i][j].getValue();
             int counter = structure[i][j].getCounter();
             QString siteId = structure[i][j].getSiteId();
             QString value = ""; if(val == '\n') value += "\n"; else value += val;
-            qD << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
+			qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
             std::vector<Identifier> identifier = structure[i][j].getPosition();
             for (Identifier id : identifier) {
-                qD << id.getDigit();
+				qDebug() << id.getDigit();
             }
         }
     }

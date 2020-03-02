@@ -14,11 +14,13 @@
 #include "Networking/Messanger.h"
 #include "Loading/loading.h"
 #include <iostream>
+#include "CustomWidget/customwidget.h"
 
 class Editor;
 class ShowFiles;
 class Login;
 class Registration;
+class CustomWidget;
 
 class Controller : public QMainWindow {
     Q_OBJECT
@@ -39,6 +41,7 @@ private:
     /* networking */
     Messanger *messanger;
     Loading *loading = nullptr;
+    CustomWidget *customWidget = nullptr;
 
 public slots:
     /* NETWORKING */
@@ -70,6 +73,8 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
+    void requestForUsernameList(QString filename, CustomWidget *customWideget);
+    void reciveUsernameList(QString filename, QStringList userlist);
 
 signals:
     void userRecived();
@@ -83,6 +88,8 @@ public:
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
     void startLoadingPopup();
     void stopLoadingPopup();
+    void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
+    void sendDeleteFile(QString filename);
 };
 
 
