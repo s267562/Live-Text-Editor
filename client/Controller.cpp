@@ -8,19 +8,31 @@
 Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
-    crdt = new CRDT();
+    crdt = new CRDT(nullptr, messanger);
+    crdtThread = new CDRTThread(this, crdt);
+    crdt->moveToThread(crdtThread);
+    crdtThread->start();
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
     connect(messanger, SIGNAL(fileRecived(QString, std::vector<std::vector<Character>>)), this, SLOT(openFile(QString, std::vector<std::vector<Character>>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
-    connect(messanger, &Messanger::newMessage,
-            this, &Controller::newMessage);
+
+    /*connect(messanger, &Messanger::newMessage,
+            this, &Controller::newMessage);*/
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
     connect(this->messanger, SIGNAL(editAccountFailed()), this, SLOT(errorEditAccount()));
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
     connect(this->messanger,SIGNAL(reciveUsernameList(QString, QStringList)), this, SLOT(reciveUsernameList(QString, QStringList)));
+
+    /* multi threading */
+    messanger->setCrdt(crdt);
+    connect(crdt, SIGNAL(writeInsert(Character)), this->messanger, SLOT(writeInsert(Character)));
+    connect(crdt, SIGNAL(writeDelete(Character)), this->messanger, SLOT(writeDelete(Character)));
+    connect(crdt, SIGNAL(writeStyleChanged(Character)), this->messanger, SLOT(writeStyleChanged(Character)));
+    connect(messanger, &Messanger::newMessage,crdt, &CRDT::newMessage);
+
     now = connection;
     connection->show();
 }
@@ -30,8 +42,8 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     user = nullptr;
 
     // Controller
-    connect(messanger, &Messanger::newMessage,
-              this, &Controller::newMessage);
+    /*connect(messanger, &Messanger::newMessage,
+              this, &Controller::newMessage);*/
 
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
@@ -160,11 +172,15 @@ void Controller::showFileFinderOtherView(){
 
 void Controller::requestForFile(QString filename){
     bool result = this->messanger->requestForFile(filename);
-
+    qDebug() << "Controller1: "<< QThread::currentThreadId();
     if (result){
         if (editor == nullptr){
             siteId = user->getUsername();
-            editor = new Editor(siteId, this, this);
+            editor = new Editor(siteId, nullptr, this);
+            //editorThread = new CDRTThread();
+            //editor = editorThread->createEditor(siteId, this);
+            //editor->moveToThread(editorThread);
+            //editorThread->setEditor(editor);
 
             /* connecting */
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
@@ -175,6 +191,16 @@ void Controller::requestForFile(QString filename){
             connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
             connect(editor, &Editor::logout, messanger, &Messanger::logOut);
+            /* MULTI THREAD */
+            crdt->setEditor(editor);
+            connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos)), editor, SLOT(insertChar(char, QTextCharFormat, Pos )));
+            connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&)));
+            connect(crdt, SIGNAL(deleteChar(Pos )), editor, SLOT(deleteChar(Pos )));
+            //connect(editor, SIGNAL(localInsert(QString , QTextCharFormat , Pos )), crdt, SLOT(localInsert(QString , QTextCharFormat , Pos )));
+            connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
+            connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor , QString, int )), Qt::QueuedConnection);
+            connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int)), Qt::QueuedConnection);
+
         }else{
             connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
             connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
@@ -185,6 +211,8 @@ void Controller::requestForFile(QString filename){
         editor->setFilename(filename);
         now->close();
         now = editor;
+        //editorThread->show();
+        //editorThread->run();
         editor->show();
         startLoadingPopup();
     }
@@ -195,7 +223,7 @@ void Controller::showEditor(){
     editor->show();
 }
 
-void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
+/*void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     // insert into the model
     Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
@@ -221,9 +249,9 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
     for(Character c : removedChars) {
         this->messanger->writeDelete(c);
     }
-}
+}*/
 
-void Controller::newMessage(Message message) {
+/*void Controller::newMessage(Message message) {
     // Message message = this->messanger->getMessage();
 
     if(message.getType() == INSERT) {
@@ -235,28 +263,28 @@ void Controller::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos);
+            emit insertChar(character.getValue(), character.getTextCharFormat(), pos);
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
 
         if(pos) {
             // delete from the editor.
-            this->editor->changeStyle(pos, message.getCharacter().getTextCharFormat());
+            emit changeStyle(pos, message.getCharacter().getTextCharFormat());
         }
     } else if(message.getType() == DELETE) {
         Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
 
         if(pos) {
             // delete from the editor.
-            this->editor->deleteChar(pos);
+            emit deleteChar(pos);
         }
     }
-}
+}*/
 
 void Controller::openFile(QString filename, std::vector<std::vector<Character>> initialStructure) {
     crdt->setStructure(initialStructure);
-    this->editor->replaceText(this->crdt->toText());
+    editor->replaceText(this->crdt->toText());
     /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
     auto result = this->user->getFileList().find(filename);
 
@@ -329,3 +357,19 @@ void Controller::sendDeleteFile(QString filename){
     this->messanger->sendDeleteFile(filename);
     startLoadingPopup();
 }
+
+/*void Controller::totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars, int position) {
+    qDebug() << "Controller: " << QThread::currentThreadId();
+    for(int i=0; i<charsAdded; i++) {
+        // for each char added
+        cursor.setPosition(position + i);
+        int line = cursor.blockNumber();
+        int ch = cursor.positionInBlock();
+        Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+        // select char
+        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+        QTextCharFormat charFormat = cursor.charFormat();
+
+        localInsert(chars.at(i), charFormat, startPos);
+    }
+}*/

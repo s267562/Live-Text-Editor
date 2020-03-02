@@ -31,9 +31,7 @@ public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
-    void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);
+
     void reset();
     void replaceText(const QString initialText);
     ~Editor();
@@ -52,10 +50,18 @@ public slots:
     void showError();
     void editAccountClicked();
     void changeUser();
+    /*MULTI THREAD*/
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    void changeStyle(Pos pos, const QTextCharFormat&format);
+    void deleteChar(Pos pos);
 
 signals:
     void logout();
     void showFinder();
+    void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
+    void totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars, int position);
+    void totalLocalStyleChange(int charsAdded, QTextCursor cursor, int position);
+    void localDelete(Pos startPos, Pos endPos);
 
 private slots:
     void onTextChanged(int position, int charsRemoved, int charsAdded);

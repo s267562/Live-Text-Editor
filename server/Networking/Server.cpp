@@ -12,7 +12,7 @@ Server::Server(QObject *parent) : QTcpServer(parent) {}
  */
 bool Server::startServer(quint16 port) {
 	connect(this, SIGNAL(newConnection()), this, SLOT(connection()));
-
+    qDebug() << "Server: "<< QThread::currentThreadId();
 	if (!this->listen(QHostAddress::Any, port)) {
 		qDebug() << "Server.cpp - startServer()     Could not start server";
 		qDebug() << ""; // newLine
@@ -22,6 +22,7 @@ bool Server::startServer(quint16 port) {
 		qDebug() << ""; // newLine
 		return true;
 	}
+
 }
 
 /**
@@ -35,6 +36,7 @@ void Server::connection() {
 	sockets[socketDescriptor] = soc;
 	QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
 	QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
+	soc->setParent(nullptr);
 
 	*connectReadyRead = connect(soc, &QTcpSocket::readyRead, this,
 								[this, connectReadyRead, connectDisconnected, soc, socketDescriptor] {
@@ -354,15 +356,17 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 			qDebug() << "File need to be created";
 			CRDT *crdt = new CRDT();
 			DB.createFile(jsonFileName, usernames[socketDescriptor]);
-			thread = new Thread(this, crdt, jsonFileName, username, this);                        /* create new thread */
+			thread = new Thread(nullptr, crdt, jsonFileName, username, this);                        /* create new thread */
 		} else
-			thread = new Thread(this, loadedCrdt, jsonFileName, username,
+			thread = new Thread(nullptr, loadedCrdt, jsonFileName, username,
 								this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
 		thread->addSocket(soc,
 						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
 		/*std::shared_ptr<Thread> thread = this->addThread(key, soc);
         thread->addSocket(soc, usernames[socketDescriptor]);*/
+		thread->moveToThread(thread);
+		soc->moveToThread(thread);
 		thread->start();
 	}
 

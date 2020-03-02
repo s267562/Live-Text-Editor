@@ -15,6 +15,7 @@ class Login;
 }
 
 class Controller;
+class Messanger;
 
 class Login : public QMainWindow
 {
