@@ -15,18 +15,23 @@
 #include "Loading/loading.h"
 #include <iostream>
 #include "CustomWidget/customwidget.h"
+#include "CDRTThread.h"
 
 class Editor;
+class CDRTThread;
 class ShowFiles;
 class Login;
 class Registration;
 class CustomWidget;
+class CRDT;
+class Messanger;
 
 class Controller : public QMainWindow {
     Q_OBJECT
 private:
     /* model */
     CRDT *crdt;
+    CDRTThread *crdtThread;
     User *user;
     QString siteId;
 
@@ -64,7 +69,7 @@ public slots:
 
     /* EDITOR */
     void showEditor();
-    void newMessage(Message message);
+    //void newMessage(Message message);
     void openFile(QString, std::vector<std::vector<Character>> initialStructure);
 
     void reciveUser(User *user);
@@ -76,20 +81,30 @@ public slots:
     void requestForUsernameList(QString filename, CustomWidget *customWideget);
     void reciveUsernameList(QString filename, QStringList userlist);
 
+    /*void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos); ->in CRDT
+    void totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars,  int position);
+    void localDelete(Pos startPos, Pos endPos);*/
+
 signals:
     void userRecived();
+    /* MULTI THREAD */
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    void changeStyle(Pos pos, const QTextCharFormat&format);
+    void deleteChar(Pos pos);
+    void reset();
 
 public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
-    void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
-    void localDelete(Pos startPos, Pos endPos);
+
     User* getUser();
-    void styleChange(QTextCharFormat textCharFormat, Pos pos);
+    //void styleChange(QTextCharFormat textCharFormat, Pos pos);  ->in CRDT
     void startLoadingPopup();
     void stopLoadingPopup();
     void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
     void sendDeleteFile(QString filename);
+    CRDT *getCrdt() const;
+    ~Controller();
 };
 
 

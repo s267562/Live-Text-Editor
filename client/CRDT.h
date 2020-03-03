@@ -10,13 +10,22 @@
 #include "utils/Pos.h"
 #include "utils/Character.h"
 #include "utils/Identifier.h"
+#include "Networking/Messanger.h"
+#include "editor.h"
 #include <math.h>
 #include <iostream>
 #include <map>
+#include <QThread>
+#include <QTextCursor>
 
-class CRDT {
+class Messanger;
+class Controller;
+class Editor;
+
+class CRDT: public QObject {
+    Q_OBJECT;
 public:
-    CRDT();
+    CRDT(QObject *parent, Messanger *messanger);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
@@ -35,6 +44,12 @@ private:
     std::vector<std::vector<Character>> structure;
     std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
+    Messanger *messanger;
+    Editor* editor = nullptr;
+public:
+    void setEditor(Editor *editor);
+
+private:
 
     // insert
     const Character generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId);
@@ -57,6 +72,21 @@ private:
 
     void mergeLines(int line);
 
+public slots:
+    //void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
+    void totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars,  int position);
+    void totalLocalStyleChange(int charsAdded, QTextCursor cursor,  int position);
+    void localDelete(Pos startPos, Pos endPos);
+    void newMessage(Message message);
+
+signals:
+    void writeInsert(Character);
+    void writeDelete(Character);
+    void writeStyleChanged(Character);
+
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    void changeStyle(Pos pos, const QTextCharFormat&format);
+    void deleteChar(Pos pos);
 };
 
 

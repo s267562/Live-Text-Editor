@@ -14,6 +14,7 @@
 #include "../User.h"
 #include "../../common/commonFunctions.h"
 
+class CRDT;
 
 class Messanger: public QObject{
     Q_OBJECT
@@ -26,15 +27,18 @@ private:
     bool reciveOkMessage;
     bool clientIsLogged;
     std::queue<QByteArray> messages;
+    CRDT *crdt = nullptr;
+
+private:
 
     QMetaObject::Connection connectReadyRead;
     QMetaObject::Connection connectDisconnected;
 
 public:
     Messanger(QObject *parent = nullptr);
-    bool writeInsert(Character character);
+    /*bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
-    bool writeDelete(Character character);
+    bool writeDelete(Character character);*/
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -56,11 +60,15 @@ public:
     bool readUsernameList();
     bool sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames);
     bool sendDeleteFile(QString filename);
+    void setCrdt(CRDT *crdt);
 
 public slots:
     void onReadyRead();
     void onDisconnect();
     bool logOut();
+    bool writeInsert(Character character);
+    bool writeStyleChanged(Character character);
+    bool writeDelete(Character character);
 
 signals:
     void errorConnection();

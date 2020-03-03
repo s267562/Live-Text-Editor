@@ -3,12 +3,15 @@
 #include <QJsonDocument>
 #include <QtCore/QBuffer>
 
+Q_DECLARE_METATYPE(Message);
+
 Messanger::Messanger(QObject *parent) : QObject(parent) {
     this->socket = new QTcpSocket(this);
     /* define initial state */
     reciveOkMessage = false;
     state = UNLOGGED;
     clientIsLogged = false;
+    qRegisterMetaType<Message>("Message");
 
     /* define connection */
     this->connectReadyRead = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
@@ -531,6 +534,7 @@ bool Messanger::readFile(){
  */
 bool Messanger::writeInsert(Character character){
     qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
+    qDebug() << "Messanger: "<< QThread::currentThreadId();
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
         QByteArray message(INSERT_MESSAGE);
@@ -622,7 +626,8 @@ bool Messanger::readInsert(){
 
     Message message(character, socket->socketDescriptor(), INSERT);
 
-    emit newMessage(message);
+    //emit newMessage(message);
+    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
     return true;
 }
 
@@ -643,7 +648,8 @@ bool Messanger::readStyleChanged(){
 
     Message message(character, socket->socketDescriptor(), STYLE_CHANGED);
 
-    emit newMessage(message);
+    //emit newMessage(message);
+    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
     return true;
 }
 
@@ -668,7 +674,8 @@ bool Messanger::readDelete(){
 
     Message message(character, socket->socketDescriptor(), DELETE);
 
-    emit newMessage(message);
+    //emit newMessage(message);
+    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
     return true;
 }
 
@@ -835,4 +842,8 @@ bool Messanger::sendDeleteFile(QString filename){
     }else{
         return false;
     }
+}
+
+void Messanger::setCrdt(CRDT *crdt) {
+    Messanger::crdt = crdt;
 }

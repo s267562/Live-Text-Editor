@@ -5,11 +5,19 @@
 #include <ctime>
 #include <cmath>
 #include "CRDT.h"
+#include "Networking/Messanger.h"
 #include <QDebug>
+#include <QTextCursor>
+
+Q_DECLARE_METATYPE(Character);
+Q_DECLARE_METATYPE(QTextCharFormat);
 
 
-CRDT::CRDT() {
+CRDT::CRDT(QObject *parent, Messanger *messanger): QObject(parent) {
     this->structure = {};
+    this->messanger = messanger;
+    qRegisterMetaType<Character>("Character");
+    qRegisterMetaType<QTextCharFormat>("QTextCharFormat");
 }
 
 void CRDT::setStructure(const std::vector<std::vector<Character>> &initialStructure) {
@@ -547,4 +555,93 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
     return pos;
+}
+
+void CRDT::totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars, int position) {
+    qDebug() << "CRDT: " << QThread::currentThreadId();
+    for(int i=0; i<charsAdded; i++) {
+        // for each char added
+        cursor.setPosition(position + i);
+        int line = cursor.blockNumber();
+        int ch = cursor.positionInBlock();
+        Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+        // select char
+        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+        QTextCharFormat charFormat = cursor.charFormat();
+
+        Character character = handleLocalInsert(chars.at(i).toLatin1(), charFormat, startPos);
+
+        // send insert at the server.
+        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character, character));
+    }
+}
+
+void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor cursor, int position) {
+    qDebug() << "CRDT: " << QThread::currentThreadId();
+
+    for(int i=0; i<charsAdded; i++) {
+        // for each char added
+        cursor.setPosition(position + i);
+        int line = cursor.blockNumber();
+        int ch = cursor.positionInBlock();
+        Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+        // select char
+        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+        QTextCharFormat textCharFormat = cursor.charFormat();
+
+        if(styleChanged(textCharFormat, pos)) {
+            Character character = getCharacter(pos);
+
+            // send insert at the server.
+            QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+        }
+    }
+}
+
+void CRDT::localDelete(Pos startPos, Pos endPos) {
+    std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
+
+    for(Character c : removedChars) {
+        QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character, c));
+    }
+}
+
+void CRDT::newMessage(Message message) {
+    // Message message = this->messanger->getMessage();
+    qDebug() << "CRDT: " << QThread::currentThreadId();
+
+    if(message.getType() == INSERT) {
+        Character character = message.getCharacter();
+
+        Pos pos = handleRemoteInsert(character);
+
+        if(character.getSiteId() == getSiteId()) {
+            // local insert - only in the model; the char is already in the view.
+        } else {
+            // remote insert - the char is to insert in the model and in the view. Insert into the editor.
+            //emit insertChar(character.getValue(), character.getTextCharFormat(), pos);
+            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()), Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos));
+        }
+    } else if(message.getType() == STYLE_CHANGED) {
+        Pos pos = handleRemoteStyleChanged(message.getCharacter());
+
+        if(pos) {
+            // delete from the editor.
+            //emit changeStyle(pos, message.getCharacter().getTextCharFormat());
+            QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()));
+        }
+    } else if(message.getType() == DELETE) {
+        Pos pos = handleRemoteDelete(message.getCharacter());
+
+        if(pos) {
+            // delete from the editor.
+            //emit deleteChar(pos);
+            QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos));
+        }
+    }
+}
+
+void CRDT::setEditor(Editor *editor) {
+    CRDT::editor = editor;
 }

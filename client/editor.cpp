@@ -8,7 +8,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QSlider>
-#include <QSpinBox>
+#include "./utils/Pos.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
@@ -18,12 +18,21 @@
 #include <QPrinter>
 #include <QColorDialog>
 #include <ShareFile/sharefile.h>
+#include <QMetaObject>
+#include <QMetaType>
+
+Q_DECLARE_METATYPE(QTextCursor);
+//Q_DECLARE_METATYPE(Pos);
+
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
                                                                           siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
     ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
+
+    qRegisterMetaType<QTextCursor>("QTextCursor");
+    qRegisterMetaType<Pos>("Pos");
 
     ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
 
@@ -315,7 +324,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             }
             QTextCursor cursor = textEdit->textCursor();
 
-            for(int i=0; i<charsAdded; i++) {
+            /*for(int i=0; i<charsAdded; i++) {
                 // for each char added
                 cursor.setPosition(position + i);
                 int line = cursor.blockNumber();
@@ -327,7 +336,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 QTextCharFormat textCharFormat = cursor.charFormat();
 
                 this->controller->styleChange(textCharFormat, pos);
-            }
+            }*/
+            QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalStyleChange", Qt::QueuedConnection, Q_ARG(int, charsAdded), Q_ARG(QTextCursor, cursor), Q_ARG(int, position));
         } else {
             if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
                 // correction when paste something in first position.
@@ -354,7 +364,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     undo();
 
                     //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-                    this->controller->localDelete(startPos, endPos);
+                    //emit localDelete(startPos, endPos);
+                    QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection, Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
                 } else {
                     // get startPos
                     int line, ch;
@@ -372,14 +383,14 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     redo();
 
                     //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-                    this->controller->localDelete(startPos, endPos);
+                    QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection, Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
                 }
             }
 
             if(charsAdded) {
                 QTextCursor cursor = textEdit->textCursor();
                 QString chars = textEdit->toPlainText().mid(position, charsAdded);
-
+                /*
                 for(int i=0; i<charsAdded; i++) {
                     // for each char added
                     cursor.setPosition(position + i);
@@ -390,8 +401,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
                     QTextCharFormat charFormat = cursor.charFormat();
 
-                    this->controller->localInsert(chars.at(i), charFormat, startPos);
-                }
+                    emit localInsert(chars.at(i), charFormat, startPos);
+                }*/
+                //emit totalLocalInsert(charsAdded, cursor, chars, position);
+                qDebug() << "Editor: "<< QThread::currentThreadId();
+                QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection, Q_ARG(int, charsAdded), Q_ARG(QTextCursor, cursor), Q_ARG(QString, chars), Q_ARG(int, position));
             }
         }
 

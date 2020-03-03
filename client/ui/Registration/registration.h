@@ -11,6 +11,7 @@ class Registration;
 }
 
 class Controller;
+class Messanger;
 
 class Registration : public QMainWindow
 {

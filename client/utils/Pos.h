@@ -11,7 +11,7 @@
 
 class Pos {
 public:
-    Pos(int ch, int line);
+    Pos(int ch = 0, int line = 0);
 
     int getCh() const;
     void setCh(int ch);

@@ -16,6 +16,7 @@ class Message {
     TypeMessage type;
     /* adding timestamp? */
 public:
+    Message(){}
     Message(Character character, qintptr socketID, TypeMessage type): character(character), socketID(socketID), type(type){}
 
 
