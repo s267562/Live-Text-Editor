@@ -31,7 +31,6 @@ public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-
     void reset();
     void replaceText(const QString initialText);
     ~Editor();
@@ -75,9 +74,7 @@ private slots:
     void textFamily(const QString &f);
     void textSize(const QString &p);
 
-
     void colorChanged(const QColor &c);
-
 
 
 private:

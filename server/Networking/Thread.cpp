@@ -64,7 +64,6 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
  */
 void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead,
 					   QMetaObject::Connection *connectDisconnected) {
-    qDebug() << "Thread: "<< QThread::currentThreadId();
 	if (soc->bytesAvailable() == 0) {
 		return;
 	}

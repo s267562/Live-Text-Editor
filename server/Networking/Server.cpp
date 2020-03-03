@@ -12,7 +12,6 @@ Server::Server(QObject *parent) : QTcpServer(parent) {}
  */
 bool Server::startServer(quint16 port) {
 	connect(this, SIGNAL(newConnection()), this, SLOT(connection()));
-    qDebug() << "Server: "<< QThread::currentThreadId();
 	if (!this->listen(QHostAddress::Any, port)) {
 		qDebug() << "Server.cpp - startServer()     Could not start server";
 		qDebug() << ""; // newLine
@@ -365,7 +364,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
 		/*std::shared_ptr<Thread> thread = this->addThread(key, soc);
         thread->addSocket(soc, usernames[socketDescriptor]);*/
-		thread->moveToThread(thread);
+		//thread->moveToThread(thread);
 		soc->moveToThread(thread);
 		thread->start();
 	}
@@ -551,10 +550,10 @@ std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
 		CRDT *crdt = new CRDT();
 		DB.createFile(fileName, username);
 		/* create new thread */
-		thread = std::make_shared<Thread>(this, crdt, fileName, username, this);
+		thread = std::make_shared<Thread>(nullptr, crdt, fileName, username, this);
 	} else {
 		/* create new thread */
-		thread = std::make_shared<Thread>(this, loadedCrdt, fileName, username, this);
+		thread = std::make_shared<Thread>(nullptr, loadedCrdt, fileName, username, this);
 	}
 	threads[fileName] = thread;
 	return thread;

@@ -177,10 +177,6 @@ void Controller::requestForFile(QString filename){
         if (editor == nullptr){
             siteId = user->getUsername();
             editor = new Editor(siteId, nullptr, this);
-            //editorThread = new CDRTThread();
-            //editor = editorThread->createEditor(siteId, this);
-            //editor->moveToThread(editorThread);
-            //editorThread->setEditor(editor);
 
             /* connecting */
             connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
@@ -196,7 +192,6 @@ void Controller::requestForFile(QString filename){
             connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos)), editor, SLOT(insertChar(char, QTextCharFormat, Pos )));
             connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&)));
             connect(crdt, SIGNAL(deleteChar(Pos )), editor, SLOT(deleteChar(Pos )));
-            //connect(editor, SIGNAL(localInsert(QString , QTextCharFormat , Pos )), crdt, SLOT(localInsert(QString , QTextCharFormat , Pos )));
             connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
             connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor , QString, int )), Qt::QueuedConnection);
             connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int)), Qt::QueuedConnection);
@@ -211,8 +206,6 @@ void Controller::requestForFile(QString filename){
         editor->setFilename(filename);
         now->close();
         now = editor;
-        //editorThread->show();
-        //editorThread->run();
         editor->show();
         startLoadingPopup();
     }
@@ -373,3 +366,12 @@ void Controller::sendDeleteFile(QString filename){
         localInsert(chars.at(i), charFormat, startPos);
     }
 }*/
+
+Controller::~Controller(){
+    this->crdtThread->quit();
+    this->crdtThread->wait();
+}
+
+CRDT *Controller::getCrdt() const {
+    return crdt;
+}

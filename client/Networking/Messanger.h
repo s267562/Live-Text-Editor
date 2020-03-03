@@ -29,9 +29,6 @@ private:
     std::queue<QByteArray> messages;
     CRDT *crdt = nullptr;
 
-public:
-    void setCrdt(CRDT *crdt);
-
 private:
 
     QMetaObject::Connection connectReadyRead;
@@ -63,6 +60,7 @@ public:
     bool readUsernameList();
     bool sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames);
     bool sendDeleteFile(QString filename);
+    void setCrdt(CRDT *crdt);
 
 public slots:
     void onReadyRead();
