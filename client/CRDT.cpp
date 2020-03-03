@@ -257,6 +257,7 @@ void CRDT::insertChar(Character character, Pos pos) {
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
             style.emplace_back(std::pair<Character,int>(character,0x4));
+
         }
     }
 
@@ -293,6 +294,7 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         //qDebug() << "need to merge line" << startPos.getLine();
         this->mergeLines(startPos.getLine());
     }
+
 
     // print the structure for debugging
     qDebug() << "\nclient/CRDT.cpp - handleDelete(): \n";
@@ -414,7 +416,7 @@ Pos CRDT::findPosition(Character character) {
 void CRDT::removeEmptyLines() {
     int line=0;
 
-    for (line = 0; line < this->structure.size()-1; line++) {
+    for (line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].empty()) {
             this->structure.erase(this->structure.begin() + line);
             this->style.erase(this->style.begin()+line+1);
@@ -422,10 +424,10 @@ void CRDT::removeEmptyLines() {
         }
     }
 
-    if (this->structure[line].empty()) {
+   /* if (this->structure[line].empty()) {
         this->structure.erase(this->structure.begin() + line);
     }
-
+*/
 }
 
 void CRDT::mergeLines(int line) {
