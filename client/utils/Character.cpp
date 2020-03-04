@@ -191,6 +191,15 @@ CharFormat Character::generateCharFormat(QTextCharFormat textCharFormat) {
     return format;
 }
 
+bool operator==(const Character &lhs, const Character &rhs) {
+    return lhs.siteId == rhs.siteId &&
+           lhs.position == rhs.position;
+}
+
+bool operator!=(const Character &lhs, const Character &rhs) {
+    return !(rhs == lhs);
+}
+
 
 
 

@@ -279,6 +279,9 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         newlineRemoved = true;
         removedChars = this->deleteMultipleLines(startPos, endPos);
 
+        for( int i=startPos.getLine(); i<endPos.getLine(); i++ ){ // TODO: Check included or not
+            this->removeStyleLine(i);
+        }
         // single-line deletes
     } else {
         removedChars = this->deleteSingleLine(startPos, endPos);
@@ -315,7 +318,6 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
     for (int line = endPos.getLine() - 1; line > startPos.getLine(); line--) {
         chars.insert(chars.end(), structure[line].begin(), structure[line].end());
         structure.erase(structure.begin() + line );
-        style.erase(style.begin() + line );
     }
 
     chars.insert(chars.end(), structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
@@ -354,6 +356,10 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
 
     if (character.getValue() == '\n') {
         this->mergeLines(pos.getLine());
+        //TODO: Some problem here
+        if(style.size() > pos.getLine() + 1) {
+            this->removeStyleLine(pos.getLine()+1);
+        }
     }
 
     this->removeEmptyLines();
@@ -419,7 +425,7 @@ void CRDT::removeEmptyLines() {
     for (line = 0; line < this->structure.size(); line++) {
         if (this->structure[line].empty()) {
             this->structure.erase(this->structure.begin() + line);
-            this->style.erase(this->style.begin()+line+1);
+           // this->style.erase(this->style.begin()+line+1);
             line--;
         }
     }
@@ -435,7 +441,7 @@ void CRDT::mergeLines(int line) {
     if(structure.size() > line + 1 && !structure[line + 1].empty()) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
         structure.erase(structure.begin() + line + 1);
-        style.erase(style.begin()+line+1);
+        //style.erase(style.begin()+line+1);
     }
 }
 
@@ -616,5 +622,19 @@ void CRDT::printStructures() {
 
     qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine
 
+}
+
+void CRDT::removeStyleLine(int i) {
+    this->style.erase(this->style.begin()+1);
+}
+
+std::vector<std::vector<Character>> CRDT::getStructure() {
+    std::vector<std::vector<Character>> tmpStructure=this->structure;
+    return tmpStructure;
+}
+
+std::vector<std::pair<Character,int>> CRDT::getStyle() {
+    std::vector<std::pair<Character,int>> tmpStyle=this->style;
+    return tmpStyle;
 }
 

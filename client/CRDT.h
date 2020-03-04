@@ -35,6 +35,12 @@ public:
     Character getBlockIdentifier(int blockNumber);
     void printStructures();
 
+
+    //TODO: Just for testing purpose
+    std::vector<std::vector<Character>> getStructure();
+    std::vector<std::pair<Character,int>> getStyle();
+
+
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;
@@ -66,6 +72,7 @@ private:
 
     void insertBlock(Character character, Pos position);
 
+    void removeStyleLine(int i);
 };
 
 

@@ -13,7 +13,6 @@
 #include "../client/Controller.h"
 
 
-
 class TestGui: public QObject
 {
 
@@ -21,66 +20,30 @@ Q_OBJECT
 
 
 private slots:
+    void initTestCase();
+    void testGuiAlignments();
     void testGui();
-    void process();
+
 
 
 private:
     Controller controller;
     Controller controller2;
 
-    int n=1;
-
     void logClient(Controller &controller, QString username, QString password);
     void generalAction(Controller &controller);
-
+    void testingDelete(Controller &controller);
+    void testingAlignmentFirstAndLastLine(Controller &controller);
 
 };
-
-
-void TestGui::process(){
-    if(n==1){
-        generalAction(controller);
-    }else{
-        generalAction(controller2);
-    }
-
-}
 
 //! [1]
 void TestGui::testGui()
 {
+    /*
+    generalAction(controller);
 
-    QApplication::setActiveWindow(&controller);
-
-    QApplication::setActiveWindow(&controller2);
-
-    logClient(controller, "u1","u1");
-
-    logClient(controller2, "u2","u2");
-
-    QThread* t1=new QThread();
-    controller.moveToThread(t1);
-
-    connect(t1,SIGNAL(started()),this,SLOT(process()));
-
-    QThread* t2=new QThread();
-    controller2.moveToThread(t2);
-
-    connect(t2,SIGNAL(started()),this,SLOT(process()));
-
-    n=1;
-    t1->start();
-
-    // generalAction(controller);
-
-    n=2;
-    t2->start();
-
-    // generalAction(controller);
-
-
-
+    generalAction(controller2);*/
 }
 //! [1]
 
@@ -182,8 +145,55 @@ void TestGui::generalAction(Controller &controller) {
     QTest::mouseClick(controller.findChild<QMainWindow*>("Editor")->findChild<QToolBar*>("")->findChildren<QToolButton*>("",Qt::FindDirectChildrenOnly).at(3), Qt::LeftButton);
 }
 
+
+void TestGui::testingDelete(Controller &controller) {
+    QTest::mouseClick(controller.findChild<QMainWindow*>("Editor")->findChild<QToolBar*>("")->findChildren<QToolButton*>("",Qt::FindDirectChildrenOnly).at(4), Qt::LeftButton);
+
+}
+
+void TestGui::testingAlignmentFirstAndLastLine(Controller &controller) {
+    QTest::mouseClick(controller.findChild<QMainWindow*>("Editor")->findChild<QToolBar*>("")->findChildren<QToolButton*>("",Qt::FindDirectChildrenOnly).at(4), Qt::LeftButton);
+    QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "This is an alignment test", Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 50);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 50);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 50);
+    QTest::mouseClick(controller.findChild<QMainWindow*>("Editor")->findChild<QToolBar*>("")->findChildren<QToolButton*>("",Qt::FindDirectChildrenOnly).at(3), Qt::LeftButton);
+    QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "This is an other alignment test", Qt::NoModifier, 20);
+}
+
+void TestGui::testGuiAlignments() {
+
+    this->testingAlignmentFirstAndLastLine(controller);
+
+    std::vector<std::vector<Character>> strC1 = this->controller.crdt->getStructure();
+    std::vector<std::vector<Character>> strC2 = this->controller2.crdt->getStructure();
+
+    std::vector<std::pair<Character,int>> styC1 = this->controller.crdt->getStyle();
+    std::vector<std::pair<Character,int>> styC2 = this->controller2.crdt->getStyle();
+
+    QCOMPARE(strC1,strC2);
+    QCOMPARE(styC1,styC2);
+
+    QCOMPARE(viewport,this->controller2.editor->centralWidget()->findChild<QWidget*>("viewport"));
+
+}
+
+void TestGui::initTestCase() {
+
+    QApplication::setActiveWindow(&controller);
+
+    QApplication::setActiveWindow(&controller2);
+
+    logClient(controller, "u1","u1");
+
+    logClient(controller2, "u2","u2");
+}
+
+
+
+
 //! [2]
-QTEST_MAIN(TestGui)
+QTEST_MAIN(TestGui);
 #include "TestGui.moc"
 //! [2]
 

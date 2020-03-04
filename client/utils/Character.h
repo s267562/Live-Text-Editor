@@ -32,6 +32,9 @@ public:
 	static Character toCharacter(QJsonDocument jsonDocument);
 	static CharFormat generateCharFormat(QTextCharFormat textCharFormat);
 
+    friend bool operator==(const Character &lhs, const Character &rhs);
+
+    friend bool operator!=(const Character &lhs, const Character &rhs);
 
 private:
     char value;

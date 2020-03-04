@@ -178,6 +178,7 @@ add_executable(TestGui Tests/TestGui.cpp
         client/ui/addfile.ui client/ui/addfile.cpp client/utils/OtherCursor.cpp client/utils/OtherCursor.h)
 
 
+
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(client2 ${LIBRARIES})
 target_link_libraries(client3 ${LIBRARIES})

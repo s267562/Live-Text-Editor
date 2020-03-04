@@ -22,6 +22,9 @@ class Registration;
 
 class Controller : public QMainWindow {
     Q_OBJECT
+
+    //TODO: Add #ifdef
+    friend class TestGui;
 private:
     /* model */
     CRDT *crdt;
@@ -81,6 +84,7 @@ public:
     void styleChange(QTextCharFormat textCharFormat, Pos pos);
     void startLoadingPopup();
     void stopLoadingPopup();
+
 };
 
 
