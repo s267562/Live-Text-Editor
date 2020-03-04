@@ -493,6 +493,9 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 		return false;
 	}
 
+	// Start transaction
+	QSqlDatabase::database().transaction();
+
 	QSqlQuery queryUsers;
 	queryUsers.prepare("UPDATE users SET username=:newUsername WHERE username=:oldUsername");
 	queryUsers.bindValue(":oldUsername", hashedOldUsername);
@@ -500,6 +503,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!queryUsers.exec()) {
 		qDebug() << "Error change username in table USERS:\n" << queryUsers.lastError();
+		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
@@ -512,6 +516,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	if (!queryFiles.exec()) {
 		qDebug() << "Error change username in table FILES:\n" << queryFiles.lastError();
 		db.close();
+		QSqlDatabase::database().rollback();
 		return false;
 	}
 
@@ -523,6 +528,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	if (!querySharing1.exec()) {
 		qDebug() << "Error change username in table SHARING OWNER:\n" << querySharing1.lastError();
 		db.close();
+		QSqlDatabase::database().rollback();
 		return false;
 	}
 
@@ -534,9 +540,11 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	if (!querySharing2.exec()) {
 		qDebug() << "Error change username in table SHARING SHARED:\n" << querySharing2.lastError();
 		db.close();
+		QSqlDatabase::database().rollback();
 		return false;
 	}
 
+	QSqlDatabase::database().commit();
 	db.close();
 	return result;
 }
@@ -558,6 +566,9 @@ bool Database::changePassword(QString username, QString newPassword) {
 		return false;
 	}
 
+	// Start transaction
+	QSqlDatabase::database().transaction();
+
 	QSqlQuery saltQuery;
 	saltQuery.prepare("SELECT salt FROM users WHERE username=:username");
 	saltQuery.bindValue(":username", hashedUsername);
@@ -568,6 +579,8 @@ bool Database::changePassword(QString username, QString newPassword) {
 			if (saltQuery.first()) {
 				salt = saltQuery.value(0).toString();
 			} else {
+				QSqlDatabase::database().rollback();
+				db.close();
 				return false;
 			}
 		}
@@ -582,8 +595,11 @@ bool Database::changePassword(QString username, QString newPassword) {
 
 	if (!query.exec()) {
 		qDebug() << "Error change password:\n" << query.lastError();
-	} else
+		QSqlDatabase::database().rollback();
+	} else {
 		result = true;
+		QSqlDatabase::database().commit();
+	}
 
 	db.close();
 	return result;
@@ -635,6 +651,9 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 		return false;
 	}
 
+	// Start transaction
+	QSqlDatabase::database().transaction();
+
 	QSqlQuery filesUpdate;
 	filesUpdate.prepare("UPDATE files SET fileID=:fileID1 WHERE fileID=:fileID2");
 	filesUpdate.bindValue(":fileID1", newFilename);
@@ -642,6 +661,7 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 
 	if (!filesUpdate.exec()) {
 		qDebug() << "Error getting user list for: " << oldFilename << "\n" << filesUpdate.lastError();
+		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
@@ -653,11 +673,12 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 
 	if (!sharingUpdate.exec()) {
 		qDebug() << "Error getting user list for: " << oldFilename << "\n" << sharingUpdate.lastError();
+		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
 
-	// TODO Remove old json file from server?
+	QSqlDatabase::database().commit();
 	return true;
 }
 
@@ -699,12 +720,16 @@ bool Database::deleteFile(QString filename) {
 		return false;
 	}
 
+	// Start transaction
+	QSqlDatabase::database().transaction();
+
 	QSqlQuery removeUser;
 	removeUser.prepare("DELETE FROM sharing WHERE fileID=:fileID");
 	removeUser.bindValue(":fileID", filename);
 
 	if (!removeUser.exec()) {
 		qDebug() << "Error getting user list for: " << filename << "\n" << removeUser.lastError();
+		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
@@ -715,9 +740,11 @@ bool Database::deleteFile(QString filename) {
 
 	if (!removeFile.exec()) {
 		qDebug() << "Error getting user list for: " << filename << "\n" << removeFile.lastError();
+		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
 
+	QSqlDatabase::database().commit();
 	return true;
 }
