@@ -9,8 +9,8 @@ Thread::Thread(QObject *parent, CRDT *crdt, QString filename, QString usernameOw
 		QThread(parent), crdt(crdt), filename(filename), usernameOwner(usernameOwner), server(server) {
 
 	// Create new timer
-	saveTimer = new QTimer(this);
-
+	saveTimer = new QTimer(nullptr);
+	saveTimer->moveToThread(this);
 	// Setup signal and slot
 	connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveCRDTToFile()));
 }

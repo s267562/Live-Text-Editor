@@ -342,7 +342,7 @@ bool CRDT::saveCRDT(QString filename) {
 	QFile saveFile(filename + ".json");
 
 	if (!saveFile.open(QIODevice::WriteOnly)) {
-		qWarning("Couldn't open save file.");
+		qWarning("Couldn't open save file. [WRITE]");
 		return false;
 	}
 
@@ -361,7 +361,7 @@ bool CRDT::loadCRDT(QString filename) {
 	QFile loadFile(filename + ".json");
 
 	if (!loadFile.open(QIODevice::ReadOnly)) {
-		qWarning("Couldn't open save file.");
+		qWarning("Couldn't open save file. [READ]");
 		return false;
 	}
 
