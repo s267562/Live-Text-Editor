@@ -471,34 +471,17 @@ void Thread::sendFile(QTcpSocket *soc){
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
     QByteArray message(SENDING_FILE);
     const std::vector<std::vector<Character>> file = crdt->getStructure();
-    std::vector<int> blockFormat;
+    std::vector<std::pair<Character,int>> blockFormat=this->crdt->getStyle();
 
-
-    for(int i=0; i<this->crdt->getTextDocument()->blockCount(); i++){
+   // std::vector<int> blockFormat;
+    /*for(int i=0; i<this->crdt->getTextDocument()->blockCount(); i++){
         QTextBlock tb=this->crdt->getTextDocument()->findBlockByNumber(i);
         int al = tb.blockFormat().alignment();
 
         blockFormat.push_back(al);
 
-//        if(al.testFlag(Qt::AlignLeft)){
-//            blockFormat.push_back(LEFT);
-//        }
-//        else if(al.testFlag(Qt::AlignRight)){
-//            blockFormat.push_back(RIGHT);
-//        }
-//        else if(al.testFlag(Qt::AlignHCenter)){
-//            blockFormat.push_back(CENTER);
-//        }
-//        else if(al.testFlag(Qt::AlignJustify)){
-//            blockFormat.push_back(JUSTIFY);
-//        }
-//        else{
-//            //Allineamento non riconosciuto
-//            qDebug() << "Allineamento non riconosciuto" ;
-//            //TODO: Gestire
-//        }
     }
-
+*/
 
     QByteArray numLines = convertionNumber(file.size());
 
@@ -513,7 +496,6 @@ void Thread::sendFile(QTcpSocket *soc){
             Character character = line[j];
             QByteArray characterByteFormat = character.toQByteArray();
             QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
-
             message.append(" " + sizeOfMessage + " " + characterByteFormat);
         }
     }
@@ -521,8 +503,15 @@ void Thread::sendFile(QTcpSocket *soc){
     QByteArray numBlocks = convertionNumber(blockFormat.size());
     message.append(" " + numBlocks);
 
-    for (int i = 0; i < blockFormat.size(); i++){
-        QByteArray alignment = convertionNumber(blockFormat.at(i));
+    for (std::pair<Character,int> & i : blockFormat){
+        Character character = i.first;
+        QByteArray characterByteFormat = character.toQByteArray();
+        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+        message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+        QByteArray alignment = convertionNumber(i.second);
+
         message.append(" " + alignment);
     }
 

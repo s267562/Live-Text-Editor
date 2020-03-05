@@ -76,7 +76,7 @@ signals:
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
-    void fileRecive(std::vector<std::vector<Character>> file, std::vector<int > at);
+    void fileRecive(std::vector<std::vector<Character>> file, std::vector<std::pair<Character,int>> at);
     void requestForFileFailed();
     void insertFailed();
     void deleteFailed();

@@ -42,6 +42,8 @@ public:
 
     QString toString();
 
+    void setStyle(std::vector<std::pair<Character, int>> blocks);
+
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;

@@ -13,7 +13,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<int>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<int>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     connect(messanger, &Messanger::newMessage,
             this, &Controller::newMessage);
@@ -37,7 +37,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<int >)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<int>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>)));
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
 }
 
@@ -278,10 +278,15 @@ void Controller::newMessage(Message message) {
     }
 }
 
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<int> styleBlocks) {
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks) {
     crdt->setStructure(initialStructure);
+    crdt->setStyle(styleBlocks);
     this->editor->replaceText(this->crdt->toText());
-    this->editor->formatText(styleBlocks);
+    std::vector<int> alignment_block;
+    for(std::pair<Character,int> & block : styleBlocks){
+        alignment_block.emplace_back(block.second);
+    }
+    this->editor->formatText(alignment_block);
 }
 
 User* Controller::getUser(){
@@ -291,8 +296,6 @@ User* Controller::getUser(){
 
 void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
     messanger->sendEditAccount(username, newPassword, oldPassword, avatar);
-    /*loading = new Loading(now);
-    loading->show();*/
 }
 
 void Controller::errorEditAccount() {

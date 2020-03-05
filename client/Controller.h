@@ -65,7 +65,7 @@ public slots:
     /* EDITOR */
     void showEditor();
     void newMessage(Message message);
-    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<int> styleBlocks);
+    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks);
 
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);

@@ -628,8 +628,7 @@ std::vector<std::vector<Character>> CRDT::getStructure() {
 }
 
 std::vector<std::pair<Character,int>> CRDT::getStyle() {
-    std::vector<std::pair<Character,int>> tmpStyle=this->style;
-    return tmpStyle;
+    return this->style;
 }
 
 QString CRDT::toString() {
@@ -684,4 +683,8 @@ QString CRDT::toString() {
 
     str +=  (num + "\n\n"); // newLine
     return str;
+}
+
+void CRDT::setStyle(std::vector<std::pair<Character, int>> blocks) {
+    this->style=blocks;
 }

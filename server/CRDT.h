@@ -37,6 +37,8 @@ public:
 	QTextDocument* getTextDocument();
 	int getRow(Character blockId);
 
+    std::vector<std::pair<Character, int>> getStyle();
+
 private:
     std::vector<std::vector<Character>> structure;
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>

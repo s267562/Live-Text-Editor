@@ -558,16 +558,29 @@ bool Messanger::readFile(){
         }
         file.push_back(line);
     }
-    std::vector<int> styleBlocks;
+
+    std::vector<std::pair<Character,int>> styleBlocks;
 
     readSpace(socket);
     int numBlocks = readNumberFromSocket(socket);
 
+    QByteArray characterByteFormat;
 
     for (int j = 0; j < numBlocks; j++){
         readSpace(socket);
+        int messageSize = readNumberFromSocket(socket);
+        readSpace(socket);
+
+        if (!readChunck(socket, characterByteFormat, messageSize)){
+            return false;
+        }
+
+        QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+        Character character = Character::toCharacter(jsonDocument);
+
+        readSpace(socket);
         int alignment = readNumberFromSocket(socket);
-        styleBlocks.push_back(alignment);
+        styleBlocks.emplace_back(character,alignment);
     }
 
 
