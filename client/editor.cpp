@@ -845,6 +845,8 @@ void Editor::resizeEvent(QResizeEvent *event) {
     ui->userListWidget->resize(149, textEdit->geometry().height() - 18 -100);
 
     ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 -100, ui->userWidget->width(), ui->userWidget->height());
+
+    this->updateOtherCursorPosition();
 }
 
 void Editor::removeUser(QString user) {

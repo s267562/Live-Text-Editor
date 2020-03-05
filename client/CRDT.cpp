@@ -247,12 +247,15 @@ void CRDT::insertChar(Character character, Pos pos) {
             qDebug().noquote() << "There is something after the newLine inserted";
             structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-            this->style.insert(this->style.begin() + pos.getLine()+1, std::pair<Character,int>(character,0x4));
+            auto previousLine=this->style.begin() + pos.getLine();
+            int alignment=previousLine->second; // Get only alignment
+            this->style.insert(this->style.begin() + pos.getLine()+1, std::pair<Character,int>(character,alignment));
 
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
-            style.emplace_back(std::pair<Character,int>(character,0x4));
-
+            auto previousLine=this->style.begin() + pos.getLine();
+            int alignment=previousLine->second; // Get only alignment
+            style.emplace_back(std::pair<Character,int>(character,alignment));
         }
     }
 

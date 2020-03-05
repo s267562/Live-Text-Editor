@@ -224,7 +224,6 @@ void Controller::newMessage(Message message) {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             qDebug() << message.getSender();
             this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, message.getSender());
-            //this->editor->otherCursors[message.getSender()]->setChar(character);
 
         }
     } else if(message.getType() == STYLE_CHANGED) {
