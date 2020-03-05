@@ -25,8 +25,7 @@ void Thread::run() {
  * @param username
  */
 void Thread::addSocket(QTcpSocket *soc, QString username) {
-	std::lock_guard<std::mutex> lg(mutexSockets);
-	qintptr socketDescriptor = soc->socketDescriptor();
+    qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = soc;
 	usernames[socketDescriptor] = username;
@@ -75,26 +74,35 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 	}
 	qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
 	qDebug() << ""; // newLine
-
+    std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
 	if (data.toStdString() == INSERT_MESSAGE && !fileDeleted) {
-		if (!readInsert(soc)) {
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+        if (!readInsert(soc)) {
 			writeErrMessage(soc, INSERT_MESSAGE);
 		}
 		writeOkMessage(soc);
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE  && !fileDeleted) {
-		if (!readStyleChanged(soc)) {
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+        if (!readStyleChanged(soc)) {
 			writeErrMessage(soc);
 		}
 		writeOkMessage(soc);
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == DELETE_MESSAGE  && !fileDeleted) {
-		if (!readDelete(soc)) {
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+        if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
-		readSpace(soc);
+        std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
+        std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+        std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+        std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
+
+        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+        readSpace(soc);
 		int fileNameSize = readNumberFromSocket(soc);
 		readSpace(soc);
 
@@ -140,6 +148,12 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 			thread->start();
 		} else {
+		    if (thread.get() != this){
+                std::unique_lock<std::shared_mutex> socketsLock(thread->mutexSockets);
+                std::unique_lock<std::shared_mutex> pendingSocketsLock(thread->mutexPendingSockets);
+                std::unique_lock<std::shared_mutex> usernamesLock(thread->mutexUsernames);
+                std::shared_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
+		    }
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 		}
 
@@ -147,7 +161,8 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		usernames.erase(soc->socketDescriptor());
 		sockets.erase(soc->socketDescriptor());
 	} else if (data.toStdString() == SHARE_CODE) {
-		if (!readShareCode(soc)) {
+        std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+        if (!readShareCode(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
 		readyRead(soc, connectReadyRead, connectDisconnected);
@@ -156,6 +171,8 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
         std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
         std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+        std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+
         if (readEditAccount(soc)) {
 			sendUser(soc);
 			server->sendFileNames(soc);
@@ -172,14 +189,23 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         }
     }  else if (data.toStdString() == FILE_INFORMATION_CHANGES){
         std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+        std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+        std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+        std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+        std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+
         if (!readFileInformationChanges(soc)) {
             writeErrMessage(soc, FILE_INFORMATION_CHANGES);
         }
     } else if (data.toStdString() == DELETE_FILE){
         std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
         std::unique_lock<std::shared_mutex> threadsMutex(server->mutexUsernames);
-        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+        std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+
+        std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+        std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+
         if (!readDeleteFile(soc)) {
             writeErrMessage(soc, DELETE_FILE);
         }
@@ -192,7 +218,10 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
  * Save CRDT to a file
  */
 void Thread::saveCRDTToFile() {
-	QString jsonFileName = /*usernameOwner + "%_##$$$##_%" +*/ filename;
+    std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
+    std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
+
+    QString jsonFileName = /*usernameOwner + "%_##$$$##_%" +*/ filename;
 	if (needToSaveFile) {
 		qDebug() << "Saving CRDT for file: " + jsonFileName;
 		crdt->saveCRDT(jsonFileName);
@@ -583,11 +612,12 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
                     QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
                     QString newFilename = newUsername + "%_##$$$##_%" + filename;
                     auto thread = server->getThread(fileList[i].split(".json")[0]);
-                    if (thread != nullptr) {
-                        thread->changeFileName(newFilename);
+                    //if (thread != nullptr) {
+                        //std::unique_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
+                        //thread->changeFileName(newFilename);
                         server->changeNamethread(fileList[i].split(".json")[0], newFilename);
 
-                    }
+                    //}
                     qDebug() << "Found file: " << fileList[i];
                     QFile renamefile(fileList[i]);
 
@@ -664,8 +694,11 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 						  QMetaObject::Connection *connectDisconnected) {
     std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
     std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
-    std::lock_guard<std::mutex> lg(mutexSockets);
-	qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
+
+    std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
+    std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+
+    qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
 	qDebug() << ""; // newLine
 	disconnect(*connectReadyRead);
 	disconnect(*connectDisconnected);
@@ -853,11 +886,19 @@ bool Thread::readDeleteFile(QTcpSocket *soc) {
 
     auto thread = server->getThread(jsonFileName);
     if (thread != nullptr) {
+        if (thread.get() != this){
+            std::unique_lock<std::shared_mutex> threadSocketsMutex(thread->mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesMutex(thread->mutexUsernames);
+            std::unique_lock<std::shared_mutex> pendingSocketsMutex(thread->mutexPendingSockets);
+            std::unique_lock<std::shared_mutex> needToSaveMutex(thread->mutexNeedToSave);
+            std::unique_lock<std::shared_mutex> fileDeletedMutex(thread->mutexFileDeleted);
+        }
         auto sockets = thread->getSockets();
 
         for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
                 server->sendFileNames(socket.second);
         }
+
         thread->deleteFile();
     }
 

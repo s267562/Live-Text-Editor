@@ -361,6 +361,11 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 		/* file already open */
 		qDebug() << "                               thread for file name aready exist " << jsonFileName;
 		qDebug() << ""; // newLine
+        std::unique_lock<std::shared_mutex> socketsLock(result->second->mutexSockets);
+        std::unique_lock<std::shared_mutex> pendingSocketsLock(result->second->mutexPendingSockets);
+        std::unique_lock<std::shared_mutex> usernamesLock(result->second->mutexUsernames);
+        std::shared_lock<std::shared_mutex> filenameLock(result->second->mutexFilename);
+
 		threads[key]->addSocket(soc, username);                       /* socket transition to secondary thread */
 	} else {
 		/* file not yet open */
@@ -380,6 +385,8 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 			thread = new Thread(nullptr, loadedCrdt, jsonFileName, username,
 								this);                        /* create new thread */
 		threads[key] = std::shared_ptr<Thread>(thread);
+
+		// nel caso mettere i locks
 		thread->addSocket(soc,
 						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
 		/*std::shared_ptr<Thread> thread = this->addThread(key, soc);
@@ -468,13 +475,13 @@ bool Server::readEditAccount(QTcpSocket *soc) {
                 for (int i=0; i<fileList.count(); i++){
                     QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
                     QString newFilename = newUsername + "%_##$$$##_%" + filename;
-                    auto thread = getThread(fileList[i].split(".json")[0]);
-                    if (thread != nullptr) {
+                    //auto thread = getThread(fileList[i].split(".json")[0]);
+                    //if (thread != nullptr) {
                         // gestire concorrenza sul filename nella struttura del thread
-                        thread->changeFileName(newFilename);
+                        //thread->changeFileName(newFilename);
                         changeNamethread(fileList[i].split(".json")[0], newFilename);
 
-                    }
+                    //}
                     qDebug() << "Found file: " << fileList[i];
                     QFile renamefile(fileList[i]);
                     
@@ -547,7 +554,6 @@ void Server::disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject
  * @return Thread with a specific ID
  */
 std::shared_ptr<Thread> Server::getThread(QString fileName) {
-	std::lock_guard<std::mutex> sl(mutexThread);
 	auto result = threads.find(fileName);
 
 	if (result != threads.end()) {
@@ -563,7 +569,6 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  * @return new Thread
  */
 std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
-	std::lock_guard<std::mutex> lg(mutexThread);
 	CRDT* loadedCrdt = new CRDT();
 
 	std::shared_ptr<Thread> thread;                        /* create new thread */
@@ -772,6 +777,9 @@ bool Server::readFileInformationChanges(QTcpSocket *soc){
 
     auto thread = getThread(oldJsonFileName);
     if (thread != nullptr) {
+        std::unique_lock<std::shared_mutex> threadSocketsMutex(thread->mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesMutex(thread->mutexUsernames);
+        std::unique_lock<std::shared_mutex> pendingSocketsMutex(thread->mutexPendingSockets);
         std::map<qintptr, QString> usernames = thread->getUsernames();
         std::map<qintptr, QTcpSocket *> threadSockets = thread->getSockets();
 
@@ -828,6 +836,12 @@ bool Server::readDeleteFile(QTcpSocket *soc) {
 
     auto thread = getThread(jsonFileName);
     if (thread != nullptr) {
+        std::unique_lock<std::shared_mutex> threadSocketsMutex(thread->mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesMutex(thread->mutexUsernames);
+        std::unique_lock<std::shared_mutex> pendingSocketsMutex(thread->mutexPendingSockets);
+        std::unique_lock<std::shared_mutex> needToSaveMutex(thread->mutexNeedToSave);
+        std::unique_lock<std::shared_mutex> fileDeletedMutex(thread->mutexFileDeleted);
+
         auto sockets = thread->getSockets();
 
         for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
@@ -873,12 +887,12 @@ const std::map<qintptr, QString> &Server::getAllUsernames() const {
 }
 
 void Server::changeNamethread(QString oldFilename, QString newFilename){
-    std::lock_guard<std::mutex> sl(mutexThread);
     auto result = threads.find(oldFilename);
 
     if (result != threads.end()) {
         threads[newFilename] = result->second;
         threads.erase(oldFilename);
+        std::unique_lock<std::shared_mutex> filenameLock(result->second->mutexFilename);
         result->second->changeFileName(newFilename);
     }
 }
