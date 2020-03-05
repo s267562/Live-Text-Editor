@@ -29,6 +29,8 @@ namespace Ui {
 class Editor : public QMainWindow {
 Q_OBJECT
 
+//TODO: Add #ifdef
+    friend class TestGui;
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 

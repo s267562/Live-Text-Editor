@@ -358,10 +358,10 @@ void Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blo
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
-        if(socket.first != soc->socketDescriptor()) {
+        //if(socket.first != soc->socketDescriptor()) {
             //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             writeMessage(socket.second, message);
-        }
+       // }
     }
 
 

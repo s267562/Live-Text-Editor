@@ -40,6 +40,7 @@ public:
     std::vector<std::vector<Character>> getStructure();
     std::vector<std::pair<Character,int>> getStyle();
 
+    QString toString();
 
 private:
     QString siteId;
@@ -73,6 +74,8 @@ private:
     void insertBlock(Character character, Pos position);
 
     void removeStyleLine(int i);
+
+
 };
 
 

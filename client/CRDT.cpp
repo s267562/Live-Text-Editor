@@ -638,3 +638,56 @@ std::vector<std::pair<Character,int>> CRDT::getStyle() {
     return tmpStyle;
 }
 
+QString CRDT::toString() {
+
+    QString str="";
+    QString num="";
+
+    for (int i = 0; i < structure.size(); i++) {
+        QString value="";
+        char val_line = style[i].first.getValue();
+
+        if(val_line == '\n') {
+            value += "\n";
+        }else {
+            value += val_line;
+        }
+
+        str += ("\n\tLINE ID:\tvalue:" + value + "\tposition: ");
+
+        std::vector<Identifier> line = style[i].first.getPosition();
+        for (Identifier id : line) {
+            num.setNum(id.getDigit());
+            str += num +" ";
+        }
+        str += "\n";
+        str += "\t\tCHARACTERS:\n";
+        for (int j = 0; j < structure[i].size(); j++) {
+
+            QString value="";
+
+            char val_char = structure[i][j].getValue();
+
+            int counter = structure[i][j].getCounter();
+
+            QString siteId = structure[i][j].getSiteId();
+            if(val_char == '\n') value += "\n"; else value += val_char;
+            str += ("\t\t\tval: " + value + "\t\tsiteId: " + siteId + "\t\tcounter: " + counter + "\t\tposition: ");
+            std::vector<Identifier> identifier = structure[i][j].getPosition();
+            for (Identifier id : identifier) {
+                num.setNum(id.getDigit());
+                str += num +" ";
+            }
+            str += "\n";
+        }
+    }
+
+    num.setNum(this->style.size());
+
+    str += ("\nNumber of rows in STYLE: " + num + "\tNumber of rows in STRUCTURE: ");
+
+    num.setNum(this->structure.size());
+
+    str +=  (num + "\n\n"); // newLine
+    return str;
+}
