@@ -121,11 +121,6 @@ Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos 
     const Character character = generateChar(val, textCharFormat, pos, siteId);
     insertChar(character, pos);
 
-    /*if(this->structure[pos.getLine()].size()==1) { // line==first char + \n
-        this->style.insert(this->style.begin()+pos.getLine(), std::pair<Character,int>(character, 0x4));
-    }*/
-
-    //qDebug() << "server/CRDT.cpp - handleInsert()     " << val << " inserted.";
 
     // print the structure for debugging
     qDebug() << "\nclient/CRDT.cpp - handleInsert():";
@@ -297,7 +292,6 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         //qDebug() << "need to merge line" << startPos.getLine();
         this->mergeLines(startPos.getLine());
     }
-
 
     // print the structure for debugging
     qDebug() << "\nclient/CRDT.cpp - handleDelete(): \n";

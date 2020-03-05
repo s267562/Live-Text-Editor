@@ -224,7 +224,7 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
 
     int row=this->crdt->getRow(blockId);
 
-    if (!row) return false;
+    if (row<0) return false;
 
     crdt->handleAlignmentChanged(alignType, row);
 
