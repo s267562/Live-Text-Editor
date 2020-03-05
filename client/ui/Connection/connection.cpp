@@ -6,7 +6,7 @@ Connection::Connection(QWidget *parent) :
     ui(new Ui::Connection)
 {
     ui->setupUi(this);
-    this->ui->serverIP->setText("127.0.0.1");
+    this->ui->serverIP->setText("192.168.1.174");
     this->ui->serverPort->setText("1234");
     connect(this->ui->pushButton, SIGNAL(clicked()), this,SLOT(connectButtonClicked()));
 

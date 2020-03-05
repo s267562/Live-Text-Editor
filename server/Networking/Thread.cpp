@@ -153,7 +153,10 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == EDIT_ACCOUNT) {
 		QString oldUsername = usernames[soc->socketDescriptor()];
-		if (readEditAccount(soc)) {
+        std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+        if (readEditAccount(soc)) {
 			sendUser(soc);
 			server->sendFileNames(soc);
 			if (oldUsername != usernames[soc->socketDescriptor()]) {
@@ -168,10 +171,15 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
             writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
         }
     }  else if (data.toStdString() == FILE_INFORMATION_CHANGES){
+        std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
         if (!readFileInformationChanges(soc)) {
             writeErrMessage(soc, FILE_INFORMATION_CHANGES);
         }
     } else if (data.toStdString() == DELETE_FILE){
+        std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexUsernames);
+        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
         if (!readDeleteFile(soc)) {
             writeErrMessage(soc, DELETE_FILE);
         }
@@ -654,7 +662,9 @@ bool Thread::sendUser(QTcpSocket *soc) {
 
 void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead,
 						  QMetaObject::Connection *connectDisconnected) {
-	std::lock_guard<std::mutex> lg(mutexSockets);
+    std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+    std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+    std::lock_guard<std::mutex> lg(mutexSockets);
 	qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
 	qDebug() << ""; // newLine
 	disconnect(*connectReadyRead);
