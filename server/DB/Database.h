@@ -30,8 +30,12 @@ private:
 
 	static QString hashPassword(QString password, QString salt);
 
+	void initalizeTables();
+
 public:
 	Database();
+
+	Database(QString threadID);
 
 	bool registerUser(QString username, QString password);
 
@@ -47,19 +51,23 @@ public:
 
 	bool addPermission(QString fileID, QString owner, QString username);
 
-    std::map<QString, bool> getFiles(QString username);
+	std::map<QString, bool> getFiles(QString username);
 
 	bool changeUsername(QString oldUsername, QString newUsername);
 
 	bool changePassword(QString username, QString newPassword);
 
-    QStringList getUsers(QString filename);
+	QStringList getUsers(QString filename);
 
-    bool changeFileName(QString oldFilename, QString newFilename);
+	bool changeFileName(QString oldFilename, QString newFilename);
 
-    bool removePermission(QString filename, QString username);
+	bool removePermission(QString filename, QString username);
 
-    bool deleteFile(QString filename);
+	bool deleteFile(QString filename);
+
+	bool createThreadConnection(QString threadID);
+
+	bool testConnection();
 };
 
 

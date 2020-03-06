@@ -14,11 +14,30 @@
 #include "Database.h"
 
 /**
- * Constructor, initialize a new DB if necessary
+ * Constructor for the server
  */
 Database::Database() {
-	db = QSqlDatabase::addDatabase("QSQLITE");
+	db = QSqlDatabase::addDatabase("QSQLITE", "conn-MAIN");
 	db.setDatabaseName("database.sqlite");
+
+	this->initalizeTables();
+}
+
+/**
+ * Constructor specifying a connection name based on thread ID
+ * @param threadID
+ */
+Database::Database(QString threadID) {
+	db = QSqlDatabase::addDatabase("QSQLITE","conn-" + threadID);
+	db.setDatabaseName("database.sqlite");
+
+	// We expect no need of tables initialization
+}
+
+/**
+ * This function creates tables if necessary
+ */
+void Database::initalizeTables() {
 
 	// DB opening
 	if (!db.open()) {
@@ -70,6 +89,7 @@ Database::Database() {
 	}
 	db.close();
 }
+
 
 /**
  * Function for generating salt hashed sha256

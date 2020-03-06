@@ -25,13 +25,13 @@ void Thread::run() {
  * @param username
  */
 void Thread::addSocket(QTcpSocket *soc, QString username) {
-    qintptr socketDescriptor = soc->socketDescriptor();
+	qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = soc;
-    //sockets[socketDescriptor] = new QTcpSocket();
-    //sockets[socketDescriptor]->setSocketDescriptor(socketDescriptor);
-    sockets[socketDescriptor]->setParent(nullptr);
-    sockets[socketDescriptor]->moveToThread(this);
+	//sockets[socketDescriptor] = new QTcpSocket();
+	//sockets[socketDescriptor]->setSocketDescriptor(socketDescriptor);
+	sockets[socketDescriptor]->setParent(nullptr);
+	sockets[socketDescriptor]->moveToThread(this);
 	usernames[socketDescriptor] = username;
 	qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
@@ -52,7 +52,8 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 															connectDisconnected);
 								   }, Qt::QueuedConnection);
 
-	pendingSocket.erase(socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
+	pendingSocket.erase(
+			socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
 	sendFile(soc);
 	sendListOfUsers(soc);
 	sendNewUser(soc);
@@ -78,36 +79,36 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 	}
 	qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
 	qDebug() << ""; // newLine
-    std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
+	std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
 	if (data.toStdString() == INSERT_MESSAGE && !fileDeleted) {
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-        if (!readInsert(soc)) {
+		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+		if (!readInsert(soc)) {
 			writeErrMessage(soc, INSERT_MESSAGE);
 		}
 		writeOkMessage(soc);
 		readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE  && !fileDeleted) {
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-        if (!readStyleChanged(soc)) {
+	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE && !fileDeleted) {
+		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+		if (!readStyleChanged(soc)) {
 			writeErrMessage(soc);
 		}
 		writeOkMessage(soc);
 		readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == DELETE_MESSAGE  && !fileDeleted) {
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-        if (!readDelete(soc)) {
+	} else if (data.toStdString() == DELETE_MESSAGE && !fileDeleted) {
+		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+		if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
-        needToSaveMutex.unlock();
+		needToSaveMutex.unlock();
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
-        std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
-        std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-        std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-        std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
+		std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
+		std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+		std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+		std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
 
-        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
-        readSpace(soc);
+		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+		readSpace(soc);
 		int fileNameSize = readNumberFromSocket(soc);
 		readSpace(soc);
 
@@ -119,26 +120,26 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		}
 
 		if (jsonFileName == this->filename && !fileDeleted) {
-		    if (pendingSocket.find(soc->socketDescriptor()) != pendingSocket.end()) {
-                sockets[soc->socketDescriptor()] = soc;
-                pendingSocket.erase(soc->socketDescriptor());
-		        sendFile(soc);
-                sendListOfUsers(soc);
-                sendNewUser(soc);
-            }else{
-                sendListOfUsers(soc);    
-		    }
+			if (pendingSocket.find(soc->socketDescriptor()) != pendingSocket.end()) {
+				sockets[soc->socketDescriptor()] = soc;
+				pendingSocket.erase(soc->socketDescriptor());
+				sendFile(soc);
+				sendListOfUsers(soc);
+				sendNewUser(soc);
+			} else {
+				sendListOfUsers(soc);
+			}
 			return;
 		}
 
-        QStringList fields = jsonFileName.split("%_##$$$##_%");
+		QStringList fields = jsonFileName.split("%_##$$$##_%");
 
-        if (fields.size() < 2) {
-            QString owner = usernames[soc->socketDescriptor()];
-            jsonFileName = owner + "%_##$$$##_%" + fields[0];
-        } else{
-            QString owner = fields[0];
-        }
+		if (fields.size() < 2) {
+			QString owner = usernames[soc->socketDescriptor()];
+			jsonFileName = owner + "%_##$$$##_%" + fields[0];
+		} else {
+			QString owner = fields[0];
+		}
 
 		disconnect(*connectReadyRead);
 		disconnect(*connectDisconnected);
@@ -153,12 +154,12 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 			thread->start();
 		} else {
-		    if (thread.get() != this){
-                std::unique_lock<std::shared_mutex> socketsLock(thread->mutexSockets);
-                std::unique_lock<std::shared_mutex> pendingSocketsLock(thread->mutexPendingSockets);
-                std::unique_lock<std::shared_mutex> usernamesLock(thread->mutexUsernames);
-                std::shared_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
-		    }
+			if (thread.get() != this) {
+				std::unique_lock<std::shared_mutex> socketsLock(thread->mutexSockets);
+				std::unique_lock<std::shared_mutex> pendingSocketsLock(thread->mutexPendingSockets);
+				std::unique_lock<std::shared_mutex> usernamesLock(thread->mutexUsernames);
+				std::shared_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
+			}
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
 		}
 
@@ -166,19 +167,19 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		usernames.erase(soc->socketDescriptor());
 		sockets.erase(soc->socketDescriptor());
 	} else if (data.toStdString() == SHARE_CODE) {
-        std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-        if (!readShareCode(soc)) {
+		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+		if (!readShareCode(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == EDIT_ACCOUNT) {
 		QString oldUsername = usernames[soc->socketDescriptor()];
-        std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
-        std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
-        std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+		std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+		std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
 
-        if (readEditAccount(soc)) {
+		if (readEditAccount(soc)) {
 			sendUser(soc);
 			server->sendFileNames(soc);
 			if (oldUsername != usernames[soc->socketDescriptor()]) {
@@ -188,33 +189,33 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		} else {
 			writeErrMessage(soc, EDIT_ACCOUNT);
 		}
-	} else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE){
-        if (!readRequestUsernameList(soc)) {
-            writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
-        }
-    }  else if (data.toStdString() == FILE_INFORMATION_CHANGES){
-        std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-        std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
-        std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
-        std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-        std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+	} else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE) {
+		if (!readRequestUsernameList(soc)) {
+			writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
+		}
+	} else if (data.toStdString() == FILE_INFORMATION_CHANGES) {
+		std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+		std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+		std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+		std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
 
-        if (!readFileInformationChanges(soc)) {
-            writeErrMessage(soc, FILE_INFORMATION_CHANGES);
-        }
-    } else if (data.toStdString() == DELETE_FILE){
-        std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-        std::unique_lock<std::shared_mutex> threadsMutex(server->mutexUsernames);
-        std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+		if (!readFileInformationChanges(soc)) {
+			writeErrMessage(soc, FILE_INFORMATION_CHANGES);
+		}
+	} else if (data.toStdString() == DELETE_FILE) {
+		std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexUsernames);
+		std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
 
-        std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
-        std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-        std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+		std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+		std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
 
-        if (!readDeleteFile(soc)) {
-            writeErrMessage(soc, DELETE_FILE);
-        }
-    } else {
+		if (!readDeleteFile(soc)) {
+			writeErrMessage(soc, DELETE_FILE);
+		}
+	} else {
 		writeErrMessage(soc);
 	}
 }
@@ -223,10 +224,10 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
  * Save CRDT to a file
  */
 void Thread::saveCRDTToFile() {
-    std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
-    std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
+	std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
+	std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
 
-    QString jsonFileName = /*usernameOwner + "%_##$$$##_%" +*/ filename;
+	QString jsonFileName = /*usernameOwner + "%_##$$$##_%" +*/ filename;
 	if (needToSaveFile) {
 		qDebug() << "Saving CRDT for file: " + jsonFileName;
 		crdt->saveCRDT(jsonFileName);
@@ -456,7 +457,7 @@ void Thread::sendNewUser(QTcpSocket *soc) {
  * @param username
  */
 void Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
-    qDebug() << "sendRemoveUser";
+	qDebug() << "sendRemoveUser";
 	QByteArray message(REMOVE_USER);
 	QByteArray usernameByteArray = convertionQString(username);
 	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
@@ -465,9 +466,9 @@ void Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
 	for (auto s : sockets) {
 		//if (socketDescriptor != s.first) {
 		qDebug() << usernames[s.first];
-			if (!writeMessage(s.second, message)) {
-				return;
-			}
+		if (!writeMessage(s.second, message)) {
+			return;
+		}
 		//}
 	}
 }
@@ -513,7 +514,7 @@ bool Thread::readShareCode(QTcpSocket *soc) {
 	int shareCodeSize = readNumberFromSocket(soc);
 	readSpace(soc);
 
-    QByteArray shareCode;
+	QByteArray shareCode;
 	if (!readChunck(soc, shareCode, shareCodeSize)) {
 		return false;
 	}
@@ -523,7 +524,7 @@ bool Thread::readShareCode(QTcpSocket *soc) {
 
 	if (server->handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)) {
 		sendAddFile(soc, filename);
-        return true;
+		return true;
 	} else {
 		writeErrMessage(soc, SHARE_CODE);
 		return false;
@@ -605,46 +606,46 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 	if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
 		if (newUsernameSize != 0) {
 			if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
-                QDir dir;
-                dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
-                dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-                std::map<qintptr, QTcpSocket *> serverSockets =  this->server->getSockets();
+				QDir dir;
+				dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
+				dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+				std::map<qintptr, QTcpSocket *> serverSockets = this->server->getSockets();
 
-                qDebug() << "Scanning: " << dir.path();
+				qDebug() << "Scanning: " << dir.path();
 
-                QStringList fileList = dir.entryList();
-                for (int i=0; i<fileList.count(); i++){
-                    QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
-                    QString newFilename = newUsername + "%_##$$$##_%" + filename;
-                    auto thread = server->getThread(fileList[i].split(".json")[0]);
-                    //if (thread != nullptr) {
-                        //std::unique_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
-                        //thread->changeFileName(newFilename);
-                        server->changeNamethread(fileList[i].split(".json")[0], newFilename);
+				QStringList fileList = dir.entryList();
+				for (int i = 0; i < fileList.count(); i++) {
+					QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
+					QString newFilename = newUsername + "%_##$$$##_%" + filename;
+					auto thread = server->getThread(fileList[i].split(".json")[0]);
+					//if (thread != nullptr) {
+					//std::unique_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
+					//thread->changeFileName(newFilename);
+					server->changeNamethread(fileList[i].split(".json")[0], newFilename);
 
-                    //}
-                    qDebug() << "Found file: " << fileList[i];
-                    QFile renamefile(fileList[i]);
+					//}
+					qDebug() << "Found file: " << fileList[i];
+					QFile renamefile(fileList[i]);
 
-                    renamefile.rename(newFilename + ".json");
-                    server->getDb().changeFileName(fileList[i].split(".json")[0], newFilename);
-                    renamefile.close();
+					renamefile.rename(newFilename + ".json");
+					server->getDb().changeFileName(fileList[i].split(".json")[0], newFilename);
+					renamefile.close();
 
 
-                    /* trovare tutti gli utenti che hanno in comune i file dell'utente */
-                    for (std::pair<qintptr, QString> username : this->server->getAllUsernames()) {
-                        if (username.first != soc->socketDescriptor()) {
-                            std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+					/* trovare tutti gli utenti che hanno in comune i file dell'utente */
+					for (std::pair<qintptr, QString> username : this->server->getAllUsernames()) {
+						if (username.first != soc->socketDescriptor()) {
+							std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
 
-                            auto result = listOfFile.find(newUsername + "%_##$$$##_%" + filename.split(".json")[0]);
-                            if (result != listOfFile.end()) {
-                                this->server->sendFileNames(serverSockets[username.first]);
-                            }
-                        }
-                    }
-                }
-                usernames[soc->socketDescriptor()] = newUsername;
-                server->addUsername(soc->socketDescriptor(), newUsername);
+							auto result = listOfFile.find(newUsername + "%_##$$$##_%" + filename.split(".json")[0]);
+							if (result != listOfFile.end()) {
+								this->server->sendFileNames(serverSockets[username.first]);
+							}
+						}
+					}
+				}
+				usernames[soc->socketDescriptor()] = newUsername;
+				server->addUsername(soc->socketDescriptor(), newUsername);
 			} else {
 				qDebug() << "Err1";
 				return false;
@@ -697,13 +698,13 @@ bool Thread::sendUser(QTcpSocket *soc) {
 
 void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject::Connection *connectReadyRead,
 						  QMetaObject::Connection *connectDisconnected) {
-    std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-    std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+	std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+	std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
 
-    std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
-    std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+	std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
+	std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
 
-    qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
+	qDebug() << "Thread.cpp - disconnected()     " << socketDescriptor << " Disconnected";
 	qDebug() << ""; // newLine
 	disconnect(*connectReadyRead);
 	disconnect(*connectDisconnected);
@@ -713,244 +714,243 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	socket.setSocketDescriptor(socketDescriptor);
 	socket.deleteLater();
 	if (sockets.find(socketDescriptor) != sockets.end()) {
-        sockets.erase(socketDescriptor);
-        sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
-    }else{
-        pendingSocket.erase(socketDescriptor);
-    }
+		sockets.erase(socketDescriptor);
+		sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
+	} else {
+		pendingSocket.erase(socketDescriptor);
+	}
 	server->removeSocket(socketDescriptor);
 	usernames.erase(socketDescriptor);
 	server->removeUsername(socketDescriptor);
-    qDebug() << usernames;
+	qDebug() << usernames;
 
-    if (sockets.empty()){
-	    //this->setParent(nullptr);
-	    //this->deleteLater();
-	    //this->quit();
-	    //this->terminate();
+	if (sockets.empty()) {
+		//this->setParent(nullptr);
+		//this->deleteLater();
+		//this->quit();
+		//this->terminate();
 	}
 }
 
 bool Thread::readRequestUsernameList(QTcpSocket *soc) {
-    qDebug() << "Thread.cpp - readFileName()     ---------- REQUEST USERNAME LIST ----------";
-    readSpace(soc);
-    int fileNameSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	qDebug() << "Thread.cpp - readFileName()     ---------- REQUEST USERNAME LIST ----------";
+	readSpace(soc);
+	int fileNameSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QString jsonFileName;
-    if (!readQString(soc, jsonFileName, fileNameSize)) {
-        return false;
-    }
+	QString jsonFileName;
+	if (!readQString(soc, jsonFileName, fileNameSize)) {
+		return false;
+	}
 
-    qDebug() << "                               " << jsonFileName;
+	qDebug() << "                               " << jsonFileName;
 
-    QStringList userlist = this->server->getDb().getUsers(jsonFileName);
-    qDebug() << userlist;
+	QStringList userlist = this->server->getDb().getUsers(jsonFileName);
+	qDebug() << userlist;
 
 
-    int nFiles = userlist.size();
-    QByteArray message(USERNAME_LIST_FOR_FILE);
-    QByteArray numUsers = convertionNumber(nFiles);
+	int nFiles = userlist.size();
+	QByteArray message(USERNAME_LIST_FOR_FILE);
+	QByteArray numUsers = convertionNumber(nFiles);
 
-    message.append(" " + numUsers);
+	message.append(" " + numUsers);
 
-    for (QString username : userlist){
-        QByteArray usernameQBytearray = convertionQString(username);
-        QByteArray usernameSize = convertionNumber(usernameQBytearray.size());
-        message.append(" " + usernameSize + " " + usernameQBytearray);
-    }
+	for (QString username : userlist) {
+		QByteArray usernameQBytearray = convertionQString(username);
+		QByteArray usernameSize = convertionNumber(usernameQBytearray.size());
+		message.append(" " + usernameSize + " " + usernameQBytearray);
+	}
 
-    return writeMessage(soc, message);
+	return writeMessage(soc, message);
 }
 
-bool Thread::readFileInformationChanges(QTcpSocket *soc){
-    qDebug() << "Thread.cpp - readDeleteFile()     ---------- READ DELETE FILE ----------";
-    readSpace(soc);
-    int oldFileNameSize = readNumberFromSocket(soc);
-    readSpace(soc);
+bool Thread::readFileInformationChanges(QTcpSocket *soc) {
+	qDebug() << "Thread.cpp - readDeleteFile()     ---------- READ DELETE FILE ----------";
+	readSpace(soc);
+	int oldFileNameSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QString oldJsonFileName;
-    if (!readQString(soc, oldJsonFileName, oldFileNameSize)) {
-        return false;
-    }
+	QString oldJsonFileName;
+	if (!readQString(soc, oldJsonFileName, oldFileNameSize)) {
+		return false;
+	}
 
-    readSpace(soc);
-    int newFileNameSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	readSpace(soc);
+	int newFileNameSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QString newJsonFileName;
-    if (!readQString(soc, newJsonFileName, newFileNameSize)) {
-        return false;
-    }
+	QString newJsonFileName;
+	if (!readQString(soc, newJsonFileName, newFileNameSize)) {
+		return false;
+	}
 
-    readSpace(soc);
-    int usernamesSize = readNumberFromSocket(soc);
-    QStringList removedUsers;
+	readSpace(soc);
+	int usernamesSize = readNumberFromSocket(soc);
+	QStringList removedUsers;
 
-    qDebug() << usernamesSize;
+	qDebug() << usernamesSize;
 
-    if (usernamesSize != 0){
-        for (int i = 0; i < usernamesSize; i++){
-            readSpace(soc);
-            int usernameSize = readNumberFromSocket(soc);
-            qDebug() << usernameSize;
-            readSpace(soc);
-            QString username;
-            if (!readQString(soc, username, usernameSize)){
-                return false;
-            }
-            qDebug() << "                              usename: "<<username;
-            this->server->getDb().removePermission(oldJsonFileName, username);
-            removedUsers.append(username);
-        }
-    }
+	if (usernamesSize != 0) {
+		for (int i = 0; i < usernamesSize; i++) {
+			readSpace(soc);
+			int usernameSize = readNumberFromSocket(soc);
+			qDebug() << usernameSize;
+			readSpace(soc);
+			QString username;
+			if (!readQString(soc, username, usernameSize)) {
+				return false;
+			}
+			qDebug() << "                              usename: " << username;
+			this->server->getDb().removePermission(oldJsonFileName, username);
+			removedUsers.append(username);
+		}
+	}
 
-    qDebug() << oldJsonFileName << newJsonFileName;
-    std::map<qintptr, QTcpSocket *> serverSockets =  this->server->getSockets();
-    std::map<qintptr, QString> serverAllUsernames = this->server->getAllUsernames();
+	qDebug() << oldJsonFileName << newJsonFileName;
+	std::map<qintptr, QTcpSocket *> serverSockets = this->server->getSockets();
+	std::map<qintptr, QString> serverAllUsernames = this->server->getAllUsernames();
 
-    if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName){
-        QFile saveFile(oldJsonFileName + ".json");
-        this->server->getDb().changeFileName(oldJsonFileName, newJsonFileName);
-        saveFile.rename(newJsonFileName+ ".json");
-        saveFile.close();
-        server->changeNamethread(oldJsonFileName, newJsonFileName);
+	if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
+		QFile saveFile(oldJsonFileName + ".json");
+		this->server->getDb().changeFileName(oldJsonFileName, newJsonFileName);
+		saveFile.rename(newJsonFileName + ".json");
+		saveFile.close();
+		server->changeNamethread(oldJsonFileName, newJsonFileName);
 
-        /* server*/
-        for (std::pair<qintptr, QString> username : serverAllUsernames) {
-            if (username.first != soc->socketDescriptor()) {
-                std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+		/* server*/
+		for (std::pair<qintptr, QString> username : serverAllUsernames) {
+			if (username.first != soc->socketDescriptor()) {
+				std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
 
-                auto result = listOfFile.find(newJsonFileName);
-                if (result != listOfFile.end()) {
-                    this->server->sendFileNames(serverSockets[username.first]);
-                }
-            }
-        }
-    }
+				auto result = listOfFile.find(newJsonFileName);
+				if (result != listOfFile.end()) {
+					this->server->sendFileNames(serverSockets[username.first]);
+				}
+			}
+		}
+	}
 
-    /* server */
-    for (QString removedUsername : removedUsers) {
-        for (std::pair<qintptr, QString> username : serverAllUsernames) {
-            if (username.first != soc->socketDescriptor() || removedUsername == username.second) {
-                this->server->sendFileNames(serverSockets[username.first]);
-            }
-        }
-    }
+	/* server */
+	for (QString removedUsername : removedUsers) {
+		for (std::pair<qintptr, QString> username : serverAllUsernames) {
+			if (username.first != soc->socketDescriptor() || removedUsername == username.second) {
+				this->server->sendFileNames(serverSockets[username.first]);
+			}
+		}
+	}
 
-    /* thread */
-    for (QString removedUsername : removedUsers) {
-        for (std::pair<qintptr, QString> username : usernames) {
-            if (removedUsername == username.second) {
-                sendRemoveUser(username.first, username.second);
-                addPendingSocket(username.first);
-                break;
-            }
-        }
-    }
+	/* thread */
+	for (QString removedUsername : removedUsers) {
+		for (std::pair<qintptr, QString> username : usernames) {
+			if (removedUsername == username.second) {
+				sendRemoveUser(username.first, username.second);
+				addPendingSocket(username.first);
+				break;
+			}
+		}
+	}
 
 
-    this->server->sendFileNames(soc);
-    return true;
+	this->server->sendFileNames(soc);
+	return true;
 }
 
 bool Thread::readDeleteFile(QTcpSocket *soc) {
-    qDebug() << "Thread.cpp - readDeleteFile()     ---------- READ DELETE FILE ----------";
-    readSpace(soc);
-    int fileNameSize = readNumberFromSocket(soc);
-    readSpace(soc);
+	qDebug() << "Thread.cpp - readDeleteFile()     ---------- READ DELETE FILE ----------";
+	readSpace(soc);
+	int fileNameSize = readNumberFromSocket(soc);
+	readSpace(soc);
 
-    QString jsonFileName;
-    if (!readQString(soc, jsonFileName, fileNameSize)) {
-        return false;
-    }
+	QString jsonFileName;
+	if (!readQString(soc, jsonFileName, fileNameSize)) {
+		return false;
+	}
 
-    qDebug() << "                               " << jsonFileName;
+	qDebug() << "                               " << jsonFileName;
+	std::map<QString, qintptr> usersremove;
+	for (std::pair<qintptr, QString> username : server->getAllUsernames()) {
+		if (username.first != soc->socketDescriptor()) {
+			std::map<QString, bool> listOfFile = server->getDb().getFiles(username.second);
 
-    std::map<QString, qintptr> usersremove;
-    for (std::pair<qintptr, QString> username : server->getAllUsernames()) {
-        if (username.first != soc->socketDescriptor()) {
-            std::map<QString, bool> listOfFile = server->getDb().getFiles(username.second);
+			auto result = listOfFile.find(jsonFileName);
+			if (result != listOfFile.end()) {
+				qDebug() << username.second;
+				usersremove[username.second] = username.first;
+			}
+		}
+	}
 
-            auto result = listOfFile.find(jsonFileName);
-            if (result != listOfFile.end()) {
-                qDebug() << username.second;
-                usersremove[username.second] = username.first;
-            }
-        }
-    }
+	if (!this->server->getDb().deleteFile(jsonFileName)) {
+		return false;
+	}
 
-    if (!this->server->getDb().deleteFile(jsonFileName)) {
-        return false;
-    }
+	needToSaveFile = false;
+	QFile deletefile(jsonFileName + ".json");
+	deletefile.remove();
+	deletefile.close();
 
-    needToSaveFile = false;
-    QFile deletefile(jsonFileName + ".json");
-    deletefile.remove();
-    deletefile.close();
+	auto thread = server->getThread(jsonFileName);
+	if (thread != nullptr) {
+		if (thread.get() != this) {
+			std::unique_lock<std::shared_mutex> threadSocketsMutex(thread->mutexSockets);
+			std::shared_lock<std::shared_mutex> usernamesMutex(thread->mutexUsernames);
+			std::unique_lock<std::shared_mutex> pendingSocketsMutex(thread->mutexPendingSockets);
+			std::unique_lock<std::shared_mutex> needToSaveMutex(thread->mutexNeedToSave);
+			std::unique_lock<std::shared_mutex> fileDeletedMutex(thread->mutexFileDeleted);
+		}
+		auto sockets = thread->getSockets();
 
-    auto thread = server->getThread(jsonFileName);
-    if (thread != nullptr) {
-        if (thread.get() != this){
-            std::unique_lock<std::shared_mutex> threadSocketsMutex(thread->mutexSockets);
-            std::shared_lock<std::shared_mutex> usernamesMutex(thread->mutexUsernames);
-            std::unique_lock<std::shared_mutex> pendingSocketsMutex(thread->mutexPendingSockets);
-            std::unique_lock<std::shared_mutex> needToSaveMutex(thread->mutexNeedToSave);
-            std::unique_lock<std::shared_mutex> fileDeletedMutex(thread->mutexFileDeleted);
-        }
-        auto sockets = thread->getSockets();
+		for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
+			server->sendFileNames(socket.second);
+		}
 
-        for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-                server->sendFileNames(socket.second);
-        }
+		thread->deleteFile();
+	}
 
-        thread->deleteFile();
-    }
+	server->addDeleteFileThread(jsonFileName);
 
-    server->addDeleteFileThread(jsonFileName);
+	std::map<qintptr, QTcpSocket *> serverSockets = server->getSockets();
 
-    std::map<qintptr, QTcpSocket *> serverSockets = server->getSockets();
+	for (std::pair<QString, qintptr> user : usersremove) {
+		if (!this->server->sendFileNames(serverSockets[user.second])) {
+			return false;
+		}
+	}
 
-    for (std::pair<QString, qintptr> user : usersremove) {
-        if (!this->server->sendFileNames(serverSockets[user.second])){
-            return false;
-        }
-    }
-
-    return true;
+	return true;
 }
 
-std::map<qintptr, QTcpSocket *> Thread::getSockets(){
-    return sockets;
+std::map<qintptr, QTcpSocket *> Thread::getSockets() {
+	return sockets;
 }
 
 const std::map<qintptr, QString> &Thread::getUsernames() const {
-    return usernames;
+	return usernames;
 }
 
-void Thread::changeFileName(QString filename){
-    this->filename = filename;
+void Thread::changeFileName(QString filename) {
+	this->filename = filename;
 }
 
-void Thread::addPendingSocket(qintptr socketDescriptor){
-    pendingSocket[socketDescriptor] = sockets[socketDescriptor];
-    sockets.erase(socketDescriptor);
+void Thread::addPendingSocket(qintptr socketDescriptor) {
+	pendingSocket[socketDescriptor] = sockets[socketDescriptor];
+	sockets.erase(socketDescriptor);
 }
 
-void Thread::deleteFile(){
-    // Gestire la concorrenza
-    for (std::pair<qintptr, QString> user: usernames) {
-        QByteArray message(REMOVE_USER);
-        QByteArray usernameByteArray = convertionQString(user.second);
-        QByteArray usernameSize = convertionNumber(usernameByteArray.size());
-        message.append(" " + usernameSize + " " + usernameByteArray);
+void Thread::deleteFile() {
+	// Gestire la concorrenza
+	for (std::pair<qintptr, QString> user: usernames) {
+		QByteArray message(REMOVE_USER);
+		QByteArray usernameByteArray = convertionQString(user.second);
+		QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+		message.append(" " + usernameSize + " " + usernameByteArray);
 
-        if (!writeMessage(sockets[user.first], message)) {
-            return;
-        }
-        pendingSocket[user.first] = sockets[user.first];
-        sockets.erase(user.first);
-    }
-    needToSaveFile = false;
-    fileDeleted = true;
+		if (!writeMessage(sockets[user.first], message)) {
+			return;
+		}
+		pendingSocket[user.first] = sockets[user.first];
+		sockets.erase(user.first);
+	}
+	needToSaveFile = false;
+	fileDeleted = true;
 }
