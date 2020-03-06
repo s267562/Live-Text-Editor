@@ -152,6 +152,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			/* thread doesn't exist */
 			thread = server->addThread(jsonFileName, usernames[soc->socketDescriptor()]);
 			thread->addSocket(soc, usernames[soc->socketDescriptor()]);
+            thread->moveToThread(thread.get());
 			thread->start();
 		} else {
 			if (thread.get() != this) {
@@ -205,7 +206,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		}
 	} else if (data.toStdString() == DELETE_FILE) {
 		std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexUsernames);
+		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
 		std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
 
 		std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
@@ -618,6 +619,8 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 
 				QStringList fileList = dir.entryList();
 				for (int i = 0; i < fileList.count(); i++) {
+                    if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
+                        continue;
 					QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
 					QString newFilename = newUsername + "%_##$$$##_%" + filename;
 					auto thread = server->getThread(fileList[i].split(".json")[0]);

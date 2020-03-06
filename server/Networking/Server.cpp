@@ -137,7 +137,7 @@ void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::C
     } else if (data.toStdString() == DELETE_FILE && socketsState[socketDescriptor] == LOGGED){
         std::shared_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
         std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-        std::unique_lock<std::shared_mutex> threadsMutex(mutexUsernames);
+        std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
         std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
 	    if (!readDeleteFile(soc)) {
             writeErrMessage(soc, DELETE_FILE);
@@ -474,6 +474,8 @@ bool Server::readEditAccount(QTcpSocket *soc) {
                 QStringList fileList = dir.entryList();
                 for (int i=0; i<fileList.count(); i++){
                     QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
+                    if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
+                        continue;
                     QString newFilename = newUsername + "%_##$$$##_%" + filename;
                     //auto thread = getThread(fileList[i].split(".json")[0]);
                     //if (thread != nullptr) {
