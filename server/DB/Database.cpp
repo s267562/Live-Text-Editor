@@ -515,8 +515,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!queryFiles.exec()) {
 		qDebug() << "Error change username in table FILES:\n" << queryFiles.lastError();
-		db.close();
 		QSqlDatabase::database().rollback();
+		db.close();
 		return false;
 	}
 
@@ -527,8 +527,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!querySharing1.exec()) {
 		qDebug() << "Error change username in table SHARING OWNER:\n" << querySharing1.lastError();
-		db.close();
 		QSqlDatabase::database().rollback();
+		db.close();
 		return false;
 	}
 
@@ -539,8 +539,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	if (!querySharing2.exec()) {
 		qDebug() << "Error change username in table SHARING SHARED:\n" << querySharing2.lastError();
-		db.close();
 		QSqlDatabase::database().rollback();
+		db.close();
 		return false;
 	}
 
@@ -634,7 +634,7 @@ QStringList Database::getUsers(QString filename) {
 	while (getUsers.next()) {
 		users.push_back(getUsers.value(0).toString());
 	}
-
+	db.close();
 	return users;
 }
 
@@ -679,6 +679,7 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 	}
 
 	QSqlDatabase::database().commit();
+	db.close();
 	return true;
 }
 
@@ -706,6 +707,7 @@ bool Database::removePermission(QString filename, QString username) {
 		return false;
 	}
 
+	db.close();
 	return true;
 }
 
@@ -746,5 +748,6 @@ bool Database::deleteFile(QString filename) {
 	}
 
 	QSqlDatabase::database().commit();
+	db.close();
 	return true;
 }
