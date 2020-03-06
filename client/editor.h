@@ -48,6 +48,8 @@ public:
 
     void updateOtherCursorPosition();
 
+    void updateAlignmentPushButton();
+
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
 public slots:
@@ -134,6 +136,7 @@ private:
     QGraphicsDropShadowEffect *m_shadowEffect1;
     QGraphicsDropShadowEffect *m_shadowEffect2;
     QString *filename;
+
 
 };
 

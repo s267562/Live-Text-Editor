@@ -211,7 +211,7 @@ void Editor::setupTextActions() {
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
 
-
+    this->updateAlignmentPushButton();
     //QFont dFont(QString("Al Bayan"), 12);
 
    // this->textEdit->document()->setDefaultFont(dFont);
@@ -333,41 +333,27 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
     QTextBlockFormat f=this->textCursor.blockFormat();
 
     f.setAlignment(Qt::Alignment(alignment));
+
     this->textCursor.setBlockFormat(f);
 
-//    if (at == LEFT) {
-//        f.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-//        this->textCursor.setBlockFormat(f);
-//    }
-//    else if (at == CENTER) {
-//        f.setAlignment(Qt::AlignHCenter);
-//        this->textCursor.setBlockFormat(f);
-//    }
-//    else if (at == RIGHT) {
-//    f.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-//        this->textCursor.setBlockFormat(f);
-//    }
-//    else if (at == JUSTIFY) {
-//        f.setAlignment(Qt::AlignJustify);
-//        this->textCursor.setBlockFormat(f);
-//    }
+    //Qt::Alignment a(alignment);
+    //this->textEdit->setTextCursor(this->textCursor);
+    //this->textEdit->setAlignment(a);
 
     this->textCursor.setPosition(oldCursorPos);
+    this->updateAlignmentPushButton();
+
 }
 
 
 
 void Editor::formatText(std::vector<int> styleBlocks){
 
-
-
     QTextDocument *doc = textEdit->document();
 
 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
-
-
 
     for(int i=0; i<styleBlocks.size(); i++){
         this->remoteAlignmentChanged(styleBlocks.at(i),i);
@@ -729,6 +715,7 @@ void Editor::onCursorPositionChanged() {
 
     }
    // this->controller->cursorChanged(cursor);
+   this->updateAlignmentPushButton();
 }
 
 void Editor::on_actionNew_File_triggered() {
@@ -955,6 +942,26 @@ void Editor::showError(){
 
 void Editor::setFilename(QString *filename){
     this->filename = filename;
+}
+
+void Editor::updateAlignmentPushButton() {
+    Qt::Alignment alignment = this->textEdit->textCursor().blockFormat().alignment();
+
+    switch(alignment){
+        case Qt::AlignHCenter:
+            this->actionAlignCenter->setChecked(true);
+            break;
+        case Qt::AlignRight | Qt::AlignAbsolute:
+            this->actionAlignRight->setChecked(true);
+            break;
+        case Qt::AlignJustify:
+            this->actionAlignJustify->setChecked(true);
+            break;
+        default:
+            this->actionAlignLeft->setChecked(true);
+            break;
+    }
+
 }
 
 
