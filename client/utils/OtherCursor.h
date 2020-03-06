@@ -27,6 +27,7 @@ public:
 
     void move(QRect coordinates, int width, int height);
 
+
     const QTextCursor &getTextCursor() const;
 
     const QColor &getColor() const;
@@ -34,6 +35,8 @@ public:
     const QLabel &getCursorLabel() const;
 
     const QLabel &getUsername() const;
+
+    void hide();
 
 };
 

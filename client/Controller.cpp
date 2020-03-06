@@ -280,7 +280,8 @@ void Controller::newMessage(Message message) {
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks) {
     crdt->setStructure(initialStructure);
     crdt->setStyle(styleBlocks);
-    this->editor->replaceText(this->crdt->toText());
+    //this->editor->replaceText(this->crdt->toText());
+    this->editor->replaceText(this->crdt->getStructure());
     std::vector<int> alignment_block;
     for(std::pair<Character,int> & block : styleBlocks){
         alignment_block.emplace_back(block.second);

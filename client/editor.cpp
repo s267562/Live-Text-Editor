@@ -849,6 +849,7 @@ void Editor::removeUser(QString user) {
 
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
+    this->otherCursors[user]->hide();
     this->otherCursors.remove(user);
 }
 
@@ -906,16 +907,19 @@ void Editor::restoreCursorSelection() {
     textEdit->setTextCursor(cursor);
 }
 
-void Editor::replaceText(const QString initialText) {
+void Editor::replaceText(const std::vector<std::vector<Character>> initialText) {
     QTextDocument *doc = textEdit->document();
 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    textEdit->setText(initialText);
-
-
-
+    for(auto & line : initialText){
+        for(auto & character : line){
+            QString c(character.getValue());
+            this->textEdit->textCursor().insertText(c,character.getTextCharFormat());
+        }
+    }
+    //textEdit->setText(initialText);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);

@@ -8,6 +8,7 @@
 OtherCursor::OtherCursor(QString name, QTextDocument *doc, QColor color, QWidget *parent): QObject(parent), username(name, parent), cursorLabel(parent), textCursor(doc), color(color) {
 
     textCursor.setPosition(0);
+    cursorLabel.show();
 
 }
 
@@ -44,3 +45,9 @@ const QLabel &OtherCursor::getCursorLabel() const {
 const QLabel &OtherCursor::getUsername() const {
     return username;
 }
+
+void OtherCursor::hide() {
+    this->cursorLabel.hide();
+    this->username.hide();
+}
+

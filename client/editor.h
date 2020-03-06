@@ -39,7 +39,7 @@ public:
     void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
     QChar deleteChar(Pos pos, QString sender);
     void reset();
-    void replaceText(const QString initialText);
+    void replaceText(const std::vector<std::vector<Character>> initialText);
     ~Editor();
     void setFilename(QString *filename);
 

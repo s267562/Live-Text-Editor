@@ -166,8 +166,8 @@ void CRDT::insertIntoTextDocument(char character, QTextCharFormat charFormat, Po
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
 
     textCursor.insertText(QString{character});
     textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
@@ -193,8 +193,8 @@ void CRDT::changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat)
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
 
 
     textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);

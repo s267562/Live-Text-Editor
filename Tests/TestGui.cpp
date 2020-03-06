@@ -21,6 +21,7 @@ Q_OBJECT
 
 private slots:
     void initTestCase();
+    void testGeneric1();
     void testGuiAlignments();
     void testGui();
 
@@ -38,6 +39,7 @@ private:
     void generalAction2(Controller &controller);
     void testingDelete(Controller &controller);
     void testingAlignmentFirstAndLastLine(Controller &controller);
+    void inspectTest();
 
 };
 
@@ -169,18 +171,6 @@ void TestGui::generalAction2(Controller &controller) {
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 100);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 100);
 
-    styleC1=this->controller.crdt->toString();
-    styleC2=this->controller2.crdt->toString();
-
-    showInfo1->setText("Style client1:\n"+styleC1 );
-    //showInfoArea->show();
-    showInfo1->show();
-
-    showInfo2->setText("Style client2:\n"+styleC2 );
-    //showInfoArea->show();
-    showInfo2->show();
-    QTest::qWait(600000);
-
     QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "Ciaovfs nfvsotnveht gveaovghqeov hgaergv", Qt::NoModifier, 20);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Enter, Qt::NoModifier, 100);
 
@@ -242,7 +232,7 @@ void TestGui::generalAction2(Controller &controller) {
     //showInfoArea->show();
     showInfo2->show();
     QTest::qWait(600000);*/
-/*
+
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Up, Qt::ShiftModifier, 100);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Up, Qt::ShiftModifier, 100);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Up, Qt::ShiftModifier, 100);
@@ -254,7 +244,7 @@ void TestGui::generalAction2(Controller &controller) {
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Up, Qt::ShiftModifier, 100);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Delete, Qt::NoModifier, 100);
     QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Delete, Qt::NoModifier, 100);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Delete, Qt::NoModifier, 100);*/
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Delete, Qt::NoModifier, 100);
 
 }
 
@@ -306,6 +296,33 @@ void TestGui::initTestCase() {
     //showInfo->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     //this->showInfoArea = new QScrollArea();
     //showInfoArea->setWidget(showInfo);
+}
+
+void TestGui::testGeneric1() {
+    QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "wjnrh herohvoehtbothborthbortb oritjboewitjbowhtobhwortbowrtn owrtiowrtjojwrotbjw toijwortjhwrthsdvsdvsdvdsv osnsovhsosdvsdvdvosdv sosvdvsdvsdvdivjsdv", Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Down, Qt::NoModifier, 100);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
+    QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "VIEJTKTUD", Qt::NoModifier, 20);
+    inspectTest();
+}
+
+void TestGui::inspectTest() {
+    QString styleC1;
+    QString styleC2;
+    styleC1=this->controller.crdt->toString();
+    styleC2=this->controller2.crdt->toString();
+
+    showInfo1->setText("Style client1:\n"+styleC1 );
+    //showInfoArea->show();
+    showInfo1->show();
+
+    showInfo2->setText("Style client2:\n"+styleC2 );
+    //showInfoArea->show();
+    showInfo2->show();
+    QTest::qWait(600000);
 }
 
 
