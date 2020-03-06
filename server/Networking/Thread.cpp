@@ -603,9 +603,12 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 
 	qDebug() << ""; // newLine
 
-	if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+	Database db(QString::number((long long) QThread::currentThread(), 16));
+	//if (server->getDb().authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
+	if (db.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
 		if (newUsernameSize != 0) {
-			if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+			//if (server->getDb().changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
+			if (db.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
 				QDir dir;
 				dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
 				dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
@@ -628,14 +631,16 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 					QFile renamefile(fileList[i]);
 
 					renamefile.rename(newFilename + ".json");
-					server->getDb().changeFileName(fileList[i].split(".json")[0], newFilename);
+					//server->getDb().changeFileName(fileList[i].split(".json")[0], newFilename);
+					db.changeFileName(fileList[i].split(".json")[0], newFilename);
 					renamefile.close();
 
 
 					/* trovare tutti gli utenti che hanno in comune i file dell'utente */
 					for (std::pair<qintptr, QString> username : this->server->getAllUsernames()) {
 						if (username.first != soc->socketDescriptor()) {
-							std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+							//std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+							std::map<QString, bool> listOfFile = db.getFiles(username.second);
 
 							auto result = listOfFile.find(newUsername + "%_##$$$##_%" + filename.split(".json")[0]);
 							if (result != listOfFile.end()) {
@@ -653,14 +658,16 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 		}
 
 		if (newPasswordSize != 0) {
-			if (server->getDb().changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+			//if (server->getDb().changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+			if (db.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
 				qDebug() << "Err2";
 				return false;
 			}
 		}
 
 		if (sizeAvatar != 0) {
-			if (!server->getDb().changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+			//if (!server->getDb().changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+			if (db.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
 				qDebug() << "Err3";
 				return false;
 			}
@@ -680,7 +687,9 @@ bool Thread::sendUser(QTcpSocket *soc) {
 	//image = "image";
 	QString username;
 	username = usernames[soc->socketDescriptor()];
-	image = server->getDb().getAvatar(username);
+	Database db(QString::number((long long) QThread::currentThread(), 16));
+	//image = server->getDb().getAvatar(username);
+	image = db.getAvatar(username);
 	QByteArray imageSize = convertionNumber(image.size());
 	QByteArray usernameByteArray = convertionQString(username);
 	QByteArray usernameSize = convertionNumber(usernameByteArray.size());
@@ -744,8 +753,9 @@ bool Thread::readRequestUsernameList(QTcpSocket *soc) {
 	}
 
 	qDebug() << "                               " << jsonFileName;
-
-	QStringList userlist = this->server->getDb().getUsers(jsonFileName);
+	Database db(QString::number((long long) QThread::currentThread(), 16));
+	//QStringList userlist = this->server->getDb().getUsers(jsonFileName);
+	QStringList userlist = db.getUsers(jsonFileName);
 	qDebug() << userlist;
 
 
@@ -790,6 +800,8 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 
 	qDebug() << usernamesSize;
 
+	Database db(QString::number((long long) QThread::currentThread(), 16));
+
 	if (usernamesSize != 0) {
 		for (int i = 0; i < usernamesSize; i++) {
 			readSpace(soc);
@@ -801,7 +813,8 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 				return false;
 			}
 			qDebug() << "                              usename: " << username;
-			this->server->getDb().removePermission(oldJsonFileName, username);
+			//this->server->getDb().removePermission(oldJsonFileName, username);
+			db.removePermission(oldJsonFileName, username);
 			removedUsers.append(username);
 		}
 	}
@@ -812,7 +825,8 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 
 	if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
 		QFile saveFile(oldJsonFileName + ".json");
-		this->server->getDb().changeFileName(oldJsonFileName, newJsonFileName);
+		//this->server->getDb().changeFileName(oldJsonFileName, newJsonFileName);
+		db.changeFileName(oldJsonFileName, newJsonFileName);
 		saveFile.rename(newJsonFileName + ".json");
 		saveFile.close();
 		server->changeNamethread(oldJsonFileName, newJsonFileName);
@@ -820,7 +834,8 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 		/* server*/
 		for (std::pair<qintptr, QString> username : serverAllUsernames) {
 			if (username.first != soc->socketDescriptor()) {
-				std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+				//std::map<QString, bool> listOfFile = this->server->getDb().getFiles(username.second);
+				std::map<QString, bool> listOfFile = db.getFiles(username.second);
 
 				auto result = listOfFile.find(newJsonFileName);
 				if (result != listOfFile.end()) {
@@ -865,12 +880,13 @@ bool Thread::readDeleteFile(QTcpSocket *soc) {
 	if (!readQString(soc, jsonFileName, fileNameSize)) {
 		return false;
 	}
-
+	Database db(QString::number((long long) QThread::currentThread(), 16));
 	qDebug() << "                               " << jsonFileName;
 	std::map<QString, qintptr> usersremove;
 	for (std::pair<qintptr, QString> username : server->getAllUsernames()) {
 		if (username.first != soc->socketDescriptor()) {
-			std::map<QString, bool> listOfFile = server->getDb().getFiles(username.second);
+			//std::map<QString, bool> listOfFile = server->getDb().getFiles(username.second);
+			std::map<QString, bool> listOfFile = db.getFiles(username.second);
 
 			auto result = listOfFile.find(jsonFileName);
 			if (result != listOfFile.end()) {
@@ -879,8 +895,8 @@ bool Thread::readDeleteFile(QTcpSocket *soc) {
 			}
 		}
 	}
-
-	if (!this->server->getDb().deleteFile(jsonFileName)) {
+	//if (!this->server->getDb().deleteFile(jsonFileName)) {
+	if (!db.deleteFile(jsonFileName)) {
 		return false;
 	}
 

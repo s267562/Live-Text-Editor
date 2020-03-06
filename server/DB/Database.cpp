@@ -17,10 +17,10 @@
  * Constructor for the server
  */
 Database::Database() {
-	db = QSqlDatabase::addDatabase("QSQLITE", "conn-MAIN");
+	connectionName = "conn-MAIN";
+	db = QSqlDatabase::addDatabase("QSQLITE",connectionName);
 	db.setDatabaseName("database.sqlite");
-
-	this->initalizeTables();
+	this->initTables();
 }
 
 /**
@@ -28,7 +28,8 @@ Database::Database() {
  * @param threadID
  */
 Database::Database(QString threadID) {
-	db = QSqlDatabase::addDatabase("QSQLITE","conn-" + threadID);
+	connectionName ="conn-" + threadID;
+	db = QSqlDatabase::addDatabase("QSQLITE",connectionName);
 	db.setDatabaseName("database.sqlite");
 
 	// We expect no need of tables initialization
@@ -37,7 +38,7 @@ Database::Database(QString threadID) {
 /**
  * This function creates tables if necessary
  */
-void Database::initalizeTables() {
+void Database::initTables() {
 
 	// DB opening
 	if (!db.open()) {
@@ -71,8 +72,9 @@ void Database::initalizeTables() {
 			"write INT,"
 			"PRIMARY KEY(owner, fileID, sharedToUser));";
 
+
 	// Query executions
-	QSqlQuery qry;
+	QSqlQuery qry(db);
 	if (qry.exec(checkEmptyQuery)) { // check db is empty
 		if (qry.next())
 			qDebug() << "DB is OK";
@@ -145,7 +147,7 @@ bool Database::registerUser(QString username, QString password) {
 	QSqlDatabase::database().transaction();
 
 	QString querySelect = "SELECT * FROM users WHERE username='" + hashedUsername + "'";
-	QSqlQuery checkUsernameQuery;
+	QSqlQuery checkUsernameQuery(db);
 
 	if (checkUsernameQuery.exec(querySelect)) {
 		if (checkUsernameQuery.isActive()) {
@@ -155,7 +157,7 @@ bool Database::registerUser(QString username, QString password) {
 				QString salt = generateSalt();
 				QString hashedPassword = hashPassword(std::move(password), salt);
 
-				QSqlQuery qry;
+				QSqlQuery qry(db);
 				qry.prepare("INSERT INTO users ("
 							"username,"
 							"password,"
@@ -199,7 +201,7 @@ bool Database::authenticateUser(QString username, QString password) {
 		return false;
 	}
 
-	QSqlQuery authenticationQuery;
+	QSqlQuery authenticationQuery(db);
 	authenticationQuery.prepare("SELECT username, password, salt FROM users WHERE username=:username");
 
 	authenticationQuery.bindValue(":username", hashedUsername);
@@ -238,7 +240,7 @@ bool Database::changeAvatar(QString username, const QByteArray &image) {
 		return false;
 	}
 
-	QSqlQuery query;
+	QSqlQuery query(db);
 	query.prepare("UPDATE users SET avatar=:avatar WHERE username=:username");
 	query.bindValue(":avatar", image);
 	query.bindValue(":username", hashedUsername);
@@ -266,7 +268,7 @@ QByteArray Database::getAvatar(QString username) {
 		return nullptr;
 	}
 
-	QSqlQuery query;
+	QSqlQuery query(db);
 	query.prepare("SELECT avatar FROM users WHERE username=:username");
 	query.bindValue(":username", hashedUsername);
 
@@ -300,7 +302,7 @@ bool Database::createFile(QString fileID, QString userOwner) {
 	QSqlDatabase::database().transaction();
 
 	// Check username is valid
-	QSqlQuery queryCheckUsername;
+	QSqlQuery queryCheckUsername(db);
 	queryCheckUsername.prepare("SELECT * FROM users WHERE username=:username");
 	queryCheckUsername.bindValue(":username", hashedUsername);
 
@@ -309,7 +311,7 @@ bool Database::createFile(QString fileID, QString userOwner) {
 	} else {
 		// Username is valid, register file id
 		if (queryCheckUsername.first()) {
-			QSqlQuery queryRegisterFile;
+			QSqlQuery queryRegisterFile(db);
 			queryRegisterFile.prepare("INSERT INTO files ("
 									  "fileID,"
 									  "username)"
@@ -348,7 +350,7 @@ bool Database::isOwner(QString fileID, QString username) {
 		return false;
 	}
 
-	QSqlQuery queryCheckOwner;
+	QSqlQuery queryCheckOwner(db);
 	queryCheckOwner.prepare("SELECT * FROM files WHERE fileID=:fileID AND username=:username");
 	queryCheckOwner.bindValue(":fileID", fileID);
 	queryCheckOwner.bindValue(":username", hashedUsername);
@@ -396,7 +398,7 @@ bool Database::addPermission(QString fileID, QString owner, QString username) {
 	QSqlDatabase::database().transaction();
 
 	// check if this file is already shared with this username
-	QSqlQuery queryCheckAlreadyShared;
+	QSqlQuery queryCheckAlreadyShared(db);
 	queryCheckAlreadyShared.prepare(
 			"SELECT * FROM sharing WHERE owner=:owner AND fileID=:fileID AND sharedToUser=:username");
 	queryCheckAlreadyShared.bindValue(":owner", hashedOwner);
@@ -411,7 +413,7 @@ bool Database::addPermission(QString fileID, QString owner, QString username) {
 			qDebug() << "File is already shared with this user";
 		} else {
 			// User need permission
-			QSqlQuery queryAddPermission;
+			QSqlQuery queryAddPermission(db);
 			queryAddPermission.prepare(
 					"INSERT INTO sharing (owner,fileID,sharedToUser) VALUES (:owner, :fileID, :sharedToUser)");
 			queryAddPermission.bindValue(":owner", hashedOwner);
@@ -455,7 +457,7 @@ std::map<QString, bool> Database::getFiles(QString username) {
 	// Start transaction
 	QSqlDatabase::database().transaction();
 
-	QSqlQuery getUserOwnedFiles;
+	QSqlQuery getUserOwnedFiles(db);
 	getUserOwnedFiles.prepare("SELECT fileID FROM files WHERE username=:username ");
 	getUserOwnedFiles.bindValue(":username", hashedUsername);
 
@@ -469,7 +471,7 @@ std::map<QString, bool> Database::getFiles(QString username) {
 			userFiles[getUserOwnedFiles.value(0).toString()] = true;
 		}
 
-		QSqlQuery getUserWriteFiles;
+		QSqlQuery getUserWriteFiles(db);
 		getUserWriteFiles.prepare("SELECT fileID FROM sharing WHERE sharedToUser=:sharedToUser");
 		getUserWriteFiles.bindValue(":sharedToUser", username);
 
@@ -516,7 +518,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	// Start transaction
 	QSqlDatabase::database().transaction();
 
-	QSqlQuery queryUsers;
+	QSqlQuery queryUsers(db);
 	queryUsers.prepare("UPDATE users SET username=:newUsername WHERE username=:oldUsername");
 	queryUsers.bindValue(":oldUsername", hashedOldUsername);
 	queryUsers.bindValue(":newUsername", hashedNewUsername);
@@ -528,7 +530,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 		return false;
 	}
 
-	QSqlQuery queryFiles;
+	QSqlQuery queryFiles(db);
 	queryFiles.prepare("UPDATE files SET username=:newUsername WHERE username=:oldUsername");
 	queryFiles.bindValue(":oldUsername", hashedOldUsername);
 	queryFiles.bindValue(":newUsername", hashedNewUsername);
@@ -540,7 +542,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 		return false;
 	}
 
-	QSqlQuery querySharing1;
+	QSqlQuery querySharing1(db);
 	querySharing1.prepare("UPDATE sharing SET owner=:newUsername WHERE owner=:oldUsername");
 	querySharing1.bindValue(":oldUsername", oldUsername);
 	querySharing1.bindValue(":newUsername", newUsername);
@@ -552,7 +554,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 		return false;
 	}
 
-	QSqlQuery querySharing2;
+	QSqlQuery querySharing2(db);
 	querySharing2.prepare("UPDATE sharing SET sharedToUser=:newUsername WHERE sharedToUser=:oldUsername");
 	querySharing2.bindValue(":oldUsername", hashedOldUsername);
 	querySharing2.bindValue(":newUsername", hashedNewUsername);
@@ -589,7 +591,7 @@ bool Database::changePassword(QString username, QString newPassword) {
 	// Start transaction
 	QSqlDatabase::database().transaction();
 
-	QSqlQuery saltQuery;
+	QSqlQuery saltQuery(db);
 	saltQuery.prepare("SELECT salt FROM users WHERE username=:username");
 	saltQuery.bindValue(":username", hashedUsername);
 
@@ -608,7 +610,7 @@ bool Database::changePassword(QString username, QString newPassword) {
 
 	QString hashedNewPassword = hashPassword(std::move(newPassword), salt);
 
-	QSqlQuery query;
+	QSqlQuery query(db);
 	query.prepare("UPDATE users SET password=:newPassword WHERE username=:username");
 	query.bindValue(":username", hashedUsername);
 	query.bindValue(":newPassword", hashedNewPassword);
@@ -640,7 +642,7 @@ QStringList Database::getUsers(QString filename) {
 		return users;
 	}
 
-	QSqlQuery getUsers;
+	QSqlQuery getUsers(db);
 	getUsers.prepare("SELECT sharedToUser FROM sharing WHERE fileID=:fileID ");
 	getUsers.bindValue(":fileID", filename);
 
@@ -674,7 +676,7 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 	// Start transaction
 	QSqlDatabase::database().transaction();
 
-	QSqlQuery filesUpdate;
+	QSqlQuery filesUpdate(db);
 	filesUpdate.prepare("UPDATE files SET fileID=:fileID1 WHERE fileID=:fileID2");
 	filesUpdate.bindValue(":fileID1", newFilename);
 	filesUpdate.bindValue(":fileID2", oldFilename);
@@ -686,7 +688,7 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 		return false;
 	}
 
-	QSqlQuery sharingUpdate;
+	QSqlQuery sharingUpdate(db);
 	sharingUpdate.prepare("UPDATE sharing SET fileID=:fileID1 WHERE fileID=:fileID2");
 	sharingUpdate.bindValue(":fileID1", newFilename);
 	sharingUpdate.bindValue(":fileID2", oldFilename);
@@ -716,7 +718,7 @@ bool Database::removePermission(QString filename, QString username) {
 		return false;
 	}
 
-	QSqlQuery removeUser;
+	QSqlQuery removeUser(db);
 	removeUser.prepare("DELETE FROM sharing WHERE fileID=:fileID AND sharedToUser=:sharedToUser");
 	removeUser.bindValue(":fileID", filename);
 	removeUser.bindValue(":sharedToUser", username);
@@ -745,7 +747,7 @@ bool Database::deleteFile(QString filename) {
 	// Start transaction
 	QSqlDatabase::database().transaction();
 
-	QSqlQuery removeUser;
+	QSqlQuery removeUser(db);
 	removeUser.prepare("DELETE FROM sharing WHERE fileID=:fileID");
 	removeUser.bindValue(":fileID", filename);
 
@@ -756,7 +758,7 @@ bool Database::deleteFile(QString filename) {
 		return false;
 	}
 
-	QSqlQuery removeFile;
+	QSqlQuery removeFile(db);
 	removeFile.prepare("DELETE FROM files WHERE fileID=:fileID");
 	removeFile.bindValue(":fileID", filename);
 

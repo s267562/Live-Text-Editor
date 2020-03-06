@@ -24,13 +24,15 @@ public:
 private:
 	QSqlDatabase db;
 
+	QString connectionName;
+
 	static QString generateSalt();
 
 	static QString hashUsername(QString username);
 
 	static QString hashPassword(QString password, QString salt);
 
-	void initalizeTables();
+	void initTables();
 
 public:
 	Database();

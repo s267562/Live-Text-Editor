@@ -117,7 +117,7 @@ add_executable(server
         common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 # Disable qDebug output
-#target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
+target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
 target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
 target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
 
