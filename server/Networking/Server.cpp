@@ -41,7 +41,7 @@ void Server::connection() {
 	*connectReadyRead = connect(soc, &QTcpSocket::readyRead, this,
 								[this, connectReadyRead, connectDisconnected, soc, socketDescriptor] {
 									readyRead(connectReadyRead, connectDisconnected, soc, socketDescriptor);
-								}, Qt::DirectConnection);
+								}, Qt::QueuedConnection);
 
 	*connectDisconnected = connect(soc, &QTcpSocket::disconnected, this,
 								   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor] {
@@ -365,7 +365,7 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
         std::unique_lock<std::shared_mutex> pendingSocketsLock(result->second->mutexPendingSockets);
         std::unique_lock<std::shared_mutex> usernamesLock(result->second->mutexUsernames);
         std::shared_lock<std::shared_mutex> filenameLock(result->second->mutexFilename);
-
+        //soc->moveToThread(result->second.get());
 		threads[key]->addSocket(soc, username);                       /* socket transition to secondary thread */
 	} else {
 		/* file not yet open */
@@ -391,13 +391,13 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
 						  usernames[socketDescriptor]);                          /* socket transition to secondary thread */
 		/*std::shared_ptr<Thread> thread = this->addThread(key, soc);
         thread->addSocket(soc, usernames[socketDescriptor]);*/
-		//thread->moveToThread(thread);
-		soc->moveToThread(thread);
+		thread->moveToThread(thread);
+		//soc->moveToThread(thread);
 		thread->start();
 	}
 
 	usernames.erase(socketDescriptor);
-
+	//sockets.erase(socketDescriptor);
 	return true;
 }
 

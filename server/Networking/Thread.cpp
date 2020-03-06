@@ -28,6 +28,10 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
     qintptr socketDescriptor = soc->socketDescriptor();
 	/* insert new socket into structure */
 	sockets[socketDescriptor] = soc;
+    //sockets[socketDescriptor] = new QTcpSocket();
+    //sockets[socketDescriptor]->setSocketDescriptor(socketDescriptor);
+    sockets[socketDescriptor]->setParent(nullptr);
+    sockets[socketDescriptor]->moveToThread(this);
 	usernames[socketDescriptor] = username;
 	qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
@@ -39,14 +43,14 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 								[this, connectReadyRead, connectDisconnected, soc]() {
 									qDebug() << "                             " << soc;
 									Thread::readyRead(soc, connectReadyRead, connectDisconnected);
-								}, Qt::DirectConnection);
+								}, Qt::QueuedConnection);
 
 	*connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this,
 								   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
 									   qDebug() << "                             " << soc;
 									   Thread::disconnected(soc, socketDescriptor, connectReadyRead,
 															connectDisconnected);
-								   }, Qt::DirectConnection);
+								   }, Qt::QueuedConnection);
 
 	pendingSocket.erase(socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
 	sendFile(soc);
@@ -94,6 +98,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
+        needToSaveMutex.unlock();
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
         std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
