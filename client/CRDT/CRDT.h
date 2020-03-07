@@ -7,11 +7,11 @@
 
 #include <string>
 #include <vector>
-#include "utils/Pos.h"
-#include "utils/Character.h"
-#include "utils/Identifier.h"
-#include "Networking/Messanger.h"
-#include "editor.h"
+#include "../utils/Pos.h"
+#include "../utils/Character.h"
+#include "../utils/Identifier.h"
+#include "../Networking/Messanger.h"
+#include "../editor.h"
 #include <math.h>
 #include <iostream>
 #include <map>

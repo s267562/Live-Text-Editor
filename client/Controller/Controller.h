@@ -5,7 +5,7 @@
 #ifndef TEXTEDITOR_CONTROLLER_H
 #define TEXTEDITOR_CONTROLLER_H
 
-#include "CRDT.h"
+#include "CRDT/CRDT.h"
 #include "editor.h"
 #include "User.h"
 #include "Login/login.h"
@@ -15,7 +15,7 @@
 #include "Loading/loading.h"
 #include <iostream>
 #include "CustomWidget/customwidget.h"
-#include "CDRTThread.h"
+#include "CRDT/CDRTThread.h"
 
 class Editor;
 class CDRTThread;

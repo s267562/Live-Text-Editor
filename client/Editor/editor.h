@@ -5,7 +5,7 @@
 #ifndef TEXTEDITOR_EDITOR_H
 #define TEXTEDITOR_EDITOR_H
 
-#include "Controller.h"
+#include "../Controller/Controller.h"
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QTextEdit>
 #include <QApplication>

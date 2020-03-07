@@ -2,7 +2,7 @@
 // Created by simone on 05/08/19.
 //
 
-#include "editor.h"
+#include "Editor/editor.h"
 #include "ui_editor.h"
 #include "../server/SimpleCrypt/SimpleCrypt.h"
 #include <QMenuBar>

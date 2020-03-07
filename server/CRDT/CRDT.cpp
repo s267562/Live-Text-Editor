@@ -7,7 +7,7 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
-#include "CRDT.h"
+#include "CRDT/CRDT.h"
 #include <QDebug>
 
 CRDT::CRDT() {

@@ -2,7 +2,7 @@
 // Created by simone on 09/08/19.
 //
 
-#include "Controller.h"
+#include "Controller/Controller.h"
 #include <QMessageBox>
 
 Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){

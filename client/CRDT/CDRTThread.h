@@ -7,7 +7,7 @@
 
 #include <QThread>
 #include "CRDT.h"
-#include "Controller.h"
+#include "../Controller.h"
 #include "CRDT.h"
 
 class Controller;
