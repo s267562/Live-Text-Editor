@@ -5,6 +5,8 @@
 #ifndef TEXTEDITOR_CRDT_H
 #define TEXTEDITOR_CRDT_H
 
+#define binarySave 1
+
 #include <string>
 #include <vector>
 #include "../client/utils/Character.h"
@@ -28,6 +30,7 @@ private:
     std::vector<std::vector<Character>> structure;
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
+    //static const bool binarySave = false; // True save.dat / false save.json
 
 
     // insert

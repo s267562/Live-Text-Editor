@@ -15,7 +15,7 @@ CRDT::CRDT() {
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {
-    return structure;
+	return structure;
 }
 
 
@@ -23,134 +23,140 @@ const std::vector<std::vector<Character>> &CRDT::getStructure() const {
 
 Pos CRDT::handleInsert(Character character) {
 
-    Pos pos = this->findInsertPosition(character);
-    this->insertChar(character, pos);
+	Pos pos = this->findInsertPosition(character);
+	this->insertChar(character, pos);
 
-    // print the structure for debugging
-    qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-            if(i == pos.getLine() && j == pos.getCh()) {
-				qDebug() << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            } else {
-				qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            }
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
+	// print the structure for debugging
+	qDebug() << "server/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
+	for (int i = 0; i < structure.size(); i++) {
+		for (int j = 0; j < structure[i].size(); j++) {
+			char val = structure[i][j].getValue();
+			int counter = structure[i][j].getCounter();
+			QString siteId = structure[i][j].getSiteId();
+			QString value = "";
+			if (val == '\n') value += "\n"; else value += val;
+			if (i == pos.getLine() && j == pos.getCh()) {
+				qDebug() << "                                ---> val:" << value << "  siteId: " << siteId
+						 << "  counter:" << counter << "  position:";
+			} else {
+				qDebug() << "                                     val:" << value << "  siteId: " << siteId
+						 << "  counter:" << counter << "  position:";
+			}
+			std::vector<Identifier> identifier = structure[i][j].getPosition();
+			for (Identifier id : identifier) {
 				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
+			}
+		}
+	}
+	qDebug() << ""; // newLine
 
-    return pos;
+	return pos;
 }
 
 Pos CRDT::findInsertPosition(Character character) {
-    // check if struct is empty or char is less than first char
-    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
-        return Pos {0, 0}; // false obj
-    }
+	// check if struct is empty or char is less than first char
+	if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
+		return Pos{0, 0}; // false obj
+	}
 
-    int minLine = 0;
-    int totalLines = this->structure.size();
-    int maxLine = totalLines - 1;
-    std::vector<Character> lastLine = this->structure[maxLine];
+	int minLine = 0;
+	int totalLines = this->structure.size();
+	int maxLine = totalLines - 1;
+	std::vector<Character> lastLine = this->structure[maxLine];
 
-    Character lastChar = lastLine[lastLine.size() - 1];
+	Character lastChar = lastLine[lastLine.size() - 1];
 
-    // char is greater than all existing chars (insert at end)
-    if (character.compareTo(lastChar) > 0) {
-        return this->findEndPosition(lastChar, lastLine, totalLines);
-    }
+	// char is greater than all existing chars (insert at end)
+	if (character.compareTo(lastChar) > 0) {
+		return this->findEndPosition(lastChar, lastLine, totalLines);
+	}
 
-    // binary search
-    while (minLine + 1 < maxLine) {
-        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
-        std::vector<Character> currentLine = this->structure[midLine];
-        lastChar = currentLine[currentLine.size() - 1];
+	// binary search
+	while (minLine + 1 < maxLine) {
+		int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+		std::vector<Character> currentLine = this->structure[midLine];
+		lastChar = currentLine[currentLine.size() - 1];
 
-        if (character.compareTo(lastChar) == 0) {
-            return Pos{ midLine, (int) currentLine.size() - 1 };
-        } else if (character.compareTo(lastChar) < 0) {
-            maxLine = midLine;
-        } else {
-            minLine = midLine;
-        }
-    }
+		if (character.compareTo(lastChar) == 0) {
+			return Pos{midLine, (int) currentLine.size() - 1};
+		} else if (character.compareTo(lastChar) < 0) {
+			maxLine = midLine;
+		} else {
+			minLine = midLine;
+		}
+	}
 
-    // Check between min and max line.
-    std::vector<Character> minCurrentLine = this->structure[minLine];
-    Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
-    std::vector<Character> maxCurrentLine = this->structure[maxLine];
-    Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
+	// Check between min and max line.
+	std::vector<Character> minCurrentLine = this->structure[minLine];
+	Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
+	std::vector<Character> maxCurrentLine = this->structure[maxLine];
+	Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
 
-    if (character.compareTo(minLastChar) <= 0) {
-        int charIdx = this->findIndexInLine(character, minCurrentLine);
-        return Pos { charIdx, minLine };
-    } else {
-        int charIdx = this->findIndexInLine(character, maxCurrentLine);
-        return Pos { charIdx, maxLine };
-    }
+	if (character.compareTo(minLastChar) <= 0) {
+		int charIdx = this->findIndexInLine(character, minCurrentLine);
+		return Pos{charIdx, minLine};
+	} else {
+		int charIdx = this->findIndexInLine(character, maxCurrentLine);
+		return Pos{charIdx, maxLine};
+	}
 
 }
 
 Pos CRDT::findEndPosition(Character lastChar, std::vector<Character> lastLine, int totalLines) {
-    if (lastChar.getValue() == '\n') {
-        return Pos { 0, totalLines };
-    } else {
-        return Pos { (int) lastLine.size(), totalLines - 1 };
-    }
+	if (lastChar.getValue() == '\n') {
+		return Pos{0, totalLines};
+	} else {
+		return Pos{(int) lastLine.size(), totalLines - 1};
+	}
 }
 
 void CRDT::insertChar(Character character, Pos pos) {
 
-    qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
+	qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
 
-    if (pos.getLine() == structure.size()) {
-        structure.push_back(std::vector<Character> {}); // pushing a new line.
-    }
+	if (pos.getLine() == structure.size()) {
+		structure.push_back(std::vector<Character>{}); // pushing a new line.
+	}
 
-    // if inserting a newline, split line into two lines.
-    if (character.getValue() == '\n') {
-        qDebug() << "Splitting line into two lines";
-        std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // get line after.
-        if (lineAfter.size() != 0) {
-            qDebug().noquote() << "There is something after the newLine inserted";
-            structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
-            /*
-            if(structure.size() <= pos.getLine()+1) {
-                // the line + 1 does not exist.
-                qDebug() << "line + 1 does not exist. Pushing back.";
-                structure.push_back(lineAfter); // pushing back the line after.
-            } else {
-                // the line + 1 exists.
-                qDebug() << "line + 1 exists, Inserting.";
-                structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
-            }
-             */
+	// if inserting a newline, split line into two lines.
+	if (character.getValue() == '\n') {
+		qDebug() << "Splitting line into two lines";
+		std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(),
+										 structure[pos.getLine()].end()); // get line after.
+		if (lineAfter.size() != 0) {
+			qDebug().noquote() << "There is something after the newLine inserted";
+			structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(),
+										   structure[pos.getLine()].end()); // delete line after.
+			/*
+			if(structure.size() <= pos.getLine()+1) {
+				// the line + 1 does not exist.
+				qDebug() << "line + 1 does not exist. Pushing back.";
+				structure.push_back(lineAfter); // pushing back the line after.
+			} else {
+				// the line + 1 exists.
+				qDebug() << "line + 1 exists, Inserting.";
+				structure.insert(structure.begin() + pos.getLine() + 1, lineAfter.begin(), lineAfter.end());
+			}
+			 */
 
-            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-        } else {
-            qDebug().noquote() << "There is nothing after the char \n inserted";
-        }
-    }
+			structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+		} else {
+			qDebug().noquote() << "There is nothing after the char \n inserted";
+		}
+	}
 
-    structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
+	structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(),
+									character); // insert the character in the pos.
 }
 
 // handle style changed
 
 Pos CRDT::handleStyleChanged(const Character &character) {
-    Pos pos = this->findPosition(character);
+	Pos pos = this->findPosition(character);
 
-    this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
+	this->structure[pos.getLine()][pos.getCh()].setTextCharFormat(character.getTextCharFormat());
 
-    return pos;
+	return pos;
 }
 
 // handle delete
@@ -162,129 +168,130 @@ void CRDT::handleDelete(const Character &character) {
 		this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
 		if (character.getValue() == '\n') {
-            qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
+			qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
 
-		    this->mergeLines(pos.getLine());
+			this->mergeLines(pos.getLine());
 		}
-		
+
 		this->removeEmptyLines();
 	}
 
-    // print the structure for debugging
-    qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-			qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
+	// print the structure for debugging
+	qDebug() << "server/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
+	for (int i = 0; i < structure.size(); i++) {
+		for (int j = 0; j < structure[i].size(); j++) {
+			char val = structure[i][j].getValue();
+			int counter = structure[i][j].getCounter();
+			QString siteId = structure[i][j].getSiteId();
+			QString value = "";
+			if (val == '\n') value += "\n"; else value += val;
+			qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:"
+					 << counter << "  position:";
+			std::vector<Identifier> identifier = structure[i][j].getPosition();
+			for (Identifier id : identifier) {
 				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
+			}
+		}
+	}
+	qDebug() << ""; // newLine
 }
 
 Pos CRDT::findPosition(Character character) {
-    // check if struct is empty or char is less than first char
-    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
-        return Pos {-1, -1}; // false obj
-    }
+	// check if struct is empty or char is less than first char
+	if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
+		return Pos{-1, -1}; // false obj
+	}
 
-    int minLine = 0;
-    int totalLines = this->structure.size();
-    int maxLine = totalLines - 1;
-    std::vector<Character> lastLine = this->structure[maxLine];
+	int minLine = 0;
+	int totalLines = this->structure.size();
+	int maxLine = totalLines - 1;
+	std::vector<Character> lastLine = this->structure[maxLine];
 
-    Character lastChar = lastLine[lastLine.size() - 1];
+	Character lastChar = lastLine[lastLine.size() - 1];
 
-    // char is greater than all existing chars (insert at end)
-    if (character.compareTo(lastChar) > 0) {
-        return Pos {-1, -1}; // false obj
-    }
+	// char is greater than all existing chars (insert at end)
+	if (character.compareTo(lastChar) > 0) {
+		return Pos{-1, -1}; // false obj
+	}
 
-    // binary search
-    while (minLine + 1 < maxLine) {
-        int midLine = std::floor(minLine + (maxLine - minLine) / 2);
-        std::vector<Character> currentLine = this->structure[midLine];
-        lastChar = currentLine[currentLine.size() - 1];
+	// binary search
+	while (minLine + 1 < maxLine) {
+		int midLine = std::floor(minLine + (maxLine - minLine) / 2);
+		std::vector<Character> currentLine = this->structure[midLine];
+		lastChar = currentLine[currentLine.size() - 1];
 
-        if (character.compareTo(lastChar) == 0) {
-            return Pos { (int) currentLine.size() - 1, midLine };
-        } else if (character.compareTo(lastChar) < 0) {
-            maxLine = midLine;
-        } else {
-            minLine = midLine;
-        }
-    }
+		if (character.compareTo(lastChar) == 0) {
+			return Pos{(int) currentLine.size() - 1, midLine};
+		} else if (character.compareTo(lastChar) < 0) {
+			maxLine = midLine;
+		} else {
+			minLine = midLine;
+		}
+	}
 
-    // Check between min and max line.
-    std::vector<Character> minCurrentLine = this->structure[minLine];
-    Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
-    std::vector<Character> maxCurrentLine = this->structure[maxLine];
-    Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
+	// Check between min and max line.
+	std::vector<Character> minCurrentLine = this->structure[minLine];
+	Character minLastChar = minCurrentLine[minCurrentLine.size() - 1];
+	std::vector<Character> maxCurrentLine = this->structure[maxLine];
+	Character maxLastChar = maxCurrentLine[maxCurrentLine.size() - 1];
 
 
-    if (character.compareTo(minLastChar) <= 0) {
-        int charIdx = this->findIndexInLine(character, minCurrentLine);
-        return Pos { charIdx, minLine };
-    } else {
-        int charIdx = this->findIndexInLine(character, maxCurrentLine);
-        return Pos { charIdx, maxLine };
-    }
+	if (character.compareTo(minLastChar) <= 0) {
+		int charIdx = this->findIndexInLine(character, minCurrentLine);
+		return Pos{charIdx, minLine};
+	} else {
+		int charIdx = this->findIndexInLine(character, maxCurrentLine);
+		return Pos{charIdx, maxLine};
+	}
 }
 
 int CRDT::findIndexInLine(Character character, std::vector<Character> line) {
 
-    int left = 0;
-    int right = line.size() - 1;
+	int left = 0;
+	int right = line.size() - 1;
 
-    if (line.size() == 0 || character.compareTo(line[left]) < 0) {
-        return left;
-    } else if (character.compareTo(line[right]) > 0) {
-        return this->structure.size();
-    }
+	if (line.size() == 0 || character.compareTo(line[left]) < 0) {
+		return left;
+	} else if (character.compareTo(line[right]) > 0) {
+		return this->structure.size();
+	}
 
-    while (left + 1 < right) {
-        int mid = std::floor(left + (right - left) / 2);
-        int compareNum = character.compareTo(line[mid]);
+	while (left + 1 < right) {
+		int mid = std::floor(left + (right - left) / 2);
+		int compareNum = character.compareTo(line[mid]);
 
-        if (compareNum == 0) {
-            return mid;
-        } else if (compareNum > 0) {
-            left = mid;
-        } else {
-            right = mid;
-        }
-    }
+		if (compareNum == 0) {
+			return mid;
+		} else if (compareNum > 0) {
+			left = mid;
+		} else {
+			right = mid;
+		}
+	}
 
-    if (character.compareTo(line[left]) == 0) {
-        return left;
-    } else {
-        return right;
-    }
+	if (character.compareTo(line[left]) == 0) {
+		return left;
+	} else {
+		return right;
+	}
 
 }
 
 void CRDT::removeEmptyLines() {
-    for (int line = 0; line < this->structure.size(); line++) {
-        if (this->structure[line].size() == 0) {
-            this->structure.erase(this->structure.begin() + line);
-            line--;
-        }
-    }
+	for (int line = 0; line < this->structure.size(); line++) {
+		if (this->structure[line].size() == 0) {
+			this->structure.erase(this->structure.begin() + line);
+			line--;
+		}
+	}
 }
 
 void CRDT::mergeLines(int line) {
-    if(structure.size() > line + 1 && structure[line + 1].size() > 0) {
-        structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
-        structure.erase(structure.begin() + line + 1);
-    }
+	if (structure.size() > line + 1 && structure[line + 1].size() > 0) {
+		structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
+		structure.erase(structure.begin() + line + 1);
+	}
 }
-
 
 
 /**
@@ -335,11 +342,15 @@ void CRDT::read(const QJsonObject &json) {
 }
 
 /**
- * Function for saving CRDT to json file TODO change save to binary if all works
+ * Function for saving CRDT to json/dat file
  * @return
  */
 bool CRDT::saveCRDT(QString filename) {
-	QFile saveFile(filename + ".json");
+#if binarySave
+		QFile saveFile(filename + ".dat");
+#else
+		QFile saveFile(filename + ".json");
+#endif
 
 	if (!saveFile.open(QIODevice::WriteOnly)) {
 		qWarning("Couldn't open save file. [WRITE]");
@@ -349,16 +360,24 @@ bool CRDT::saveCRDT(QString filename) {
 	QJsonObject CRDTobject;
 	write(CRDTobject);
 	QJsonDocument saveDocument(CRDTobject);
+#if binarySave
+	saveFile.write(saveDocument.toBinaryData());
+#else
 	saveFile.write(saveDocument.toJson());
+#endif
 	return true;
 }
 
 /**
- * Function for loading CRDT from json file
+ * Function for loading CRDT from json/dat file
  * @return
  */
 bool CRDT::loadCRDT(QString filename) {
+#if binarySave
+	QFile loadFile(filename + ".dat");
+#else
 	QFile loadFile(filename + ".json");
+#endif
 
 	if (!loadFile.open(QIODevice::ReadOnly)) {
 		qWarning("Couldn't open save file. [READ]");
@@ -366,7 +385,11 @@ bool CRDT::loadCRDT(QString filename) {
 	}
 
 	QByteArray savedData = loadFile.readAll();
+#if binarySave
+	QJsonDocument loadDocument(QJsonDocument::fromBinaryData(savedData));
+#else
 	QJsonDocument loadDocument(QJsonDocument::fromJson(savedData));
+#endif
 	read(loadDocument.object());
 	return true;
 }
