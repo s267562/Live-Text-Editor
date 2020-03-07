@@ -506,8 +506,8 @@ std::map<QString, bool> Database::getFiles(QString username) {
  */
 bool Database::changeUsername(QString oldUsername, QString newUsername) {
 	bool result = true;
-	QString hashedOldUsername = hashUsername(std::move(oldUsername));
-	QString hashedNewUsername = hashUsername(std::move(newUsername));
+	QString hashedOldUsername = hashUsername(oldUsername);
+	QString hashedNewUsername = hashUsername(newUsername);
 
 	// DB opening
 	if (!db.open()) {
@@ -544,8 +544,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	QSqlQuery querySharing1(db);
 	querySharing1.prepare("UPDATE sharing SET owner=:newUsername WHERE owner=:oldUsername");
-	querySharing1.bindValue(":oldUsername", oldUsername);
-	querySharing1.bindValue(":newUsername", newUsername);
+	querySharing1.bindValue(":oldUsername", hashedOldUsername);
+	querySharing1.bindValue(":newUsername", hashedNewUsername);
 
 	if (!querySharing1.exec()) {
 		qDebug() << "Error change username in table SHARING OWNER:\n" << querySharing1.lastError();
@@ -556,8 +556,8 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 
 	QSqlQuery querySharing2(db);
 	querySharing2.prepare("UPDATE sharing SET sharedToUser=:newUsername WHERE sharedToUser=:oldUsername");
-	querySharing2.bindValue(":oldUsername", hashedOldUsername);
-	querySharing2.bindValue(":newUsername", hashedNewUsername);
+	querySharing2.bindValue(":oldUsername", oldUsername);
+	querySharing2.bindValue(":newUsername", newUsername);
 
 	if (!querySharing2.exec()) {
 		qDebug() << "Error change username in table SHARING SHARED:\n" << querySharing2.lastError();
