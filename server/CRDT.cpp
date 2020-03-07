@@ -11,7 +11,12 @@
 #include <QDebug>
 
 CRDT::CRDT() : td(new QTextDocument), textCursor(td) {
-    this->style.emplace_back(std::pair<Character,int> {});
+    QTextCharFormat cf;
+    Identifier i(0,"Server");
+    std::vector<Identifier> in_pos;
+    in_pos.emplace_back(i);
+    Character initialBlock=Character('\r',cf,-1,"None",in_pos);
+    this->style.emplace_back(std::pair<Character,int> {initialBlock,17});
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {

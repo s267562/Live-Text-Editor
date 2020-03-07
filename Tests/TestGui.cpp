@@ -300,11 +300,11 @@ void TestGui::initTestCase() {
 
 void TestGui::testGeneric1() {
     QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "wjnrh herohvoehtbothborthbortb oritjboewitjbowhtobhwortbowrtn owrtiowrtjojwrotbjw toijwortjhwrthsdvsdvsdvdsv osnsovhsosdvsdvdvosdv sosvdvsdvsdvdivjsdv", Qt::NoModifier, 20);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Down, Qt::NoModifier, 100);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
-    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 100);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Down, Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 20);
+    QTest::keyClick(controller.findChild<QMainWindow*>("Editor")->centralWidget(), Qt::Key_Left, Qt::NoModifier, 20);
     QTest::keyClicks(controller.findChild<QMainWindow*>("Editor")->centralWidget(), "VIEJTKTUD", Qt::NoModifier, 20);
     inspectTest();
 }

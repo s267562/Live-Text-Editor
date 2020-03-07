@@ -9,7 +9,9 @@
 
 
 CRDT::CRDT() {
-    this->style.emplace_back(std::pair<Character,int> {});
+    //QTextCharFormat cf;
+    //Character initialBlock=Character('\r',cf,-1,"None",std::vector<Identifier> {0});
+    //this->style.emplace_back(std::pair<Character,int> {initialBlock,17});
 }
 
 void CRDT::setStructure(const std::vector<std::vector<Character>> &initialStructure) {

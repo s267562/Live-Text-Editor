@@ -325,7 +325,7 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
     int bc = this->textEdit->textCursor().document()->blockCount();
 
     this->textCursor.movePosition(QTextCursor::Start);
-    this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
+    this->textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
 
     int cursorPos = this->textCursor.position();
     int num=this->textCursor.blockNumber();
