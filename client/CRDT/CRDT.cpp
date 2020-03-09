@@ -43,7 +43,6 @@ const Character CRDT::getCharacter(Pos pos) {
 // remote insert
 
 Pos CRDT::handleRemoteInsert(Character character) {
-
     Pos pos = this->findInsertPosition(character);
     this->insertChar(character, pos);
 

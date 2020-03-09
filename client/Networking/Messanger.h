@@ -28,6 +28,7 @@ private:
     bool clientIsLogged;
     std::queue<QByteArray> messages;
     CRDT *crdt = nullptr;
+    bool clientIsDisconnected;
 
 private:
 

@@ -8,7 +8,6 @@
 #include <QThread>
 #include "CRDT.h"
 #include "../Controller/Controller.h"
-#include "CRDT.h"
 
 class Controller;
 class CRDT;

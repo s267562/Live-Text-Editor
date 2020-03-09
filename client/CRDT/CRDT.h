@@ -17,6 +17,7 @@
 #include <map>
 #include <QThread>
 #include <QTextCursor>
+#include <shared_mutex>
 
 class Messanger;
 class Controller;
@@ -38,6 +39,9 @@ public:
     const QString toText();
     bool styleChanged(QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteStyleChanged(const Character &character);
+
+public:
+    std::shared_mutex mutexCRDT;
 
 private:
     QString siteId;

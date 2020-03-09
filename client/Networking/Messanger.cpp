@@ -11,6 +11,7 @@ Messanger::Messanger(QObject *parent) : QObject(parent) {
     reciveOkMessage = false;
     state = UNLOGGED;
     clientIsLogged = false;
+    clientIsDisconnected = false;
     qRegisterMetaType<Message>("Message");
 
     /* define connection */
@@ -25,6 +26,18 @@ Messanger::Messanger(QObject *parent) : QObject(parent) {
  * @return result of connection
  */
 bool Messanger::connectTo(QString host, QString port){
+    if (clientIsDisconnected){
+        this->socket = new QTcpSocket(this);
+        reciveOkMessage = false;
+        state = UNLOGGED;
+        clientIsLogged = false;
+        clientIsDisconnected = false;
+        qRegisterMetaType<Message>("Message");
+
+        /* define connection */
+        this->connectReadyRead = connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+        this->connectDisconnected = connect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnect()));
+    }
     serverIP = host;
     serverPort = port;
     socket->connectToHost(host, port.toInt());
@@ -728,6 +741,7 @@ void Messanger::onDisconnect(){
     QTcpSocket soc;
     soc.setSocketDescriptor(socketDescriptor);
     soc.deleteLater();
+    clientIsDisconnected = true;
     emit errorConnection();
 }
 

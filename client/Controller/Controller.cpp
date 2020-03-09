@@ -277,6 +277,7 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
 
 void Controller::openFile(QString filename, std::vector<std::vector<Character>> initialStructure) {
     // introdurre sincronizzazione
+    std::unique_lock<std::shared_mutex> uniqueLock(crdt->mutexCRDT);
     crdt->setStructure(initialStructure);
     editor->replaceText(this->crdt->toText());
     /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */

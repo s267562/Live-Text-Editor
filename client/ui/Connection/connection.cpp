@@ -18,7 +18,7 @@ Connection::~Connection()
 }
 
 void Connection::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == 16777220)           // Kenter Key is pressed
+    if (event->key() == 16777220)           // enter Key is pressed
         connectButtonClicked();
 }
 
