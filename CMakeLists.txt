@@ -33,14 +33,14 @@ add_executable(client
         client/ui/Login/login.cpp
         client/main.cpp
         client/resource.qrc
-        client/editor.ui
-        client/editor.cpp client/editor.h
-        client/CRDT.cpp client/CRDT.h
+        client/Editor/editor.ui
+        client/Editor/editor.cpp client/Editor/editor.h
+        client/CRDT/CRDT.cpp client/CRDT/CRDT.h
         client/utils/Character.cpp client/utils/Character.h
         client/utils/CharFormat.h
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
-        client/Controller.cpp client/Controller.h
+        client/Controller/Controller.cpp client/Controller/Controller.h
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
         common/Constants.h
@@ -55,10 +55,10 @@ add_executable(client
         client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
         common/commonFunctions.h
         common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
+        client/User/User.cpp client/User/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
-        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp client/CDRTThread.cpp client/CDRTThread.h)
+        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h)
 
 add_executable(client2
         client/textEditor.qrc
@@ -66,14 +66,14 @@ add_executable(client2
         client/ui/Login/login.cpp
         client/main2.cpp
         client/resource.qrc
-        client/editor.ui
-        client/editor.cpp client/editor.h
-        client/CRDT.cpp client/CRDT.h
+        client/Editor/editor.ui
+        client/Editor/editor.cpp client/Editor/editor.h
+        client/CRDT/CRDT.cpp client/CRDT/CRDT.h
         client/utils/Character.cpp client/utils/Character.h
         client/utils/CharFormat.h
         client/utils/Pos.cpp client/utils/Pos.h
         client/utils/Identifier.cpp client/utils/Identifier.h
-        client/Controller.cpp client/Controller.h
+        client/Controller/Controller.cpp client/Controller/Controller.h
         client/Networking/Messanger.h
         client/Networking/Messanger.cpp
         common/Constants.h
@@ -88,11 +88,11 @@ add_executable(client2
         client/ui/Loading/loading.cpp client/ui/Loading/loading.ui
         common/commonFunctions.h
         common/commonFunctions.cpp
-        client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
+        client/User/User.cpp client/User/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
         client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp
-        client/CDRTThread.cpp client/CDRTThread.h)
+        client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h)
 
 add_executable(server
         server/main.cpp
@@ -102,8 +102,8 @@ add_executable(server
         server/Networking/Server.h
         server/Networking/Thread.cpp
         server/Networking/Thread.h
-        server/CRDT.cpp
-        server/CRDT.h
+        server/CRDT/CRDT.cpp
+        server/CRDT/CRDT.h
         client/utils/Identifier.h
         client/utils/Identifier.cpp
         client/utils/Character.h
@@ -117,9 +117,9 @@ add_executable(server
         common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
 
 # Disable qDebug output
-target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
-target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
-target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
+#target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
+#target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
+#target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
 
 
 target_link_libraries(client ${LIBRARIES})

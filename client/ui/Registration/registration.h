@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QObject>
 #include "../../Networking/Messanger.h"
-#include "../../Controller.h"
+#include "../../Controller/Controller.h"
 
 namespace Ui {
 class Registration;

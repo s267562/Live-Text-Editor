@@ -2,7 +2,7 @@
 #define CUSTOMWIDGET_H
 
 #include <QListWidgetItem>
-#include "../../Controller.h"
+#include "../../Controller/Controller.h"
 
 namespace Ui {
 class CustomWidget;

@@ -7,7 +7,7 @@
 #include <QLineEdit>
 #include <QKeyEvent>
 #include "../../Networking/Messanger.h"
-#include "../../Controller.h"
+#include "../../Controller/Controller.h"
 #include "Registration/registration.h"
 
 namespace Ui {

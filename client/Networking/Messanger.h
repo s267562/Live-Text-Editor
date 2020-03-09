@@ -10,8 +10,8 @@
 #include "../utils/Character.h"
 #include "../utils/Pos.h"
 #include "message/Message.h"
-#include "../CRDT.h"
-#include "../User.h"
+#include "../CRDT/CRDT.h"
+#include "../User/User.h"
 #include "../../common/commonFunctions.h"
 
 class CRDT;

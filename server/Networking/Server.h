@@ -1,4 +1,5 @@
 #ifndef SERVER_H
+
 #define SERVER_H
 
 #include <QObject>
@@ -49,11 +50,6 @@ public:
     void removeSocket(qintptr socketDescriptor);                                    // sync ok
     void addDeleteFileThread(QString filename);                                     // sync ok
     void removeDeleteFileThread(QString filename);                                  // sync -> da fare
-
-
-    const std::shared_mutex &getMutexAllUsernames();
-    const std::shared_mutex &getMutexUsernames();
-
 
 private:
     void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);                     // sync

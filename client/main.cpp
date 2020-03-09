@@ -1,4 +1,4 @@
-#include "Controller.h"
+#include "Controller/Controller.h"
 #include "Networking/Messanger.h"
 #include <QApplication>
 #include <QDesktopWidget>

@@ -2,7 +2,7 @@
 #define EDITACCOUNT_H
 
 #include <QDialog>
-#include "../../User.h"
+#include "../../User/User.h"
 #include <QKeyEvent>
 
 namespace Ui {

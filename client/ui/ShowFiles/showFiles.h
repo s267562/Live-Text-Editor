@@ -3,7 +3,7 @@
 
 #include <QListWidget>
 #include <QMainWindow>
-#include "../../Controller.h"
+#include "../../Controller/Controller.h"
 #include "EditAccount/editaccount.h"
 #include "CreateFile/createfile.h"
 #include "AddFile/addfile.h"

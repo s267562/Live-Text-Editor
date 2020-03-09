@@ -11,7 +11,7 @@
 #include "../utils/Character.h"
 #include "../utils/Identifier.h"
 #include "../Networking/Messanger.h"
-#include "../editor.h"
+#include "../Editor/editor.h"
 #include <math.h>
 #include <iostream>
 #include <map>

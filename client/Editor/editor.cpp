@@ -2,13 +2,13 @@
 // Created by simone on 05/08/19.
 //
 
-#include "Editor/editor.h"
+#include "editor.h"
 #include "ui_editor.h"
-#include "../server/SimpleCrypt/SimpleCrypt.h"
+#include "../../server/SimpleCrypt/SimpleCrypt.h"
 #include <QMenuBar>
 #include <QMenu>
 #include <QSlider>
-#include "./utils/Pos.h"
+#include "../utils/Pos.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>

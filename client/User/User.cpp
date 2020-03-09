@@ -2,7 +2,7 @@
 // Created by andrea settimo on 2019-09-02.
 //
 
-#include "User/User.h"
+#include "User.h"
 
 User::User(QString username, QPixmap avatar): username(username), avatar(avatar){}
 

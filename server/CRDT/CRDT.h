@@ -9,9 +9,9 @@
 
 #include <string>
 #include <vector>
-#include "../client/utils/Character.h"
-#include "../client/utils/Identifier.h"
-#include "../client/utils/Pos.h"
+#include "../../client/utils/Character.h"
+#include "../../client/utils/Identifier.h"
+#include "../../client/utils/Pos.h"
 #include <math.h>
 #include <iostream>
 

@@ -4,8 +4,8 @@
 
 #include <ctime>
 #include <cmath>
-#include "CRDT/CRDT.h"
-#include "Networking/Messanger.h"
+#include "CRDT.h"
+#include "../Networking/Messanger.h"
 #include <QDebug>
 #include <QTextCursor>
 
