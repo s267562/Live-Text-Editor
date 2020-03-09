@@ -11,7 +11,7 @@
 #include "../../common/commonFunctions.h"
 #include "../../common/Message.h"
 #include "../../client/utils/Pos.h"
-#include "../CRDT.h"
+#include "../CRDT/CRDT.h"
 #include "Server.h"
 #include <shared_mutex>
 
