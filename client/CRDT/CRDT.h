@@ -26,6 +26,7 @@ class Editor;
 class CRDT: public QObject {
     Q_OBJECT;
 public:
+    std::shared_mutex mutexCRDT;
     CRDT(QObject *parent, Messanger *messanger);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
@@ -39,17 +40,29 @@ public:
     const QString toText();
     bool styleChanged(QTextCharFormat textCharFormat, Pos pos);
     Pos handleRemoteStyleChanged(const Character &character);
+    int getRow(Character blockId);
+    Character getBlockIdentifier(int blockNumber);
+    void printStructures();
 
-public:
-    std::shared_mutex mutexCRDT;
+
+    //TODO: Just for testing purpose
+    std::vector<std::vector<Character>> getStructure();
+    std::vector<std::pair<Character,int>> getStyle();
+
+    QString toString();
+
+    void setStyle(std::vector<std::pair<Character, int>> blocks);
+
 
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;
     std::map<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
+    std::vector<std::pair<Character,int>> style;
     Messanger *messanger;
     Editor* editor = nullptr;
+
 public:
     void setEditor(Editor *editor);
 
@@ -75,6 +88,10 @@ private:
     void removeEmptyLines();
 
     void mergeLines(int line);
+    
+    void insertBlock(Character character, Pos position);
+
+    void removeStyleLine(int i);
 
 public slots:
     //void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);

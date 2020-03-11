@@ -46,6 +46,7 @@ public:
     std::shared_mutex mutexFileDeleted;
 
 
+
 public:
 	explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", QString usernameOwner = "",
 					Server *server = nullptr);
@@ -59,6 +60,7 @@ public:
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok
+
 
 private:
 	bool readInsert(QTcpSocket *soc);
@@ -77,6 +79,10 @@ private:
     bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
     bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
     bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
+
+    bool readAlignmentChanged(QTcpSocket *soc);
+    void writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
+
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

@@ -15,7 +15,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecived(QString, std::vector<std::vector<Character>>)), this, SLOT(openFile(QString, std::vector<std::vector<Character>>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
 
     /*connect(messanger, &Messanger::newMessage,
@@ -48,7 +48,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>)), this, SLOT(openFile(std::vector<std::vector<Character>>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>)));
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
 }
 
@@ -219,6 +219,8 @@ void Controller::showEditor(){
 /*void Controller::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     // insert into the model
     Character character = this->crdt->handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
+    
+    QTextCharFormat tcf=character.getTextCharFormat();
 
     // send insert at the server.
     this->messanger->writeInsert(character);
@@ -231,9 +233,22 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
 
         // send insert at the server.
         this->messanger->writeStyleChanged(character);
-    } else {
+    }
+    else {
         // do nothing...
     }
+
+}
+
+
+void Controller::alignChange(int alignment_type, int blockNumber) {
+
+    // send insert at the server.
+    //TODO Check this
+    Character blockId=this->crdt->getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
+    //if(blockId.getSiteId()!=-1){
+        this->messanger->writeAlignmentChanged(alignment_type,blockId);
+    //}
 }
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
@@ -245,41 +260,84 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
 }*/
 
 /*void Controller::newMessage(Message message) {
-    // Message message = this->messanger->getMessage();
+
+    qDebug() << "\nController.cpp - newMessage()";
+
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
-
         Pos pos = this->crdt->handleRemoteInsert(character);
 
         if(character.getSiteId() == this->crdt->getSiteId()) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            emit insertChar(character.getValue(), character.getTextCharFormat(), pos);
+            qDebug() << message.getSender();
+            this->editor->insertChar(character.getValue(), character.getTextCharFormat(), pos, message.getSender());
+
         }
     } else if(message.getType() == STYLE_CHANGED) {
-        Pos pos = this->crdt->handleRemoteStyleChanged(message.getCharacter());
+        Character character=message.getCharacter();
+        Pos pos = this->crdt->handleRemoteStyleChanged(character);
 
         if(pos) {
             // delete from the editor.
-            emit changeStyle(pos, message.getCharacter().getTextCharFormat());
-        }
-    } else if(message.getType() == DELETE) {
-        Pos pos = this->crdt->handleRemoteDelete(message.getCharacter());
+            QTextCharFormat tcf =  message.getCharacter().getTextCharFormat();
 
+            this->editor->changeStyle(pos, tcf, message.getSender());
+
+        }
+    } else if(message.getType() == ALIGNMENT_CHANGED) {
+        int row = this->crdt->getRow(message.getCharacter());
+        if(row>=0){
+            this->editor->remoteAlignmentChanged(message.getAlignmentType(), row);
+        }
+        
+    }
+    else if(message.getType() == DELETE) {
+
+        QDebug qD(QtDebugMsg);
+
+        QString sender = message.getSender();
+        Character character = message.getCharacter();
+
+        //TODO: Fix print
+
+        qD << "\n\t\tMESSAGE:\tDELETE";
+        qD << "\n\t\tSENDER:\t" << sender;
+        qD << "\n\t\tCHAR TO REMOVE:\t\tValue:\t" << character.getValue()+"\tCounter:\t" << character.getCounter() << "\tsiteId:\t" + character.getSiteId() + "\tPosition:\t";
+
+        for (Identifier id : character.getPosition()) {
+            qD << id.getDigit();
+        }
+
+
+        Pos pos = this->crdt->handleRemoteDelete(character);
         if(pos) {
             // delete from the editor.
-            emit deleteChar(pos);
+            QChar removedChar=this->editor->deleteChar(pos,sender);
+
+            qD << "\n\t\tChar removed correctly";
+            //TODO: If an error occurs?
+
+        }else{ // Skip in case char doesn't exist
+            qD << "\n\t\tThe char has already been removed";
         }
+
     }
 }*/
 
-void Controller::openFile(QString filename, std::vector<std::vector<Character>> initialStructure) {
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks) {
     // introdurre sincronizzazione
     std::unique_lock<std::shared_mutex> uniqueLock(crdt->mutexCRDT);
     crdt->setStructure(initialStructure);
+    crdt->setStyle(styleBlocks);
     editor->replaceText(this->crdt->toText());
+    std::vector<int> alignment_block;
+    for(std::pair<Character,int> & block : styleBlocks){
+        alignment_block.emplace_back(block.second);
+    }
+    this->editor->formatText(alignment_block);
     /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
     auto result = this->user->getFileList().find(filename);
 

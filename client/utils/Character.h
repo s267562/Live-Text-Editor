@@ -12,6 +12,7 @@
 #include "CharFormat.h"
 #include <QJsonDocument>
 #include <QtGui/QTextCharFormat>
+#include <QLabel>
 
 class Character {
 public:
@@ -31,12 +32,17 @@ public:
 	static Character toCharacter(QJsonDocument jsonDocument);
 	static CharFormat generateCharFormat(QTextCharFormat textCharFormat);
 
+    friend bool operator==(const Character &lhs, const Character &rhs);
+
+    friend bool operator!=(const Character &lhs, const Character &rhs);
+
 private:
     char value;
     QTextCharFormat textCharFormat;
     int counter;
     QString siteId;
     std::vector<Identifier> position;
+    QTextBlockFormat textBlockFormat;
 };
 
 

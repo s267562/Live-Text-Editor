@@ -8,7 +8,8 @@
 #include <QDebug>
 
 Character::Character(char value, QTextCharFormat textCharFormat, int counter, const QString &siteId, const std::vector<Identifier> &position)
-		: value(value), textCharFormat(textCharFormat), counter(counter), siteId(siteId), position(position) {}
+		: value(value), textCharFormat(textCharFormat),
+		  counter(counter), siteId(siteId), position(position){}
 
 Character::Character() {
     value = '*';
@@ -189,3 +190,17 @@ CharFormat Character::generateCharFormat(QTextCharFormat textCharFormat) {
 
     return format;
 }
+
+bool operator==(const Character &lhs, const Character &rhs) {
+    return lhs.siteId == rhs.siteId &&
+           lhs.position == rhs.position;
+}
+
+bool operator!=(const Character &lhs, const Character &rhs) {
+    return !(rhs == lhs);
+}
+
+
+
+
+

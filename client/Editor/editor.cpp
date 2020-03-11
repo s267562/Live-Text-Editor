@@ -17,6 +17,8 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QColorDialog>
+#include <sharefile.h>
+#include <QtCharts>
 #include <ShareFile/sharefile.h>
 #include <QMetaObject>
 #include <QMetaType>
@@ -26,7 +28,9 @@ Q_DECLARE_METATYPE(QTextCursor);
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)), textDocument(textEdit->document()),
-                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller) {
+                                                                          siteId(siteId), QMainWindow(parent), ui(new Ui::Editor), controller(controller),
+                                                                          colors({"#ff4500","#7fffd4","#deb887","#00ffff","#ff7f50","#0000ff","#9932cc","#ff1493","#ffd700","#a52a2a","#1e90ff","#9370db","#006400","#ff0000","#008080"}){
+
     ui->setupUi(this);
     setWindowTitle(QCoreApplication::applicationName());
     setCentralWidget(textEdit);
@@ -37,6 +41,10 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
 
     ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
+
+    colorIndex=0;
+
+    // TODO: from QByteArray to QPixMap
 
     #if UI
         QPixmap pix = controller->getUser()->getAvatar();
@@ -68,6 +76,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
 
+
     m_shadowEffect1 = new QGraphicsDropShadowEffect(this);
     m_shadowEffect1->setColor(QColor(0, 0, 0, 255 * 0.1));
     m_shadowEffect1->setXOffset(0);
@@ -75,6 +84,10 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     m_shadowEffect1->setBlurRadius(12);
     m_shadowEffect1->setEnabled(true);
     ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
+    
+    
+    
+    //qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
 
 void Editor::setupTextActions() {
@@ -184,6 +197,7 @@ void Editor::setupTextActions() {
     tb->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
 
+
     menu->addSeparator();
 
 
@@ -194,6 +208,7 @@ void Editor::setupTextActions() {
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
+
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
 
     comboSize = new QComboBox(tb);
@@ -207,6 +222,12 @@ void Editor::setupTextActions() {
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+
+    this->updateAlignmentPushButton();
+    //QFont dFont(QString("Al Bayan"), 12);
+
+   // this->textEdit->document()->setDefaultFont(dFont);
+    qDebug() << "QFont default" << this->textEdit->textCursor().charFormat().font();
 
 }
 
@@ -267,16 +288,93 @@ void Editor::colorChanged(const QColor &c)
 
 void Editor::textAlign(QAction *a)
 {
-    if (a == actionAlignLeft)
-        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-    else if (a == actionAlignCenter)
+   // int at=LEFT;
+    int alCode=0;
+
+    if (a == actionAlignLeft) {
+        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute); //Absolute means that the "left" not depends on layout of widget
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
+    }
+    else if (a == actionAlignCenter) {
         textEdit->setAlignment(Qt::AlignHCenter);
-    else if (a == actionAlignRight)
+       // at = CENTER;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
+    }
+    else if (a == actionAlignRight) {
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-    else if (a == actionAlignJustify)
+      // at = RIGHT;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
+    }
+    else if (a == actionAlignJustify) {
         textEdit->setAlignment(Qt::AlignJustify);
+       // at=JUSTIFY;
+        alCode=textEdit->alignment();
+        qDebug() << alCode;
+    }
+
+    int start=this->startSelection;
+    int end=this->endSelection;
+
+    this->textCursor.setPosition(start);
+    int startBlock=this->textCursor.blockNumber();
+
+    this->textCursor.setPosition(end);
+    int endBlock=this->textCursor.blockNumber();
+
+    for(int blockNum=startBlock; blockNum<=endBlock; blockNum++) {
+        this->controller->alignChange(alCode, blockNum);
+    }
+
 }
 
+void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
+
+    int oldCursorPos = this->textCursor.position();
+
+    int bc = this->textEdit->textCursor().document()->blockCount();
+
+    this->textCursor.movePosition(QTextCursor::Start);
+    this->textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
+
+    int cursorPos = this->textCursor.position();
+    int num=this->textCursor.blockNumber();
+
+    QTextBlockFormat f=this->textCursor.blockFormat();
+
+    f.setAlignment(Qt::Alignment(alignment));
+
+    this->textCursor.setBlockFormat(f);
+
+    //Qt::Alignment a(alignment);
+    //this->textEdit->setTextCursor(this->textCursor);
+    //this->textEdit->setAlignment(a);
+
+    this->textCursor.setPosition(oldCursorPos);
+    this->updateAlignmentPushButton();
+
+}
+
+
+
+void Editor::formatText(std::vector<int> styleBlocks){
+
+    QTextDocument *doc = textEdit->document();
+
+
+    disconnect(doc, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
+
+    for(int i=0; i<styleBlocks.size(); i++){
+        this->remoteAlignmentChanged(styleBlocks.at(i),i);
+    }
+
+     connect(doc, &QTextDocument::contentsChange,
+            this, &Editor::onTextChanged);
+
+}
 
 void Editor::mergeFormatOnWordOrSelection(const QTextCharFormat &format) {
     QTextCursor cursor = textEdit->textCursor();
@@ -307,7 +405,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
     saveCursor();
 
-    if(validSignal(position, charsAdded, charsRemoved)) {
+   if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
@@ -333,11 +431,44 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 // select char
                 cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
 
-                QTextCharFormat textCharFormat = cursor.charFormat();
+            qDebug() << "Cursor position STYLE CHANGE" << cursor.position();
 
                 this->controller->styleChange(textCharFormat, pos);
             }*/
             QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalStyleChange", Qt::QueuedConnection, Q_ARG(int, charsAdded), Q_ARG(QTextCursor, cursor), Q_ARG(int, position));
+            // Eugenio
+            /*if(this->cursorPos!=this->startSelection){ // Selection forward
+
+                for(int i=0; i<charsAdded; i++) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    QTextCharFormat textCharFormat = cursor.charFormat();
+
+                    this->controller->styleChange(textCharFormat, pos);
+                }
+            }
+            else{ // Selection backward
+                for(int i=charsAdded-1; i>=0; i--) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    QTextCharFormat textCharFormat = cursor.charFormat();
+
+                    this->controller->styleChange(textCharFormat, pos);
+                }
+            }*/
+
         } else {
             if(position == 0 && charsAdded > 0 && charsRemoved > 0) {
                 // correction when paste something in first position.
@@ -410,7 +541,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
         }
 
         restoreCursor();
-        onCursorPositionChanged();
+       // onCursorPositionChanged();
     } else {
         qDebug() << " "; // new Line
         //qDebug() << "INVALID SIGNAL";
@@ -422,45 +553,110 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
             restoreCursor();
         }
     }
+
+    this->updateOtherCursorPosition();
+
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &Editor::onCursorPositionChanged);
+
+    qDebug() << this->textEdit->document()->blockCount();
 }
 
-void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos) {
+void Editor::updateOtherCursorPosition(){
+    QHash<QString, OtherCursor*>::const_iterator i;
+
+
+    int width=this->textEdit->cursorRect().width();
+    int height=this->textEdit->cursorRect().height();
+
+    for (i = this->otherCursors.constBegin() ; i != this->otherCursors.constEnd(); ++i) {
+        qDebug() << i.key() << ':' << i.value()->getTextCursor().position();
+        QRect coord=this->textEdit->cursorRect(i.value()->getTextCursor());
+        i.value()->move(coord, width, height);
+    }
+}
+
+
+void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
     int oldCursorPos = textCursor.position();
 
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
 
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &Editor::onCursorPositionChanged);
+
     textCursor.insertText(QString{character});
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+    int width=this->textEdit->cursorRect().width();
+
+    qDebug() << "Cursor width: " << width;
+    int height=this->textEdit->cursorRect().height();
+    qDebug() << "Cursor height: " << height;
+
+    this->otherCursors[siteId]->move(coord, width, height);
+
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+
+    qDebug() << "Pos text cursor (after insert): " << textCursor.position();
+    qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
+
+
     textCursor.setPosition(textCursor.position()-1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
     textEdit->mergeCurrentCharFormat(textCharFormat);
 
+
+    qDebug()<<siteId;
+
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
+
     textCursor.setPosition(oldCursorPos);
+
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+               this, &Editor::onCursorPositionChanged);
+
 }
 
-void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
+void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString siteId) {
     //qDebug() << "bold" << format.isBold();
     //qDebug() << "underline" << format.isUnderline();
     //qDebug() << "italic" << format.isItalic();
     int oldCursorPos = textCursor.position();
 
+
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
 
     QTextDocument *doc = textEdit->document();
+
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+    int width=this->textEdit->cursorRect().width();
+
+    qDebug() << "Cursor width: " << width;
+    int height=this->textEdit->cursorRect().height();
+    qDebug() << "Cursor height: " << height;
+
+    this->otherCursors[siteId]->move(coord, width, height);
+
+    this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
+
+    qDebug() << "Pos text cursor (after style change): " << textCursor.position();
+    qDebug() << "Pos other text cursor (after style change): " << this->otherCursors[siteId]->getTextCursor().position();
 
     textCursor.setPosition(textCursor.position()+1, QTextCursor::KeepAnchor);
     textCursor.mergeCharFormat(textCharFormat);
@@ -473,23 +669,51 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat) {
     textCursor.setPosition(oldCursorPos);
 }
 
-void Editor::deleteChar(Pos pos) {
+
+
+QChar Editor::deleteChar(Pos pos, QString sender) {
+
+    qDebug() << "\nEditor.cpp - deleteChar():";
+    qDebug() << "\t\tDelete char at:\n";
+    qDebug() << "\t\t\tline:\t"<< pos.getLine() << "\n\t\t\tch:\t"<< pos.getCh();
+    qDebug() << "\n\t\tInserted by:\t" << siteId;
+
+
     int oldCursorPos = textCursor.position();
 
+    qDebug() << "\n\t\tInitial cursor position:\t" << oldCursorPos;
+
     textCursor.movePosition(QTextCursor::Start);
-    textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, pos.getLine());
-    textCursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, pos.getCh());
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
 
     QTextDocument *doc = textEdit->document();
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
+    QChar deletedChar=textEdit->document()->characterAt(textCursor.position());
+
     textCursor.deleteChar();
+
+    qDebug() << "\n\t\tDeleted char:\t" << deletedChar;
+
+    QRect coord=this->textEdit->cursorRect(textCursor);
+    int width=this->textEdit->cursorRect().width();
+    int height=this->textEdit->cursorRect().height();
+
+
+    this->otherCursors[sender]->move(coord,width,height);
+
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
 
     textCursor.setPosition(oldCursorPos);
+
+    qDebug() << "\n\t\tFinal cursor position:\t" << textCursor.position();
+
+    return deletedChar;
 }
 
 void Editor::setFormat(CharFormat charFormat) {
@@ -500,10 +724,11 @@ void Editor::setFormat(CharFormat charFormat) {
 
 void Editor::onCursorPositionChanged() {
     QTextCursor cursor = textEdit->textCursor();
+   // qDebug() << "Cursor Position: " << cursor.position();
     if(!cursor.hasSelection()) {
         int cursorPos = cursor.position();
         if(cursorPos == 0) {
-            setFormat(CharFormat()); // defaul character
+            setFormat(CharFormat()); // defaul character TODO: Default font is problem in non ubuntu users. We should find a more general default font
         } else if(cursorPos > 0) {
             cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
             QTextCharFormat textCharFormat = cursor.charFormat();
@@ -513,8 +738,12 @@ void Editor::onCursorPositionChanged() {
                                  textCharFormat.foreground().color(),
                                  textCharFormat.font().family(),
                                  textCharFormat.fontPointSize()));
+            //this->controller->cursorChanged(cursor);
         }
+
     }
+   // this->controller->cursorChanged(cursor);
+   this->updateAlignmentPushButton();
 }
 
 void Editor::on_actionNew_File_triggered() {
@@ -639,6 +868,8 @@ void Editor::resizeEvent(QResizeEvent *event) {
     ui->userListWidget->resize(149, textEdit->geometry().height() - 18 -100);
 
     ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 -100, ui->userWidget->width(), ui->userWidget->height());
+
+    this->updateOtherCursorPosition();
 }
 
 void Editor::removeUser(QString user) {
@@ -646,16 +877,26 @@ void Editor::removeUser(QString user) {
         showFinder();
         return;
     }
+    qDebug() << "\nEditor.cpp - removeUsers():\n";
+    qDebug() << "\t\tUSER REMOVED:\t" << user;
+
     users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
         return s == user;
     }));
     qDebug() << user;
 
+   // qDebug() << "Before: " << this->otherCursors.size();
+   // qDebug() << this->otherCursors[user]->text();
+
     ui->userListWidget->clear();
     ui->userListWidget->addItems(users);
+    this->otherCursors[user]->hide();
+    this->otherCursors.remove(user);
 }
 
 void Editor::setUsers(QStringList users) {
+    qDebug() << "\nEditor.cpp - setUsers(): ";
+
     #if UI
         if (loadingFlag){
             loadingMovie->stop();
@@ -674,6 +915,17 @@ void Editor::setUsers(QStringList users) {
     this->users = users;
     ui->userListWidget->addItems(users);
     controller->stopLoadingPopup();
+
+    std::for_each( users.begin(), users.end(), [this](QString user){
+        QColor color(colors[colorIndex]);
+        color.setAlpha(128); // opacity
+        otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
+        colorIndex++;
+        if(colorIndex==14){
+            colorIndex=0;
+        }
+
+    });
 }
 
 void Editor::saveCursor() {
@@ -696,13 +948,19 @@ void Editor::restoreCursorSelection() {
     textEdit->setTextCursor(cursor);
 }
 
-void Editor::replaceText(const QString initialText) {
+void Editor::replaceText(const std::vector<std::vector<Character>> initialText) {
     QTextDocument *doc = textEdit->document();
 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
-    textEdit->setText(initialText);
+    for(auto & line : initialText){
+        for(auto & character : line){
+            QString c(character.getValue());
+            this->textEdit->textCursor().insertText(c,character.getTextCharFormat());
+        }
+    }
+    //textEdit->setText(initialText);
 
     connect(doc, &QTextDocument::contentsChange,
             this, &Editor::onTextChanged);
@@ -710,6 +968,7 @@ void Editor::replaceText(const QString initialText) {
     QTextCursor newCursor = textEdit->textCursor();
     newCursor.movePosition(QTextCursor::End);
     textEdit->setTextCursor(newCursor);
+    qDebug() << "Alignment: " << textEdit->alignment();
 }
 
 void Editor::reset() {
@@ -750,3 +1009,24 @@ void Editor::changeUser(){
     ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
     ui->username->setText(controller->getUser()->getUsername());
 }
+void Editor::updateAlignmentPushButton() {
+    Qt::Alignment alignment = this->textEdit->textCursor().blockFormat().alignment();
+
+    switch(alignment){
+        case Qt::AlignHCenter:
+            this->actionAlignCenter->setChecked(true);
+            break;
+        case Qt::AlignRight | Qt::AlignAbsolute:
+            this->actionAlignRight->setChecked(true);
+            break;
+        case Qt::AlignJustify:
+            this->actionAlignJustify->setChecked(true);
+            break;
+        default:
+            this->actionAlignLeft->setChecked(true);
+            break;
+    }
+
+}
+
+

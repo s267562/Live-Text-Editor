@@ -40,6 +40,8 @@ public:
     /*bool writeInsert(Character character);
     bool writeStyleChanged(Character character);
     bool writeDelete(Character character);*/
+    //bool writeDelete(Character character);
+    bool writeAlignmentChanged(int alignment_type, Character blockId); // gestire con un segnale forse
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -63,6 +65,11 @@ public:
     bool sendDeleteFile(QString filename);
     void setCrdt(CRDT *crdt);
 
+    bool readAlignmentChanged();
+
+
+    User *user = nullptr;
+
 public slots:
     void onReadyRead();
     void onDisconnect();
@@ -80,7 +87,7 @@ signals:
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
-    void fileRecived(QString filename, std::vector<std::vector<Character>> file);
+    void fileRecive(std::vector<std::vector<Character>> file, std::vector<std::pair<Character,int>> at);
     void requestForFileFailed();
     void insertFailed();
     void deleteFailed();

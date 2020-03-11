@@ -15,6 +15,9 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QGraphicsDropShadowEffect>
+#include "utils/Constants.h"
+#include <QLabel>
+#include "utils/OtherCursor.h"
 #include "EditAccount/editaccount.h"
 
 
@@ -27,16 +30,29 @@ namespace Ui {
 class Editor : public QMainWindow {
 Q_OBJECT
 
+//TODO: Add #ifdef
+    friend class TestGui;
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
+    void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
+    QChar deleteChar(Pos pos, QString sender);
     void reset();
-    void replaceText(const QString initialText);
+    void replaceText(const std::vector<std::vector<Character>> initialText);
     ~Editor();
     void setFilename(QString filename);
     void closeEditAccount();
 
+    void remoteAlignmentChanged(int alignment, int blockNumber);
+    void formatText(std::vector<int> styleBlocks);
+
+    void updateOtherCursorPosition();
+
+    void updateAlignmentPushButton();
+
+    //void alignmentChanged(alignment_type at, int cursorPosition);
 
 public slots:
     void on_actionNew_File_triggered();
@@ -91,7 +107,17 @@ private:
     QStringList users;
     QMovie *loadingMovie;
     bool loadingFlag = true;
+    int colorIndex;
     EditAccount *editA = nullptr;
+    
+
+
+public: //TODO : just to try
+    QHash<QString, OtherCursor*> otherCursors;
+    
+private:
+    std::vector<QString> colors;
+
 
     void setFormat(CharFormat charFormat);
     void undo();
@@ -122,6 +148,7 @@ private:
     QGraphicsDropShadowEffect *m_shadowEffect1;
     QGraphicsDropShadowEffect *m_shadowEffect2;
     QString filename;
+
 
 };
 

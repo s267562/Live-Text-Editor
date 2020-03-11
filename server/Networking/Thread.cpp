@@ -101,7 +101,13 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		}
 		needToSaveMutex.unlock();
 		readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
+	} else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+        if (!readAlignmentChanged(soc)) {
+            writeErrMessage(soc);
+        }
+        writeOkMessage(soc);
+        readyRead(soc, connectReadyRead, connectDisconnected);
+    } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
 		std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
 		std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
 		std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
@@ -318,6 +324,38 @@ bool Thread::readStyleChanged(QTcpSocket *soc) {
 	return true;
 }
 
+bool Thread::readAlignmentChanged(QTcpSocket *soc){
+    qDebug() << "Thread.cpp - readAlignmentChanged()     ---------- READ ALIGNMENT CHANGED ----------";
+
+
+    //TODO: Manage better conversion from enum QByteArray
+    readSpace(soc);
+    int alignType = readNumberFromSocket(soc);
+    readSpace(soc);
+
+    int sizeBlockId = readNumberFromSocket(soc);
+    
+    readSpace(soc);
+    
+    QByteArray characterByteFormat;
+    if (!readChunck(soc, characterByteFormat, sizeBlockId)){
+        return false;
+    }
+
+    QJsonDocument jsonFormatBlockId = QJsonDocument::fromBinaryData(characterByteFormat);
+    Character blockId = Character::toCharacter(jsonFormatBlockId);
+
+    int row=this->crdt->getRow(blockId);
+
+    if (row<0) return false;
+
+    crdt->handleAlignmentChanged(alignType, row);
+
+    this->writeAlignmentChanged(soc, alignType, blockId);
+
+    return true;
+}
+
 /**
  * This method reads the character, that was removed from other users
  * @param soc
@@ -404,6 +442,45 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
 			writeMessage(socket.second, message);
 		}
 	}
+}
+
+
+void Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId){
+
+    qDebug() << "Thread.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
+
+    QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
+
+    QByteArray alignmentByteFormat=convertionNumber(alignment);
+    QByteArray blockIdByteFormat=blockId.toQByteArray();
+    //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
+    QByteArray sizeBlockId = convertionNumber(blockIdByteFormat.size());
+
+
+    message.append(" " + alignmentByteFormat);
+    message.append(" " + sizeBlockId);
+    message.append(" " + blockIdByteFormat);
+
+
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+
+    message.append(" "+sizeOfSender+" "+username);
+
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+        //if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+       // }
+    }
+
+
 }
 
 /**
@@ -839,6 +916,7 @@ bool Thread::readRequestUsernameList(QTcpSocket *soc) {
 
 	return writeMessage(soc, message);
 }
+
 
 bool Thread::readFileInformationChanges(QTcpSocket *soc) {
     if (soc == nullptr)

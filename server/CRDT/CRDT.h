@@ -14,6 +14,9 @@
 #include "../../client/utils/Pos.h"
 #include <math.h>
 #include <iostream>
+#include <QtCharts>
+
+//enum align {LEFT, CENTER, RIGHT, JUSTIFY};
 
 class CRDT {
 public:
@@ -26,12 +29,26 @@ public:
 	bool saveCRDT(QString filename);
 	const std::vector<std::vector<Character>> &getStructure() const;
 
+	void handleAlignmentChanged(int alignment, int blockNumber);
+	void insertIntoTextDocument(char character, QTextCharFormat charFormat, Pos pos);
+	void deleteFromTextDocument(Pos pos);
+	void changeStyleOfDocument(Pos pos, const QTextCharFormat &textCharFormat);
+	//void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+
+	QTextDocument* getTextDocument();
+	int getRow(Character blockId);
+
+    std::vector<std::pair<Character, int>> getStyle();
+
 private:
     std::vector<std::vector<Character>> structure;
 	std::map<QString, int> versionsVector; // map<socketDescriptor, counter>
     static const int base = 32;
     //static const bool binarySave = false; // True save.dat / false save.json
+	std::vector<std::pair<Character,int>> style;
 
+	QTextDocument *td;
+	QTextCursor textCursor;
 
     // insert
     Pos findInsertPosition(Character character);
@@ -47,6 +64,8 @@ private:
 
 	void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
+
+    void removeStyleLine(int i);
 };
 
 

@@ -54,3 +54,12 @@ Identifier::Identifier() {
 	digit = -1;
 	siteId = nullptr;
 }
+
+bool operator==(const Identifier &lhs, const Identifier &rhs) {
+    return lhs.digit == rhs.digit &&
+           lhs.siteId == rhs.siteId;
+}
+
+bool operator!=(const Identifier &lhs, const Identifier &rhs) {
+    return !(rhs == lhs);
+}

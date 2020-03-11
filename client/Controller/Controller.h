@@ -28,6 +28,9 @@ class Messanger;
 
 class Controller : public QMainWindow {
     Q_OBJECT
+
+    //TODO: Add #ifdef
+    friend class TestGui;
 private:
     /* model */
     CRDT *crdt;
@@ -69,8 +72,8 @@ public slots:
 
     /* EDITOR */
     void showEditor();
-    //void newMessage(Message message);
-    void openFile(QString, std::vector<std::vector<Character>> initialStructure);
+    void newMessage(Message message);
+    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks);
 
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
@@ -78,6 +81,7 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
+    void alignChange(int alignment_type, int blockNumber);
     void requestForUsernameList(QString filename, CustomWidget *customWideget);
     void reciveUsernameList(QString filename, QStringList userlist);
 

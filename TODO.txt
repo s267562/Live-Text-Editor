@@ -7,3 +7,15 @@
 lettura del file lato server
 cambio nome file lato server al salvataggio
 
++ Login premendo invio
++ Tutti i "Confirm" devono poter essere dati premendo invio (E' più user friendly)
++ Non far selezinare all'utente ip and port
++ Gestione valori di ritorno delle funzioni: if then else
++ Mantenere coerenti i tasti di allineamento
++ Bloccare doppio accesso ad un client
+
++ Testare shortcuts (crtl-x, ctrl-v, etc)
++ Testare reale utilizzo in rete (no locale)
++ Testare allineamento:
+    * verificare che structure and style siano sempre di lunghezza coerente tranne al più nell'ultima riga
+    * verificare in debug l'allineamento su una riga che viene eliminata mentre l'allineamnento è stato inviato
