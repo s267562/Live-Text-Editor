@@ -17,7 +17,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QColorDialog>
-#include <sharefile.h>
+#include <../ui/ShareFile/sharefile.h>
 #include <QtCharts>
 #include <ShareFile/sharefile.h>
 #include <QMetaObject>
@@ -671,7 +671,7 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 
 
 
-QChar Editor::deleteChar(Pos pos, QString sender) {
+void Editor::deleteChar(Pos pos, QString sender) {
 
     qDebug() << "\nEditor.cpp - deleteChar():";
     qDebug() << "\t\tDelete char at:\n";
@@ -713,7 +713,7 @@ QChar Editor::deleteChar(Pos pos, QString sender) {
 
     qDebug() << "\n\t\tFinal cursor position:\t" << textCursor.position();
 
-    return deletedChar;
+    return;
 }
 
 void Editor::setFormat(CharFormat charFormat) {

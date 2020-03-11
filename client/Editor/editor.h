@@ -15,9 +15,9 @@
 #include <QComboBox>
 #include <QFontComboBox>
 #include <QGraphicsDropShadowEffect>
-#include "utils/Constants.h"
+#include "../../common/Constants.h"
 #include <QLabel>
-#include "utils/OtherCursor.h"
+#include "../utils/OtherCursor.h"
 #include "EditAccount/editaccount.h"
 
 
@@ -31,14 +31,14 @@ class Editor : public QMainWindow {
 Q_OBJECT
 
 //TODO: Add #ifdef
-    friend class TestGui;
+//    friend class TestGui;
 public:
     Editor(QString siteId, QWidget *parent = nullptr, Controller *controller = nullptr);
 
     void setController(Controller *controller);
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
+    /*void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
     void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
-    QChar deleteChar(Pos pos, QString sender);
+    QChar deleteChar(Pos pos, QString sender);*/
     void reset();
     void replaceText(const std::vector<std::vector<Character>> initialText);
     ~Editor();
@@ -66,9 +66,9 @@ public slots:
     void editAccountClicked();
     void changeUser();
     /*MULTI THREAD*/
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
-    void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
+    void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
+    void deleteChar(Pos pos, QString sender);
 
 signals:
     void logout();

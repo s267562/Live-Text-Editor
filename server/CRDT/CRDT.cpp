@@ -393,3 +393,69 @@ bool CRDT::loadCRDT(QString filename) {
 	read(loadDocument.object());
 	return true;
 }
+
+void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
+
+    int oldCursorPos = this->textCursor.position();
+
+    QTextBlockFormat f=this->textCursor.blockFormat();
+    this->textCursor.movePosition(QTextCursor::Start);
+
+    this->textCursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, blockNumber);
+
+    int cursorPos = this->textCursor.position();
+
+    Qt::Alignment a(alignment);
+
+    qDebug() << a;
+
+    f.setAlignment(a);
+
+    this->textCursor.setBlockFormat(f);
+
+
+    if(blockNumber<this->style.size()) {
+        this->style[blockNumber].second=alignment;
+    }
+
+
+    this->textCursor.setPosition(oldCursorPos);
+
+
+}
+
+int CRDT::getRow(Character blockId) {
+    if (this->style.empty() || blockId.compareTo(this->style[0].first) < 0) {
+        return -1;
+    }
+
+    int minLine = 0;
+    int totalLines = this->style.size();
+    int maxLine = totalLines - 1;
+
+    Character lastBlockId = style[maxLine].first;
+
+    // char is greater than all existing chars (insert at end)
+    if (blockId.compareTo(lastBlockId) > 0) {
+        return -1;
+    }
+
+    // binary search
+    while (minLine <= maxLine) {
+        int midLine = std::floor((minLine + maxLine) / 2);
+
+        lastBlockId = style[midLine].first;
+
+        if (blockId.compareTo(lastBlockId) == 0) {
+            return midLine;
+        } else if (blockId.compareTo(lastBlockId) < 0) {
+            maxLine = midLine-1;
+        } else {
+            minLine = midLine+1;
+        }
+    }
+
+    return -1;
+}
+
+

@@ -567,7 +567,7 @@ bool Messanger::readFile(){
     }
 
 
-    emit fileRecive(file, styleBlocks);
+    emit fileRecive(file, styleBlocks, filename);
     return true;
 }
 

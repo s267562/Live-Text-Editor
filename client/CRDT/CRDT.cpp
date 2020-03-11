@@ -642,7 +642,7 @@ void CRDT::newMessage(Message message) {
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
             //emit insertChar(character.getValue(), character.getTextCharFormat(), pos);
-            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()), Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos));
+            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()), Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos), Q_ARG(QString, message.getSender()));
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = handleRemoteStyleChanged(message.getCharacter());
@@ -650,16 +650,23 @@ void CRDT::newMessage(Message message) {
         if(pos) {
             // delete from the editor.
             //emit changeStyle(pos, message.getCharacter().getTextCharFormat());
-            QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()));
+            QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()), Q_ARG(QString, message.getSender()));
         }
     } else if(message.getType() == DELETE) {
+        QString sender = message.getSender();
         Pos pos = handleRemoteDelete(message.getCharacter());
 
         if(pos) {
             // delete from the editor.
             //emit deleteChar(pos);
-            QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos));
+            QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos),  Q_ARG(QString, message.getSender()));
         }
+    } else if(message.getType() == ALIGNMENT_CHANGED) {
+        int row = getRow(message.getCharacter());
+        if(row>=0){
+            this->editor->remoteAlignmentChanged(message.getAlignmentType(), row); // Segnale
+        }
+
     }
 }
 

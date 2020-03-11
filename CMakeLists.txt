@@ -14,7 +14,7 @@ find_package(Qt5Charts REQUIRED)
 find_package(Qt5Sql REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
-find_package(Qt5Test REQUIRED)
+#find_package(Qt5Test REQUIRED)
 
 list(APPEND LIBRARIES
         Qt5::Core
@@ -24,7 +24,8 @@ list(APPEND LIBRARIES
         Qt5::Sql
         Qt5::Network
         Qt5::PrintSupport
-        Qt5::Test)
+        #Qt5::Test
+        )
 
 list(REMOVE_DUPLICATES LIBRARIES)
 
@@ -61,7 +62,8 @@ add_executable(client
         client/User/User.cpp client/User/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
-        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h)
+        client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h
+        client/utils/OtherCursor.h client/utils/OtherCursor.cpp)
 
 add_executable(client2
         client/textEditor.qrc
@@ -124,7 +126,7 @@ add_executable(server
 #target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
 #target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
 
-add_executable(TestGui Tests/TestGui.cpp
+#[[add_executable(TestGui Tests/TestGui.cpp
         client/textEditor.qrc
         client/ui/login.ui
         client/ui/login.cpp
@@ -152,13 +154,13 @@ add_executable(TestGui Tests/TestGui.cpp
         client/Networking/common/commonFunctions.h
         client/Networking/common/commonFunctions.cpp
         client/User.cpp client/User.h client/utils/CharFormat.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h
-        client/ui/addfile.ui client/ui/addfile.cpp client/utils/OtherCursor.cpp client/utils/OtherCursor.h)
+        client/ui/addfile.ui client/ui/addfile.cpp client/utils/OtherCursor.cpp client/utils/OtherCursor.h)]]
 
 
 
 target_link_libraries(client ${LIBRARIES})
 target_link_libraries(client2 ${LIBRARIES})
-target_link_libraries(client3 ${LIBRARIES})
+#target_link_libraries(client3 ${LIBRARIES})
 target_link_libraries(server ${LIBRARIES})
 
-target_link_libraries(TestGui ${LIBRARIES})
+#target_link_libraries(TestGui ${LIBRARIES})

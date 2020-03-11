@@ -189,9 +189,9 @@ void Controller::requestForFile(QString filename){
             connect(editor, &Editor::logout, messanger, &Messanger::logOut);
             /* MULTI THREAD */
             crdt->setEditor(editor);
-            connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos)), editor, SLOT(insertChar(char, QTextCharFormat, Pos )));
-            connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&)));
-            connect(crdt, SIGNAL(deleteChar(Pos )), editor, SLOT(deleteChar(Pos )));
+            connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos, QString)), editor, SLOT(insertChar(char, QTextCharFormat, Pos, QString)));
+            connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&, QString)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&, QString)));
+            connect(crdt, SIGNAL(deleteChar(Pos, QString)), editor, SLOT(deleteChar(Pos, QString)));
             connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
             connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor , QString, int )), Qt::QueuedConnection);
             connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int)), Qt::QueuedConnection);
@@ -241,15 +241,7 @@ void Controller::styleChange(QTextCharFormat textCharFormat, Pos pos) {
 }
 
 
-void Controller::alignChange(int alignment_type, int blockNumber) {
 
-    // send insert at the server.
-    //TODO Check this
-    Character blockId=this->crdt->getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
-    //if(blockId.getSiteId()!=-1){
-        this->messanger->writeAlignmentChanged(alignment_type,blockId);
-    //}
-}
 
 void Controller::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = this->crdt->handleLocalDelete(startPos, endPos);
@@ -327,12 +319,22 @@ void Controller::localDelete(Pos startPos, Pos endPos) {
     }
 }*/
 
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks) {
+void Controller::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
+
+    // send insert at the server.
+    //TODO Check this
+    Character blockId=this->crdt->getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
+    //if(blockId.getSiteId()!=-1){
+    this->messanger->writeAlignmentChanged(alignment_type,blockId);
+    //}
+}
+
+void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
     // introdurre sincronizzazione
     std::unique_lock<std::shared_mutex> uniqueLock(crdt->mutexCRDT);
     crdt->setStructure(initialStructure);
     crdt->setStyle(styleBlocks);
-    editor->replaceText(this->crdt->toText());
+    editor->replaceText(this->crdt->getStructure());
     std::vector<int> alignment_block;
     for(std::pair<Character,int> & block : styleBlocks){
         alignment_block.emplace_back(block.second);

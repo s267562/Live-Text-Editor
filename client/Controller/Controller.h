@@ -25,6 +25,7 @@ class Registration;
 class CustomWidget;
 class CRDT;
 class Messanger;
+class OtherCursor;
 
 class Controller : public QMainWindow {
     Q_OBJECT
@@ -72,8 +73,8 @@ public slots:
 
     /* EDITOR */
     void showEditor();
-    void newMessage(Message message);
-    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks);
+    //void newMessage(Message message);
+    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename);
 
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
@@ -92,9 +93,9 @@ public slots:
 signals:
     void userRecived();
     /* MULTI THREAD */
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
+    /*void insertChar(char character, QTextCharFormat charFormat, Pos pos);
     void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);
+    void deleteChar(Pos pos);*/
     void reset();
 
 public:
