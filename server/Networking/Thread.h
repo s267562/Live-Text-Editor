@@ -81,6 +81,7 @@ private:
 signals:
     void error(QTcpSocket::SocketError socketerror);
 	void newMessage();
+	void removeThread(QString filename);
 
 public slots:
 	void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);                                            // sync

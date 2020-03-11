@@ -1007,3 +1007,10 @@ void Server::addDeleteFileThread(QString filename){
 void Server::removeDeleteFileThread(QString filename){
     deleteFileThread.erase(filename);
 }
+
+void Server::removeThread(QString filename){
+    threads[filename]->quit();
+    threads[filename]->requestInterruption();
+    threads[filename]->wait();
+    threads.erase(filename);
+}

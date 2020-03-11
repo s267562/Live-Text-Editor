@@ -12,6 +12,7 @@ Thread::Thread(QObject *parent, CRDT *crdt, QString filename, QString usernameOw
 	saveTimer->moveToThread(this);
 	// Setup signal and slot
 	connect(saveTimer, SIGNAL(timeout()), this, SLOT(saveCRDTToFile()));
+	//connect(this, SIGNAL(removeThread(QString)), server, SLOT(removeThread(QString)));
 }
 
 void Thread::run() {
@@ -793,11 +794,10 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	server->removeUsername(socketDescriptor);
 	qDebug() << usernames;
 
-	if (sockets.empty()) {
-		//this->setParent(nullptr);
-		//this->deleteLater();
-		//this->quit();
-		//this->terminate();
+	if (sockets.empty() && pendingSocket.empty()) {
+	    // dire al server di eliminare il thread dalla struttura
+        //QMetaObject::invokeMethod(server, "removeThread", Qt::QueuedConnection, Q_ARG(QString, filename));
+        //server->removeThread(filename);
 	}
 }
 

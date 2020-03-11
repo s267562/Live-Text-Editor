@@ -51,6 +51,7 @@ public:
     void addDeleteFileThread(QString filename);                                     // sync ok
     void removeDeleteFileThread(QString filename);                                  // sync -> da fare
 
+
 private:
     void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);                     // sync
     void disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);                  // sync
@@ -70,6 +71,7 @@ signals:
 
 public slots:
     void connection();
+    void removeThread(QString filename);
 };
 
 #endif // SERVER_H
