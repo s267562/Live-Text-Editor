@@ -97,7 +97,8 @@ add_executable(client2
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
         client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp
-        client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h)
+        client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h
+        client/utils/OtherCursor.h client/utils/OtherCursor.cpp)
 
 add_executable(server
         server/main.cpp

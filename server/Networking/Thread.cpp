@@ -406,20 +406,27 @@ void Thread::writeInsert(QTcpSocket *soc, Character character) {
         return;
 
     QByteArray message(INSERT_MESSAGE);
-	QByteArray characterByteFormat = character.toQByteArray();
-	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-	message.append(" " + sizeOfMessage + " " + characterByteFormat);
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-	qDebug() << "                         " << message;
-	qDebug() << ""; // newLine
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
 
-	//broadcast
-	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-		if (socket.first != soc->socketDescriptor()) {
-			writeMessage(socket.second, message);
-		}
-	}
+
+    QByteArray username =usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+    message.append(" "+sizeOfSender+" "+username);
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        if(socket.first != soc->socketDescriptor()) {
+            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
+    }
 }
 
 void Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
@@ -428,20 +435,30 @@ void Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
         return;
 
     QByteArray message(STYLE_CAHNGED_MESSAGE);
-	QByteArray characterByteFormat = character.toQByteArray();
-	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-	message.append(" " + sizeOfMessage + " " + characterByteFormat);
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-	qDebug() << "                         " << message;
-	qDebug() << ""; // newLine
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+    message.append(" "+sizeOfSender+" "+username);
 
-	//broadcast
-	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-		if (socket.first != soc->socketDescriptor()) {
-			writeMessage(socket.second, message);
-		}
-	}
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
+
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
+
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        // qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+        if(socket.first != soc->socketDescriptor()) {
+            //qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
+    }
 }
 
 
@@ -492,22 +509,29 @@ void Thread::writeDelete(QTcpSocket *soc, Character character) {
 	qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
     if (soc == nullptr)
         return;
-
     QByteArray message(DELETE_MESSAGE);
-	QByteArray characterByteFormat = character.toQByteArray();
-	QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+    QByteArray characterByteFormat = character.toQByteArray();
+    QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-	message.append(" " + sizeOfMessage + " " + characterByteFormat);
+    message.append(" " + sizeOfMessage + " " + characterByteFormat);
 
-	qDebug() << "                         " << message;
-	qDebug() << ""; // newLine
+    qDebug() << "                         " << message;
+    qDebug() << ""; // newLine
 
-	//broadcast
-	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-		if (socket.first != soc->socketDescriptor()) {
-			writeMessage(socket.second, message);
-		}
-	}
+    QByteArray username=usernames[soc->socketDescriptor()].toUtf8();
+    QByteArray sizeOfSender=convertionNumber(username.size());
+
+    message.append(" "+sizeOfSender+" "+username);
+    qDebug() << "msg:" << " "+sizeOfSender+" "+username;
+
+    //broadcast
+    for(std::pair<qintptr, QTcpSocket*> socket : sockets){
+        qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
+        if(socket.first != soc->socketDescriptor()) {
+            qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
+            writeMessage(socket.second, message);
+        }
+    }
 }
 
 /**
