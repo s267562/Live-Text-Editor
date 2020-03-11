@@ -15,7 +15,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
 
     /* creation connection and messanger object */
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
-    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>)));
+    connect(messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>, QString)), this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>, QString)));
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
 
     /*connect(messanger, &Messanger::newMessage,

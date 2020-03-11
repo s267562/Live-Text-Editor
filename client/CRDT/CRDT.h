@@ -105,9 +105,9 @@ signals:
     void writeDelete(Character);
     void writeStyleChanged(Character);
 
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos);
-    void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString);
+    void changeStyle(Pos pos, const QTextCharFormat&format, QString);
+    void deleteChar(Pos pos, QString);
 };
 
 

@@ -598,7 +598,8 @@ void Thread::sendFile(QTcpSocket *soc) {
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
 	QByteArray message(SENDING_FILE);
 	const std::vector<std::vector<Character>> file = crdt->getStructure();
-	QByteArray filenameByteArray = convertionQString(filename);
+    std::vector<std::pair<Character,int>> blockFormat=this->crdt->getStyle();
+    QByteArray filenameByteArray = convertionQString(filename);
 	QByteArray filenameSize = convertionNumber(filenameByteArray.size());
 	QByteArray numLines = convertionNumber(file.size());
 
@@ -617,6 +618,21 @@ void Thread::sendFile(QTcpSocket *soc) {
 			message.append(" " + sizeOfMessage + " " + characterByteFormat);
 		}
 	}
+
+    QByteArray numBlocks = convertionNumber(blockFormat.size());
+    message.append(" " + numBlocks);
+
+    for (std::pair<Character,int> & i : blockFormat){
+        Character character = i.first;
+        QByteArray characterByteFormat = character.toQByteArray();
+        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+        message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+        QByteArray alignment = convertionNumber(i.second);
+
+        message.append(" " + alignment);
+    }
 	qDebug() << "                         " << message;
 	qDebug() << ""; // newLine
 

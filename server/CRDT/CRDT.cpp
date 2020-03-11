@@ -458,4 +458,10 @@ int CRDT::getRow(Character blockId) {
     return -1;
 }
 
+void CRDT::removeStyleLine(int i) {
+    this->style.erase(this->style.begin()+1);
+}
 
+std::vector<std::pair<Character,int>> CRDT::getStyle() {
+    return this->style;
+}
