@@ -620,31 +620,28 @@ void Thread::sendFile(QTcpSocket *soc) {
         return;
 
     qDebug() << "Thread.cpp - sendFile()     ---------- SEND FILE ----------";
-    QByteArray message(SENDING_FILE);
-    const std::vector<std::vector<Character>> file = crdt->getStructure();
+	QByteArray message(SENDING_FILE);
+	const std::vector<std::vector<Character>> file = crdt->getStructure();
     std::vector<std::pair<Character,int>> blockFormat=this->crdt->getStyle();
+    QByteArray filenameByteArray = convertionQString(filename);
+	QByteArray filenameSize = convertionNumber(filenameByteArray.size());
+	QByteArray numLines = convertionNumber(file.size());
 
-    QByteArray numLines = convertionNumber(file.size());
+	message.append(" " + filenameSize + " " + filenameByteArray + " " + numLines);
 
-    message.append(" " + numLines);
+	for (int i = 0; i < file.size(); i++) {
+		std::vector<Character> line = file[i];
+		QByteArray numChar = convertionNumber(file[i].size());
 
-    QByteArray filename_size = convertionNumber(this->filename.size());
+		message.append(" " + numChar);
+		for (int j = 0; j < line.size(); j++) {
+			Character character = line[j];
+			QByteArray characterByteFormat = character.toQByteArray();
+			QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-    message.append(" " + filename_size);
-    message.append( " " + this->filename);
-
-    for (int i = 0; i < file.size(); i++){
-        std::vector<Character> line = file[i];
-        QByteArray numChar = convertionNumber(file[i].size());
-
-        message.append(" " + numChar);
-        for (int j = 0; j < line.size(); j++){
-            Character character = line[j];
-            QByteArray characterByteFormat = character.toQByteArray();
-            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
-            message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        }
-    }
+			message.append(" " + sizeOfMessage + " " + characterByteFormat);
+		}
+	}
 
     QByteArray numBlocks = convertionNumber(blockFormat.size());
     message.append(" " + numBlocks);
@@ -660,13 +657,12 @@ void Thread::sendFile(QTcpSocket *soc) {
 
         message.append(" " + alignment);
     }
+	qDebug() << "                         " << message;
+	qDebug() << ""; // newLine
 
-    qDebug() << "                         " << message;
-    qDebug() << ""; // newLine
-
-    if (!writeMessage(soc,message)){
-        return;
-    }
+	if (!writeMessage(soc, message)) {
+		return;
+	}
 }
 
 bool Thread::readShareCode(QTcpSocket *soc) {

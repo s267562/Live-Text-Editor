@@ -511,16 +511,11 @@ bool Messanger::readFile(){
     std::vector<std::vector<Character>> file;
     readSpace(socket);
     int filesize = readNumberFromSocket(socket);
-
-
     readSpace(socket);
-    int filename_size = readNumberFromSocket(socket);
-
     QString filename;
-    if (!readQString(socket, filename, filename_size)){
+    if (!readQString(socket, filename, filesize)){
         return false;
     }
-
     readSpace(socket);
     int numLines = readNumberFromSocket(socket);
 
@@ -771,7 +766,7 @@ bool Messanger::readAlignmentChanged(){
     int sizeBlockId = readNumberFromSocket(socket);
 
     readSpace(socket);
-
+    
     QByteArray characterByteFormat;
     if (!readChunck(socket, characterByteFormat, sizeBlockId)){
         return false;
