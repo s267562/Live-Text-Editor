@@ -5,7 +5,7 @@
 #ifndef TEXTEDITOR_CRDT_H
 #define TEXTEDITOR_CRDT_H
 
-#define binarySave 1
+#define binarySave 0
 
 #include <string>
 #include <vector>

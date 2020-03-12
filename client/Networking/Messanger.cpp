@@ -510,10 +510,10 @@ bool Messanger::readFile(){
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
     readSpace(socket);
-    int filesize = readNumberFromSocket(socket);
+    int filenameSize = readNumberFromSocket(socket);
     readSpace(socket);
     QString filename;
-    if (!readQString(socket, filename, filesize)){
+    if (!readQString(socket, filename, filenameSize)){
         return false;
     }
     readSpace(socket);
