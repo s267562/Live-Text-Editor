@@ -336,6 +336,8 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure, 
     crdt->setStyle(styleBlocks);
     editor->replaceText(this->crdt->getStructure());
     std::vector<int> alignment_block;
+    alignment_block.reserve(styleBlocks.size());
+
     for(std::pair<Character,int> & block : styleBlocks){
         alignment_block.emplace_back(block.second);
     }
