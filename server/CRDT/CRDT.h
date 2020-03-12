@@ -39,6 +39,7 @@ public:
 	int getRow(Character blockId);
 
     std::vector<std::pair<Character, int>> getStyle();
+    void printStructures();
 
 private:
     std::vector<std::vector<Character>> structure;

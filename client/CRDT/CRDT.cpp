@@ -57,25 +57,7 @@ Pos CRDT::handleRemoteInsert(Character character) {
     this->insertChar(character, pos);
 
     // print the structure for debugging
-    qDebug() << "client/CRDT.cpp - handleRemoteInsert()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-            if(i == pos.getLine() && j == pos.getCh()) {
-				qDebug() << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            } else {
-				qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            }
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
-				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
+    printStructures();
 
     return pos;
 }
@@ -148,28 +130,7 @@ Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos 
     const Character character = generateChar(val, textCharFormat, pos, siteId);
     insertChar(character, pos);
 
-
-    // print the structure for debugging
-    qDebug() << "client/CRDT.cpp - handleInsert()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-            if(i == pos.getLine() && j == pos.getCh()) {
-				qDebug() << "                                ---> val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            } else {
-				qDebug() << "                                     val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            }
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
-				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
-
+    printStructures();
     return character;
 }
 
@@ -341,21 +302,7 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
     }
 
     // print the structure for debugging
-    qDebug() << "client/CRDT.cpp - handleDelete()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-			qDebug() << "                                           val:" << value <<  "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
-				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
+    printStructures();
 
     return removedChars;
 }
@@ -418,22 +365,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
     this->removeEmptyLines();
 
     // print the structure for debugging
-    qDebug() << "client/CRDT.cpp - handleRemoteDelete()     ---------- STRUCTURE ----------";
-    for (int i = 0; i < structure.size(); i++) {
-        for (int j = 0; j < structure[i].size(); j++) {
-            char val = structure[i][j].getValue();
-            int counter = structure[i][j].getCounter();
-            QString siteId = structure[i][j].getSiteId();
-            QString value = ""; if(val == '\n') value += "\n"; else value += val;
-			qDebug() << "                                                 val:" << value << "  siteId: " << siteId << "  counter:" << counter << "  position:";
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
-				qDebug() << id.getDigit();
-            }
-        }
-    }
-    qDebug() << ""; // newLine
-
+    printStructures();
     return pos;
 }
 

@@ -406,8 +406,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
     qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded << " chars removed: " << charsRemoved;
 
     saveCursor();
-
-   if(validSignal(position, charsAdded, charsRemoved)) {
+    if(validSignal(position, charsAdded, charsRemoved)) {
         //qDebug() << "VALID SIGNAL";
         //std::cout << "VALID SIGNAL" << std::endl;
 
