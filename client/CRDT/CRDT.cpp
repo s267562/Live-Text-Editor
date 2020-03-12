@@ -556,17 +556,27 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     return pos;
 }
 
-void CRDT::totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars, int position) {
+void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
+    Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
+
+    // send insert at the server.
+    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character, character));
+}
+
+void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
+    qDebug() << "CRDT: " << QThread::currentThreadId();
+    qDebug() << "Pos"<<position << "Chars added"<< charsAdded;
     for(int i=0; i<charsAdded; i++) {
         // for each char added
-        cursor.setPosition(position + i);
-        int line = cursor.blockNumber();
-        int ch = cursor.positionInBlock();
+        qDebug()<< cursor->position();
+        cursor->setPosition(position + i);
+        int line = cursor->blockNumber();
+        int ch = cursor->positionInBlock();
         Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
         // select char
-        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-        QTextCharFormat charFormat = cursor.charFormat();
+        cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
+        QTextCharFormat charFormat = cursor->charFormat();
 
         Character character = handleLocalInsert(chars.at(i).toLatin1(), charFormat, startPos);
 
