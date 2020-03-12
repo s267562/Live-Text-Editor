@@ -193,7 +193,7 @@ void Controller::requestForFile(QString filename){
             connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&, QString)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&, QString)));
             connect(crdt, SIGNAL(deleteChar(Pos, QString)), editor, SLOT(deleteChar(Pos, QString)));
             connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
-            connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor , QString, int )), Qt::QueuedConnection);
+            connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor* , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor* , QString, int )), Qt::QueuedConnection);
             connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int)), Qt::QueuedConnection);
 
         }else{
