@@ -333,30 +333,33 @@ void Editor::textAlign(QAction *a)
 }
 
 void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
-
+    disconnect(textDocument, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
     int oldCursorPos = this->textCursor.position();
 
     int bc = this->textEdit->textCursor().document()->blockCount();
 
-    this->textCursor.movePosition(QTextCursor::Start);
-    this->textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
+    textEdit->textCursor().movePosition(QTextCursor::Start);
+    textEdit->textCursor().movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
 
     int cursorPos = this->textCursor.position();
     int num=this->textCursor.blockNumber();
 
-    QTextBlockFormat f=this->textCursor.blockFormat();
+    QTextBlockFormat f = QTextBlockFormat{textEdit->textCursor().blockFormat()};
 
     f.setAlignment(Qt::Alignment(alignment));
 
-    this->textCursor.setBlockFormat(f);
+    textEdit->textCursor().setBlockFormat(f);
+    //this->textCursor.blockFormat().setAlignment(Qt::Alignment(alignment));
 
     //Qt::Alignment a(alignment);
     //this->textEdit->setTextCursor(this->textCursor);
     //this->textEdit->setAlignment(a);
 
-    this->textCursor.setPosition(oldCursorPos);
+    textEdit->textCursor().setPosition(oldCursorPos);
     this->updateAlignmentPushButton();
-
+    connect(textDocument, &QTextDocument::contentsChange,
+               this, &Editor::onTextChanged);
 }
 
 

@@ -45,7 +45,6 @@ public:
     void setFilename(QString filename);
     void closeEditAccount();
 
-    void remoteAlignmentChanged(int alignment, int blockNumber);
     void formatText(std::vector<int> styleBlocks);
 
     void updateOtherCursorPosition();
@@ -69,6 +68,7 @@ public slots:
     void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
     void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
     void deleteChar(Pos pos, QString sender);
+    void remoteAlignmentChanged(int alignment, int blockNumber);
 
 signals:
     void logout();

@@ -649,6 +649,7 @@ void CRDT::newMessage(Message message) {
         int row = getRow(message.getCharacter());
         if(row>=0){
             this->editor->remoteAlignmentChanged(message.getAlignmentType(), row); // Segnale
+            QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
         }
 
     }
@@ -729,7 +730,8 @@ void CRDT::printStructures() {
 
     QDebug qD(QtDebugMsg);
     qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
-
+    if (style.size() == 0)
+        return;
 
     for (int i = 0; i < structure.size(); i++) {
         QString value="";
