@@ -24,6 +24,7 @@
 #include <QMetaType>
 
 Q_DECLARE_METATYPE(QTextCursor*);
+Q_DECLARE_METATYPE(QTextCursor);
 //Q_DECLARE_METATYPE(Pos);
 
 
@@ -36,6 +37,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
     setCentralWidget(textEdit);
 
     qRegisterMetaType<QTextCursor*>("QTextCursor*");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
     qRegisterMetaType<Pos>("Pos");
 
     ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
@@ -435,7 +437,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
                 this->controller->styleChange(textCharFormat, pos);
             }*/
-            QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalStyleChange", Qt::QueuedConnection, Q_ARG(int, charsAdded), Q_ARG(QTextCursor, cursor), Q_ARG(int, position));
+            QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalStyleChange", Qt::QueuedConnection, Q_ARG(int, charsAdded), Q_ARG(QTextCursor, cursor), Q_ARG(int, position), Q_ARG(int, cursorPos), Q_ARG(int, startSelection));
             // Eugenio
             /*if(this->cursorPos!=this->startSelection){ // Selection forward
 

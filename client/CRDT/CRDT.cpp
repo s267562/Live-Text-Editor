@@ -607,10 +607,10 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
     }
 }
 
-void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor cursor, int position) {
+void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor cursor, int position, int cursorPos, int startSelection) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
 
-    for(int i=0; i<charsAdded; i++) {
+    /*for(int i=0; i<charsAdded; i++) {
         // for each char added
         cursor.setPosition(position + i);
         int line = cursor.blockNumber();
@@ -626,6 +626,48 @@ void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor cursor, int positio
 
             // send insert at the server.
             QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+        }
+    }*/
+
+    if(cursorPos != startSelection){ // Selection forward
+
+        for(int i=0; i<charsAdded; i++) {
+            // for each char added
+            cursor.setPosition(position + i);
+            int line = cursor.blockNumber();
+            int ch = cursor.positionInBlock();
+            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+            // select char
+            cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+            QTextCharFormat textCharFormat = cursor.charFormat();
+
+            if(styleChanged(textCharFormat, pos)) {
+                Character character = getCharacter(pos);
+
+                // send insert at the server.
+                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+            }
+        }
+    }
+    else{ // Selection backward
+        for(int i=charsAdded-1; i>=0; i--) {
+            // for each char added
+            cursor.setPosition(position + i);
+            int line = cursor.blockNumber();
+            int ch = cursor.positionInBlock();
+            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+            // select char
+            cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+            QTextCharFormat textCharFormat = cursor.charFormat();
+
+            if(styleChanged(textCharFormat, pos)) {
+                Character character = getCharacter(pos);
+
+                // send insert at the server.
+                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+            }
         }
     }
 }
