@@ -353,6 +353,8 @@ bool Thread::readAlignmentChanged(QTcpSocket *soc){
 
     this->writeAlignmentChanged(soc, alignType, blockId);
 
+    needToSaveFile = true;
+
     return true;
 }
 

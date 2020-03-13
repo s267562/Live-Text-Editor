@@ -958,6 +958,7 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
+    textEdit->clear();
     for(auto & line : initialText){
         for(auto & character : line){
             QString c(character.getValue());

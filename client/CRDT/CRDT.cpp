@@ -648,7 +648,7 @@ void CRDT::newMessage(Message message) {
     } else if(message.getType() == ALIGNMENT_CHANGED) {
         int row = getRow(message.getCharacter());
         if(row>=0){
-            this->editor->remoteAlignmentChanged(message.getAlignmentType(), row); // Segnale
+            //this->editor->remoteAlignmentChanged(message.getAlignmentType(), row); // Segnale
             QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
         }
 

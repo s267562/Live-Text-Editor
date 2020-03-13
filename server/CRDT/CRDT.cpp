@@ -278,6 +278,17 @@ void CRDT::write(QJsonObject &json) const {
 		vectorVectors.append(arrayChar);
 	}
 	json["structure"] = vectorVectors;
+
+    QJsonArray vectorStyle;
+    for (std::pair<Character,int> p : style) {
+        QJsonObject line;
+        QJsonObject character;
+        p.first.write(character);
+        line["character"] = character;
+        line["line"] = p.second;
+        vectorStyle.append(line);
+    }
+    json["style"] = vectorStyle;
 }
 
 /**
@@ -305,6 +316,22 @@ void CRDT::read(const QJsonObject &json) {
 			structure.push_back(innerVector);
 		}
 	}
+
+    if (json.contains("style") && json["style"].isArray()) {
+        QJsonArray vectorStyle = json["style"].toArray();
+        //structure.clear();
+        style.reserve(vectorStyle.size());
+        for (int vectorIndex = 0; vectorIndex < vectorStyle.size(); vectorIndex++) {
+            QJsonObject jsonObject = vectorStyle[vectorIndex].toObject();
+            QJsonObject characterJson = jsonObject["character"].toObject();
+            Character character;
+            character.read(characterJson);
+            int i = jsonObject["line"].toInt();
+
+            style.push_back(std::make_pair(character, i));
+        }
+    }
+
 }
 
 /**
@@ -366,7 +393,7 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 
     qDebug() << a;
 
-    if(blockNumber<this->style.size()) {
+    if(blockNumber < this->style.size()) {
         this->style[blockNumber].second=alignment;
     }
 
