@@ -600,7 +600,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
                this, &Editor::onCursorPositionChanged);
 
-    textCursor.insertText(QString{character});
+    textCursor.insertText(QString::fromLatin1(&character, 1));
 
     QRect coord=this->textEdit->cursorRect(textCursor);
     int width=this->textEdit->cursorRect().width();
@@ -965,8 +965,8 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
     textEdit->clear();
     for(auto & line : initialText){
         for(auto & character : line){
-            QString c(character.getValue());
-            this->textEdit->textCursor().insertText(c,character.getTextCharFormat());
+            char c = character.getValue();
+            this->textEdit->textCursor().insertText(QString::fromLatin1(&c, 1), character.getTextCharFormat());
         }
     }
     //textEdit->setText(initialText);
