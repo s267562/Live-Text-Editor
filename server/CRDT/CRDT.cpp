@@ -328,7 +328,7 @@ void CRDT::read(const QJsonObject &json) {
             character.read(characterJson);
             int i = jsonObject["line"].toInt();
 
-            style.push_back(std::make_pair(character, i));
+            style.emplace_back(std::make_pair(character, i));
         }
     }
 
@@ -396,7 +396,6 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
     if(blockNumber < this->style.size()) {
         this->style[blockNumber].second=alignment;
     }
-
 }
 
 int CRDT::getRow(Character blockId) {

@@ -328,6 +328,7 @@ void Editor::textAlign(QAction *a)
 
     for(int blockNum=startBlock; blockNum<=endBlock; blockNum++) {
         this->controller->alignChange(alCode, blockNum);
+        qDebug() << alCode << blockNum;
     }
 
 }
@@ -335,31 +336,31 @@ void Editor::textAlign(QAction *a)
 void Editor::remoteAlignmentChanged(int alignment, int blockNumber){
     disconnect(textDocument, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
-    int oldCursorPos = this->textCursor.position();
+    int oldCursorPos = textCursor.position();
 
     int bc = this->textEdit->textCursor().document()->blockCount();
 
-    textEdit->textCursor().movePosition(QTextCursor::Start);
-    textEdit->textCursor().movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, blockNumber);
 
     int cursorPos = this->textCursor.position();
     int num=this->textCursor.blockNumber();
 
-    QTextBlockFormat f = QTextBlockFormat{textEdit->textCursor().blockFormat()};
+    QTextBlockFormat f = QTextBlockFormat{textCursor.blockFormat()};
 
     f.setAlignment(Qt::Alignment(alignment));
 
-    textEdit->textCursor().setBlockFormat(f);
+    textCursor.setBlockFormat(f);
     //this->textCursor.blockFormat().setAlignment(Qt::Alignment(alignment));
 
     //Qt::Alignment a(alignment);
     //this->textEdit->setTextCursor(this->textCursor);
     //this->textEdit->setAlignment(a);
 
-    textEdit->textCursor().setPosition(oldCursorPos);
-    this->updateAlignmentPushButton();
+    textCursor.setPosition(oldCursorPos);
     connect(textDocument, &QTextDocument::contentsChange,
-               this, &Editor::onTextChanged);
+            this, &Editor::onTextChanged);
+    this->updateAlignmentPushButton();
 }
 
 
@@ -372,8 +373,11 @@ void Editor::formatText(std::vector<int> styleBlocks){
     disconnect(doc, &QTextDocument::contentsChange,
                this, &Editor::onTextChanged);
 
+    qDebug() << styleBlocks.size();
+
     for(int i=0; i<styleBlocks.size(); i++){
         this->remoteAlignmentChanged(styleBlocks.at(i),i);
+        qDebug() << "Alignment:" << styleBlocks.at(i) << "Block:" << i;
     }
 
      connect(doc, &QTextDocument::contentsChange,
