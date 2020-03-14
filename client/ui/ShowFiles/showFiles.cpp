@@ -128,7 +128,10 @@ QString ShowFiles::getShareCode(const QString &username, const QString &filename
 	SimpleCrypt crypto;
 	crypto.setKey(0xf55f15758b7e0153); // Random generated key, same must be used server side!!!
 
+	qDebug()<< "username: "+ username;
+	qDebug()<< "filename: "+ filename;
 	QString shareCode = crypto.encryptToString(username + "%_##$$$##_%" + filename);
+	qDebug()<< "shareCode: "+ shareCode;
 	return shareCode;
 }
 
