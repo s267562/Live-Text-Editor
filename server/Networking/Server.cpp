@@ -716,7 +716,7 @@ bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
 }
 
 /**
- * Retrieve username and filename from a given shareCode <--- username + "%_##$$$##_%" + filename
+ * Retrieve username and filename from a given shareCode <--- username + "%_##$$$##_%" + username + "%_##$$$##_%" + filename
  * separator used: "%_##$$$##_%"
  * crypto key: 0xf55f15758b7e0153
  * @param shareCode : shareCode to decrypt
