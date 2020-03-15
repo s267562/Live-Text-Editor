@@ -52,6 +52,7 @@ void Thread::addSocket(QTcpSocket *soc, QString username) {
 
 	pendingSocket.erase(socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
 	sendFile(soc);
+	QThread::sleep(3);
 	sendListOfUsers(soc);
 	sendNewUser(soc);
 
@@ -99,7 +100,8 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
 		}
-		needToSaveMutex.unlock();
+        writeOkMessage(soc);
+        //needToSaveMutex.unlock();
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
         if (!readAlignmentChanged(soc)) {
@@ -914,9 +916,10 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	qDebug() << usernames;
 
 	if (sockets.empty() && pendingSocket.empty()) {
+	    if (!fileDeleted)
+            saveCRDTToFile();
 	    // dire al server di eliminare il thread dalla struttura
-        //QMetaObject::invokeMethod(server, "removeThread", Qt::QueuedConnection, Q_ARG(QString, filename));
-        //server->removeThread(filename);
+        QMetaObject::invokeMethod(server, "removeThread", Qt::QueuedConnection, Q_ARG(QString, filename));
 	}
 }
 

@@ -566,7 +566,6 @@ bool Messanger::readFile(){
         styleBlocks.emplace_back(character,alignment);
     }
 
-
     emit fileRecive(file, styleBlocks, filename);
     return true;
 }
@@ -673,9 +672,15 @@ bool Messanger::writeDelete(Character character){
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
+        messages.push(message);
+        if (reciveOkMessage) {
+            reciveOkMessage = false;
 
-        if (!writeMessage(socket, message)){
-            return false;
+            if (!writeMessage(socket, message)) {
+                return false;
+            }
+            messages.pop();
+
         }
     }
     return true;

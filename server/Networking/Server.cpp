@@ -1013,4 +1013,5 @@ void Server::removeThread(QString filename){
     threads[filename]->requestInterruption();
     threads[filename]->wait();
     threads.erase(filename);
+    qDebug() << "Thread eliminato!";
 }

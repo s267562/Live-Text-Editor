@@ -532,6 +532,7 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
         cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
         QTextCharFormat charFormat = cursor->charFormat();
 
+        qDebug() <<"totalLocalInsert: "<< chars.at(i).toLatin1();
         Character character = handleLocalInsert(chars.at(i).toLatin1(), charFormat, startPos);
 
         // send insert at the server.
