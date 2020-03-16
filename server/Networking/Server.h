@@ -17,6 +17,7 @@ class Thread;
 class Server: public QTcpServer{
     Q_OBJECT
 private:
+    /* ATTRIBUTES */
     std::map<QString,std::shared_ptr<Thread>> threads;                       // sync
     std::map<QString,std::shared_ptr<Thread>> deleteFileThread;              // sync
     std::map<qintptr, SocketState> socketsState;
@@ -25,33 +26,7 @@ private:
     std::map<qintptr, QTcpSocket*> sockets;                                  // sync
     Database DB;                                                             // rendere le operazioni atomiche
 
-public:
-    std::shared_mutex mutexThread;
-    std::shared_mutex mutexDeleteFileThread;
-    std::shared_mutex mutexSockets;
-    std::shared_mutex mutexUsernames;
-    std::shared_mutex mutexAllUsernames;
-
-public:
-    explicit Server(QObject *parent = nullptr);
-    bool startServer(quint16 port);
-    std::shared_ptr<Thread> getThread(QString fileName);                            // sync
-    std::shared_ptr<Thread> addThread(QString fileName, QString username);          // sync
-    bool handleShareCode(QString username, QString shareCode, QString &filename);
-    Database getDb() const;
-    bool sendFileNames(QTcpSocket *soc);                                            // sync ok
-    const std::map<qintptr, QTcpSocket *> &getSockets() const;                      // sync
-    void removeUsername(qintptr username);                                          // sync ok
-    void changeNamethread(QString oldFilename, QString newFilename);                // sync -> da fare
-    const std::map<qintptr, QString> &getUsernames() const;                         // sync
-    const std::map<qintptr, QString> &getAllUsernames() const;                      // sync
-    void addUsername(qintptr socketdescriptor, QString username);                   // sync ok
-    void removeSocket(qintptr socketDescriptor);                                    // sync ok
-    void addDeleteFileThread(QString filename);                                     // sync ok
-    void removeDeleteFileThread(QString filename);                                  // sync -> da fare
-
-
-private:
+    /* METHODS */
     void readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);                     // sync
     void disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *disconnectReadyRead, QTcpSocket* soc, qintptr socketDescriptor);                  // sync
     bool logIn(QTcpSocket *soc);                                        // sync ok
@@ -68,11 +43,35 @@ private:
 
     void connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
-signals:
+public:
+    /* ATTRIBUTES */
+    std::shared_mutex mutexThread;
+    std::shared_mutex mutexDeleteFileThread;
+    std::shared_mutex mutexSockets;
+    std::shared_mutex mutexUsernames;
+    std::shared_mutex mutexAllUsernames;
+
+    /* METHODS */
+    explicit Server(QObject *parent = nullptr);
+    bool startServer(quint16 port);
+    std::shared_ptr<Thread> getThread(QString fileName);                            // sync
+    std::shared_ptr<Thread> addThread(QString fileName, QString username);          // sync
+    bool handleShareCode(QString username, QString shareCode, QString &filename);
+    Database getDb() const;
+    bool sendFileNames(QTcpSocket *soc);                                            // sync ok
+    const std::map<qintptr, QTcpSocket *> &getSockets() const;                      // sync
+    void removeUsername(qintptr username);                                          // sync ok
+    void changeNamethread(const QString& oldFilename, const QString& newFilename);                // sync -> da fare
+    const std::map<qintptr, QString> &getUsernames() const;                         // sync
+    const std::map<qintptr, QString> &getAllUsernames() const;                      // sync
+    void addUsername(qintptr socketdescriptor, QString username);                   // sync ok
+    void removeSocket(qintptr socketDescriptor);                                    // sync ok
+    void addDeleteFileThread(const QString& filename);                                     // sync ok
+    void removeDeleteFileThread(const QString& filename);                                  // sync -> da fare
 
 public slots:
     void connection();
-    void removeThread(QString filename);
+    void removeThread(const QString& filename);
 };
 
 #endif // SERVER_H

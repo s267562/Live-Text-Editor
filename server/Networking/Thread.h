@@ -52,11 +52,11 @@ public:
 					Server *server = nullptr);
 
 	void run();
-	void addSocket(QTcpSocket *soc, QString username);                              // sync ok
-	void sendListOfUsers(QTcpSocket *soc);                                          // sync ok
+	bool addSocket(QTcpSocket *soc, QString username);                              // sync ok
+	bool sendListOfUsers(QTcpSocket *soc);                                          // sync ok
     std::map<qintptr, QTcpSocket *> getSockets();                                   // sync
     void changeFileName(QString filename);                                          // sync ok
-    void sendRemoveUser(qintptr socketDescriptor, QString username);               // sync ok
+    bool sendRemoveUser(qintptr socketDescriptor, QString username);               // sync ok
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok
@@ -66,11 +66,11 @@ private:
 	bool readInsert(QTcpSocket *soc);
 	bool readStyleChanged(QTcpSocket *soc);
 	bool readDelete(QTcpSocket *soc);
-	void writeInsert(QTcpSocket *soc, Character character);
-	void writeStyleChanged(QTcpSocket *soc, Character character);
-	void writeDelete(QTcpSocket *soc, Character character);
-	void sendNewUser(QTcpSocket *soc);                                              // sync ok
-	void sendFile(QTcpSocket *soc);
+	bool writeInsert(QTcpSocket *soc, Character character);
+	bool writeStyleChanged(QTcpSocket *soc, Character character);
+	bool writeDelete(QTcpSocket *soc, Character character);
+	bool sendNewUser(QTcpSocket *soc);                                              // sync ok
+	bool sendFile(QTcpSocket *soc);
 	bool readShareCode(QTcpSocket *soc);                                            // sync ok
 	bool sendAddFile(QTcpSocket *soc, QString filename);
 	bool readEditAccount(QTcpSocket *soc);                                          // sync ok
@@ -81,8 +81,8 @@ private:
     bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
     bool readAlignmentChanged(QTcpSocket *soc);
-    void writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
-
+    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
+    void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

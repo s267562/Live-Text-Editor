@@ -216,7 +216,7 @@ bool Server::logIn(QTcpSocket *soc) {
 	qDebug() << ""; // newLine
 
 	/* Check if user is already logged in */
-	for (const std::pair<quintptr, QString> &pair : allUsernames) {
+	for (const std::pair<quintptr, QString> pair : allUsernames) {
 		if (pair.second == QString(username))
 			return false;
 	}
@@ -409,7 +409,9 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
         std::unique_lock<std::shared_mutex> usernamesLock(result->second->mutexUsernames);
         std::shared_lock<std::shared_mutex> filenameLock(result->second->mutexFilename);
 
-        threads[key]->addSocket(soc, username);                       /* socket transition to secondary thread */
+        if (!threads[key]->addSocket(soc, username)) {               /* socket transition to secondary thread */
+            return false;
+        }
 	} else {
 	    std::shared_ptr<Thread> thread = addThread(key, username);
 		thread->addSocket(soc,usernames[socketDescriptor]);                                                 /* socket transition to secondary thread */
@@ -658,10 +660,8 @@ bool Server::readShareCode(QTcpSocket *soc) {
     QString filename;
 
     if (handleShareCode(usernames[soc->socketDescriptor()], shareCode, filename)) {
-        sendAddFile(soc, filename);
-        return true;
+        return sendAddFile(soc, filename);
     } else {
-        writeErrMessage(soc, SHARE_CODE);
         return false;
     }
 }
@@ -981,7 +981,7 @@ void Server::removeSocket(qintptr socketDescriptor){
 }
 
 void Server::addUsername(qintptr socketdescriptor, QString username) {
-    allUsernames[socketdescriptor] = username;
+    allUsernames[socketdescriptor] = std::move(username);
 }
 
 const std::map<qintptr, QString> &Server::getUsernames() const {
@@ -997,7 +997,7 @@ const std::map<qintptr, QString> &Server::getAllUsernames() const {
  * @param oldFilename
  * @param newFilename
  */
-void Server::changeNamethread(QString oldFilename, QString newFilename){
+void Server::changeNamethread(const QString& oldFilename, const QString& newFilename){
     auto result = threads.find(oldFilename);
 
     if (result != threads.end()) {
@@ -1012,14 +1012,14 @@ void Server::changeNamethread(QString oldFilename, QString newFilename){
  * This method adds a thread in the deleteFileThread structure
  * @param filename
  */
-void Server::addDeleteFileThread(QString filename){
+void Server::addDeleteFileThread(const QString& filename){
     if (threads.find(filename) != threads.end()) {
         deleteFileThread[filename] = threads[filename];
         threads.erase(filename);
     }
 }
 
-void Server::removeDeleteFileThread(QString filename){
+void Server::removeDeleteFileThread(const QString& filename){
     deleteFileThread.erase(filename);
     qDebug() << "Thread deleted!";
 }
@@ -1028,7 +1028,10 @@ void Server::removeDeleteFileThread(QString filename){
  * This method handles the elimination of thread
  * @param filename
  */
-void Server::removeThread(QString filename){
+void Server::removeThread(const QString& filename){
+    std::unique_lock<std::shared_mutex> threadLok(mutexThread);
+    std::unique_lock<std::shared_mutex> deletedThreadLock(mutexDeleteFileThread);
+
     threads[filename]->quit();
     threads[filename]->requestInterruption();
     threads[filename]->wait();
