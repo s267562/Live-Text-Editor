@@ -18,7 +18,6 @@ class Server: public QTcpServer{
     Q_OBJECT
 private:
     std::map<QString,std::shared_ptr<Thread>> threads;                       // sync
-
     std::map<QString,std::shared_ptr<Thread>> deleteFileThread;              // sync
     std::map<qintptr, SocketState> socketsState;
     std::map<qintptr, QString> usernames;                                    // sync ??
@@ -66,6 +65,8 @@ private:
     bool readRequestUsernameList(QTcpSocket *soc);
     bool readFileInformationChanges(QTcpSocket *soc);                   // sync ok
     bool readDeleteFile(QTcpSocket *soc);                               // sync ok
+
+    void connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 signals:
 

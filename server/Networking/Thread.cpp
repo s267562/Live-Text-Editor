@@ -25,36 +25,38 @@ void Thread::run() {
  * @param username
  */
 void Thread::addSocket(QTcpSocket *soc, QString username) {
-	qintptr socketDescriptor = soc->socketDescriptor();
-	/* insert new socket into structure */
-	sockets[socketDescriptor] = soc;
-	sockets[socketDescriptor]->setParent(nullptr);
-	sockets[socketDescriptor]->moveToThread(this);
-	usernames[socketDescriptor] = username;
-	qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
 
-	QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
-	QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
 
-	/* connect socket and signal */
-	*connectReadyRead = connect(soc, &QAbstractSocket::readyRead, this,
-								[this, connectReadyRead, connectDisconnected, soc]() {
-									qDebug() << "                             " << soc;
-									Thread::readyRead(soc, connectReadyRead, connectDisconnected);
-								}, Qt::QueuedConnection);
-
-	*connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this,
-								   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
-									   qDebug() << "                             " << soc;
-									   Thread::disconnected(soc, socketDescriptor, connectReadyRead,
-															connectDisconnected);
-								   }, Qt::QueuedConnection);
-
-	pendingSocket.erase(socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
-	sendFile(soc);
-	QThread::sleep(3);
+	//pendingSocket.erase(socketDescriptor);      //tolgo dalla lista l'utente che ha di nuovo il permesso di modificare il file
+    sendFile(soc);
+	//QThread::sleep(3);
 	sendListOfUsers(soc);
 	sendNewUser(soc);
+
+    qintptr socketDescriptor = soc->socketDescriptor();
+    /* insert new socket into structure */
+    sockets[socketDescriptor] = soc;
+    sockets[socketDescriptor]->setParent(nullptr);
+    sockets[socketDescriptor]->moveToThread(this);
+    usernames[socketDescriptor] = username;
+    qDebug() << "Thread.cpp - addSocket()     sockets.size" << sockets.size();
+
+    QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
+    QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
+
+    /* connect socket and signal */
+    *connectReadyRead = connect(soc, &QAbstractSocket::readyRead, this,
+                                [this, connectReadyRead, connectDisconnected, soc]() {
+                                    qDebug() << "                             " << soc;
+                                    Thread::readyRead(soc, connectReadyRead, connectDisconnected);
+                                }, Qt::QueuedConnection);
+
+    *connectDisconnected = connect(soc, &QAbstractSocket::disconnected, this,
+                                   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor]() {
+                                       qDebug() << "                             " << soc;
+                                       Thread::disconnected(soc, socketDescriptor, connectReadyRead,
+                                                            connectDisconnected);
+                                   }, Qt::QueuedConnection);
 
 	qDebug() << "                             " << socketDescriptor << " Messanger connected" << soc;
 	qDebug() << ""; // newLine
@@ -645,6 +647,14 @@ void Thread::sendFile(QTcpSocket *soc) {
 
 			message.append(" " + sizeOfMessage + " " + characterByteFormat);
 		}
+		QByteArray datas;
+        if (!writeMessage(soc, message)) {
+            return;
+        }
+        if (!readChunck(soc, datas, 5)){
+            return;
+        }
+        message.clear();
 	}
 
     QByteArray numBlocks = convertionNumber(blockFormat.size());
@@ -660,9 +670,17 @@ void Thread::sendFile(QTcpSocket *soc) {
         QByteArray alignment = convertionNumber(i.second);
 
         message.append(" " + alignment);
+        QByteArray datas;
+        if (!writeMessage(soc, message)) {
+            return;
+        }
+        if (!readChunck(soc, datas, 5)){
+            return;
+        }
+        message.clear();
     }
 	qDebug() << "                         " << message;
-	qDebug() << ""; // newLine
+	qDebug() << "File inviato!"; // newLine
 
 	if (!writeMessage(soc, message)) {
 		return;

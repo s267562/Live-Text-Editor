@@ -540,6 +540,7 @@ bool Messanger::readFile(){
             line.push_back(character);
         }
         file.push_back(line);
+        writeOkMessage(socket);
     }
 
     std::vector<std::pair<Character,int>> styleBlocks;
@@ -564,6 +565,7 @@ bool Messanger::readFile(){
         readSpace(socket);
         int alignment = readNumberFromSocket(socket);
         styleBlocks.emplace_back(character,alignment);
+        writeOkMessage(socket);
     }
 
     emit fileRecive(file, styleBlocks, filename);

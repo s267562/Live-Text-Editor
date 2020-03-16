@@ -49,13 +49,20 @@ bool readSpace(QTcpSocket *soc) {
 bool writeMessage(QTcpSocket *soc, QByteArray &message) {
     if (soc == nullptr)
         return false;
+    int size = message.size();
+    qint64 left = size;
 
-    soc->write(message);
-    if (soc->waitForBytesWritten(TIMEOUT)) {
-        return true;
-    } else {
-        return false;
+    while (left != 0) {
+        qint64 written = soc->write(message);
+        if (soc->waitForBytesWritten(TIMEOUT)) {
+            //return true;
+        } else {
+            return false;
+        }
+        left -= written;
+        message.right(size-left);
     }
+    return true;
 }
 
 bool writeOkMessage(QTcpSocket *soc) {
