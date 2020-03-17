@@ -25,24 +25,27 @@ void Thread::run() {
  */
 bool Thread::addSocket(QTcpSocket *soc, QString username) {
     qDebug() << "Thread.cpp - addSocket()     ---------- ADD SOCKET ----------";
+    qintptr socketDescriptor = soc->socketDescriptor();
+    usernames[socketDescriptor] = username;
     if (!sendFile(soc)) {
+        usernames.erase(socketDescriptor);
         return false;
     }
 
 	if (!sendListOfUsers(soc)) {
+        usernames.erase(socketDescriptor);
         return false;
 	}
 
 	if (!sendNewUser(soc)) {
+        usernames.erase(socketDescriptor);
         return false;
     }
 
     /* insert new socket into structure */
-    qintptr socketDescriptor = soc->socketDescriptor();
     sockets[socketDescriptor] = soc;
     sockets[socketDescriptor]->setParent(nullptr);
     sockets[socketDescriptor]->moveToThread(this);
-    usernames[socketDescriptor] = username;
     pendingSocket.erase(socketDescriptor);
 
     QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
