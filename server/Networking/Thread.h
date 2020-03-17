@@ -24,7 +24,8 @@ class Server;
 class Thread : public QThread {
 Q_OBJECT
 private:
-	std::map<qintptr, QTcpSocket *> sockets;                        // sync
+    /* ATTRIBUTES */
+    std::map<qintptr, QTcpSocket *> sockets;                        // sync
 	std::map<qintptr, QString> usernames;                           // sync
 	std::map<qintptr, QTcpSocket *> pendingSocket;                  // sync
 	CRDT *crdt;
@@ -37,7 +38,29 @@ private:
 	bool timerStarted = false;
 	bool fileDeleted = false;
 
+    /* METHODS */
+    bool readInsert(QTcpSocket *soc);
+    bool readStyleChanged(QTcpSocket *soc);
+    bool readDelete(QTcpSocket *soc);
+    bool writeInsert(QTcpSocket *soc, Character character);
+    bool writeStyleChanged(QTcpSocket *soc, Character character);
+    bool writeDelete(QTcpSocket *soc, Character character);
+    bool sendNewUser(QTcpSocket *soc);                                              // sync ok
+    bool sendFile(QTcpSocket *soc);
+    bool readShareCode(QTcpSocket *soc);                                            // sync ok
+    bool sendAddFile(QTcpSocket *soc, QString filename);
+    bool readEditAccount(QTcpSocket *soc);                                          // sync ok
+    bool sendUser(QTcpSocket *soc);                                                 // sync ok
+    bool readRequestUsernameList(QTcpSocket *soc);
+    bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
+    bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
+    bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
+    bool readAlignmentChanged(QTcpSocket *soc);
+    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
+    void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
+
 public:
+    /* ATTRIBUTES */
     std::shared_mutex mutexSockets;
     std::shared_mutex mutexUsernames;
     std::shared_mutex mutexPendingSockets;
@@ -45,12 +68,9 @@ public:
     std::shared_mutex mutexNeedToSave;
     std::shared_mutex mutexFileDeleted;
 
-
-
-public:
-	explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", QString usernameOwner = "",
+    /* METHODS */
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", QString usernameOwner = "",
 					Server *server = nullptr);
-
 	void run();
 	bool addSocket(QTcpSocket *soc, QString username);                              // sync ok
 	bool sendListOfUsers(QTcpSocket *soc);                                          // sync ok
@@ -60,29 +80,6 @@ public:
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok
-
-
-private:
-	bool readInsert(QTcpSocket *soc);
-	bool readStyleChanged(QTcpSocket *soc);
-	bool readDelete(QTcpSocket *soc);
-	bool writeInsert(QTcpSocket *soc, Character character);
-	bool writeStyleChanged(QTcpSocket *soc, Character character);
-	bool writeDelete(QTcpSocket *soc, Character character);
-	bool sendNewUser(QTcpSocket *soc);                                              // sync ok
-	bool sendFile(QTcpSocket *soc);
-	bool readShareCode(QTcpSocket *soc);                                            // sync ok
-	bool sendAddFile(QTcpSocket *soc, QString filename);
-	bool readEditAccount(QTcpSocket *soc);                                          // sync ok
-	bool sendUser(QTcpSocket *soc);                                                 // sync ok
-    bool readRequestUsernameList(QTcpSocket *soc);
-    bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
-    bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
-    bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
-
-    bool readAlignmentChanged(QTcpSocket *soc);
-    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
-    void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
