@@ -1,5 +1,5 @@
 //
-// Created by simone on 09/08/19.
+// Created by andrea settimo on 2020-03-18.
 //
 
 #ifndef TEXTEDITOR_CONTROLLER_H
@@ -33,13 +33,13 @@ class Controller : public QMainWindow {
     //TODO: Add #ifdef
     friend class TestGui;
 private:
-    /* model */
+    /* MODEL */
     CRDT *crdt;
     CDRTThread *crdtThread;
     User *user;
     QString siteId;
 
-    /* view */
+    /* VIEWS */
     Editor *editor;
     Login *login;
     Connection *connection;
@@ -48,12 +48,13 @@ private:
     QWidget *now;
     QMainWindow *GUI = new QMainWindow(this);
 
-    /* networking */
+    /* NETWORKING */
     Messanger *messanger;
     Loading *loading = nullptr;
     bool loadingPoPupIsenabled = false;
     CustomWidget *customWidget = nullptr;
 
+    /* Connection */
     void networkingConnection();
     void crdtConnection();
     void loginConnection();
@@ -62,32 +63,44 @@ private:
     void finderConnection();
     void finderDisconnection();
     void editorConnection();
+
     void handleGUI(QMainWindow *window);
 
+public:
+    Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
+    Controller();
+    User* getUser();
+    void startLoadingPopup();
+    void stopLoadingPopup();
+    void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
+    void sendDeleteFile(QString filename);
+    CRDT *getCrdt() const;
+    ~Controller();
+
 public slots:
-    /* NETWORKING */
+    /* ------------------------------------------------------------- NETWORKING */
     void errorConnection();
 
-    /* CONNECTION */
+    /* ------------------------------------------------------------- CONNECTION */
     void connectClient(QString address, QString port);
 
-    /* LOGIN */
+    /*  ------------------------------------------------------------- LOGIN */
     void showLogin();
 
-    /* REGISTRATION */
+    /* ------------------------------------------------------------- REGISTRATION */
     void showRegistration();
 
-    /* SHOW FILES */
+    /* ------------------------------------------------------------- SHOW FILES */
     void showFileFinder(std::map<QString, bool>);
     void showFileFinderOtherView();
     void requestForFile(QString filename);
     void addFileNames(std::map<QString, bool> filenames);
+    void requestForUsernameList(QString filename, CustomWidget *customWideget);
+    void reciveUsernameList(QString filename, QStringList userlist);
 
-    /* EDITOR */
+    /* ------------------------------------------------------------- EDITOR */
     void showEditor();
-    //void newMessage(Message message);
     void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename);
-
     void reciveUser(User *user);
     void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
     void errorEditAccount();
@@ -95,33 +108,10 @@ public slots:
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
     void alignChange(int alignment_type, int blockNumber);
-    void requestForUsernameList(QString filename, CustomWidget *customWideget);
-    void reciveUsernameList(QString filename, QStringList userlist);
-
-    /*void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos); ->in CRDT
-    void totalLocalInsert(int charsAdded, QTextCursor cursor, QString chars,  int position);
-    void localDelete(Pos startPos, Pos endPos);*/
 
 signals:
     void userRecived();
-    /* MULTI THREAD */
-    /*void insertChar(char character, QTextCharFormat charFormat, Pos pos);
-    void changeStyle(Pos pos, const QTextCharFormat&format);
-    void deleteChar(Pos pos);*/
     void reset();
-
-public:
-    Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
-    Controller();
-
-    User* getUser();
-    //void styleChange(QTextCharFormat textCharFormat, Pos pos);  ->in CRDT
-    void startLoadingPopup();
-    void stopLoadingPopup();
-    void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
-    void sendDeleteFile(QString filename);
-    CRDT *getCrdt() const;
-    ~Controller();
 };
 
 

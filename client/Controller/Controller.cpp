@@ -20,7 +20,7 @@ Controller::Controller(): messanger(new Messanger(this)), connection(new Connect
     /* Networking */
     networkingConnection();
 
-    /* Multi threading */
+    /* CRDT */
     crdtConnection();
 
     GUI->setGeometry((QApplication::desktop()->width() - connection->width())/2, (QApplication::desktop()->height() - connection->height())/2, connection->width(), connection->height());

@@ -7,6 +7,5 @@
 CDRTThread::CDRTThread(QObject *parent, CRDT *crdt):QThread(parent), crdt(crdt){}
 
 void CDRTThread::run(){
-    //editor->show();
     exec();
 }
