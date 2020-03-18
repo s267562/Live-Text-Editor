@@ -96,6 +96,46 @@ void ShowFiles::on_actionLogout_triggered() {
 
 void ShowFiles::resizeEvent(QResizeEvent *event) {
 	ui->customToolbar->setGeometry(0, 0, width(), 60);
+	ui->avatar->setGeometry(width() - 50, 10, 40, 40);
+    ui->logout->setGeometry(width() - 95, 14, 35, 35);
+    int centralWidgetX = 0;
+    int centralWidgetY = 0;
+    int widgetX = 0;
+    int widgetY = 0;
+
+    /*if (width() > ui->listWidget->width()){
+        centralWidgetX = width()/2 - ui->listWidget->width()/2;
+        widgetX = ui->listWidget->width()/2 - ui->listWidget->width()/2;
+    }else{
+        centralWidgetX = 0;
+        widgetX = width()/2 - ui->listWidget->width()/2;
+    }
+
+    if (height() > ui->listWidget->height()){
+        widgetY = height()/2 - ui->listWidget->height()/2;
+    } else{
+        widgetY = ui->listWidget->geometry().y();
+    }
+
+
+    ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height());*/
+    if (width() > ui->listWidget->width()){
+        centralWidgetX = width()/2 - ui->listWidget->width()/2;
+        widgetX = ui->listWidget->width()/2 - ui->listWidget->width()/2;
+    }else{
+        centralWidgetX = 0;
+        widgetX = width()/2 - ui->listWidget->width()/2;
+    }
+
+    /*if (height() > ui->widget->height()){
+        widgetY = height()/2 - ui->widget->height()/2;
+    } else{
+        //widgetY = ui->widget->geometry().y();
+    }*/
+
+
+    ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height());
+
 }
 
 

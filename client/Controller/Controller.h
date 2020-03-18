@@ -46,11 +46,23 @@ private:
     Registration *registration;
     ShowFiles *finder;
     QWidget *now;
+    QMainWindow *GUI = new QMainWindow(this);
 
     /* networking */
     Messanger *messanger;
     Loading *loading = nullptr;
+    bool loadingPoPupIsenabled = false;
     CustomWidget *customWidget = nullptr;
+
+    void networkingConnection();
+    void crdtConnection();
+    void loginConnection();
+    void registrationConnection();
+    void registrationDisconnection();
+    void finderConnection();
+    void finderDisconnection();
+    void editorConnection();
+    void handleGUI(QMainWindow *window);
 
 public slots:
     /* NETWORKING */

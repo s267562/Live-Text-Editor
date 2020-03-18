@@ -101,6 +101,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readInsert(soc)) {
 			writeErrMessage(soc, INSERT_MESSAGE);
+            return;
 		}
 		writeOkMessage(soc);
         needToSaveMutex.unlock();
@@ -109,6 +110,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readStyleChanged(soc)) {
 			writeErrMessage(soc);
+            return;
 		}
 		writeOkMessage(soc);
         needToSaveMutex.unlock();
@@ -117,15 +119,19 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
+            return;
 		}
         writeOkMessage(soc);
         needToSaveMutex.unlock();
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
         if (!readAlignmentChanged(soc)) {
             writeErrMessage(soc);
+            return;
         }
         writeOkMessage(soc);
+        needToSaveMutex.unlock();
         readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
 		std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
@@ -136,11 +142,13 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
 		if (!readFileName(soc, connectReadyRead, connectDisconnected)){
             writeErrMessage(soc, REQUEST_FILE_MESSAGE);
+            return;
         }
 	} else if (data.toStdString() == SHARE_CODE) {
 		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
 		if (!readShareCode(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
+            return;
 		}
 		readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == EDIT_ACCOUNT) {

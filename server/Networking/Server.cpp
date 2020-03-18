@@ -861,7 +861,7 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
     for (QString removedUsername : removedUsers) {
         for (std::pair<qintptr, QString> username : allUsernames) {
             if (username.first != soc->socketDescriptor() || removedUsername == username.second) {
-                if (sendFileNames(sockets[username.first])) {
+                if (!sendFileNames(sockets[username.first])) {
                     return false;
                 }
             }
