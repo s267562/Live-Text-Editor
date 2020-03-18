@@ -205,7 +205,6 @@ bool Messanger::despatchMessage(){
         QByteArray message = messages.front();
         messages.pop();
         if (!writeMessage(socket, message)){
-            // push ???
             messages.push(message);
             return false;
         }
@@ -241,10 +240,6 @@ bool Messanger::logIn(QString username, QString password) {
             return false;
         }
     }
-
-    //this->crdt->setSiteId(username);    //TODO: da rimuovere...
-    //this->siteId = username;            //TODO: da rimuovere...
-
     return true;
 }
 
@@ -308,9 +303,6 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
     if (!writeMessage(socket, message)){
         return false;
     }
-
-   // this->crdt->setSiteId(username);
-    //this->siteId = username;
 
     return true;
 }
@@ -603,6 +595,11 @@ bool Messanger::writeInsert(Character character){
     return true;
 }
 
+/**
+ * This method sends the character with another style
+ * @param character
+ * @return result of writing on socket
+ */
 bool Messanger::writeStyleChanged(Character character){
     qDebug() << "Messanger.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
 
@@ -628,6 +625,12 @@ bool Messanger::writeStyleChanged(Character character){
     return true;
 }
 
+/**
+ * This method sends the alignment changes
+ * @param alignment_type
+ * @param blockId
+ * @return
+ */
 bool Messanger::writeAlignmentChanged(int alignment_type, Character blockId){
     qDebug() << "Messanger.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
@@ -657,8 +660,6 @@ bool Messanger::writeAlignmentChanged(int alignment_type, Character blockId){
     }
     return true;
 }
-
-
 
 /**
  * This method sends the character, that was removed
@@ -727,6 +728,10 @@ bool Messanger::readInsert(){
     return true;
 }
 
+/**
+ * This method reads the style changes
+ * @return
+ */
 bool Messanger::readStyleChanged(){
     qDebug() << "Messanger.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
 
@@ -761,7 +766,10 @@ bool Messanger::readStyleChanged(){
     return true;
 }
 
-
+/**
+ * This method reads the alignment changes
+ * @return
+ */
 bool Messanger::readAlignmentChanged(){
 
     qDebug() << "Messanger.cpp - readAlignmentChanged()     ---------- READ ALIGNMENT CHANGED ----------";
@@ -799,11 +807,9 @@ bool Messanger::readAlignmentChanged(){
 
     Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
-    //emit newMessage(message);
     QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
     return true;
 }
-
 
 /**
  * This method reads the character, that was removed from other users
@@ -836,7 +842,6 @@ bool Messanger::readDelete(){
 
     Message message(character, socket->socketDescriptor(), DELETE, username);
 
-    //emit newMessage(message);
     QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
     return true;
 }
@@ -859,6 +864,10 @@ bool Messanger::sendShareCode(QString shareCode){
     return true;
 }
 
+/**
+ * This method reads the file added
+ * @return
+ */
 bool Messanger::readAddFile(){
     qDebug() << "Messanger.cpp - readAddFile()     ---------- READ ADDFILE ----------";
 
@@ -883,6 +892,9 @@ bool Messanger::readAddFile(){
     return true;
 }
 
+/**
+ * This method is called when the socket disconnects
+ */
 void Messanger::onDisconnect(){
     qDebug() << "Messanger.cpp - onDisconnect()     " << socketDescriptor <<" Disconnected";
     qDebug() << ""; // newLine
@@ -894,6 +906,11 @@ void Messanger::onDisconnect(){
     emit errorConnection();
 }
 
+/**
+ * This method sends the request for the usernames list
+ * @param fileName
+ * @return
+ */
 bool Messanger::requestForUsernameList(QString fileName){
     qDebug() << "Messanger.cpp - requestForUsernameList()     ---------- REQUEST FOR USERNAME LIST ----------";
 
@@ -919,6 +936,10 @@ bool Messanger::requestForUsernameList(QString fileName){
     }
 }
 
+/**
+ * This method reads the usernames list
+ * @return
+ */
 bool Messanger::readUsernameList(){
     qDebug() << "Messanger.cpp - readUsernameList()     ---------- READ USERNAME LIST ----------";
     QStringList usernames;
@@ -946,6 +967,13 @@ bool Messanger::readUsernameList(){
     return true;
 }
 
+/**
+ * This method sends the file information changes
+ * @param oldFilename
+ * @param newFilename
+ * @param usernames
+ * @return
+ */
 bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames){
     qDebug() << "Messanger.cpp - sendFileInfomationChanges()     ---------- SEND FILE INFORMATION CHANGES ----------";
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -982,6 +1010,11 @@ bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilena
     }
 }
 
+/**
+ * This method sends the file that which should be eliminated
+ * @param filename
+ * @return
+ */
 bool Messanger::sendDeleteFile(QString filename){
     qDebug() << "Messanger.cpp - sendDeleteFile()     ---------- SEND DELETE FILE ----------";
 

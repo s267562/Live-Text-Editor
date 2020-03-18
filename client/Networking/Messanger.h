@@ -30,17 +30,15 @@ private:
     CRDT *crdt = nullptr;
     bool clientIsDisconnected;
 
-private:
-
     QMetaObject::Connection connectReadyRead;
     QMetaObject::Connection connectDisconnected;
 
 public:
+    /* ATTRIBUTES */
+    User *user = nullptr;
+
+    /* METHODS */
     Messanger(QObject *parent = nullptr);
-    /*bool writeInsert(Character character);
-    bool writeStyleChanged(Character character);
-    bool writeDelete(Character character);*/
-    //bool writeDelete(Character character);
     bool writeAlignmentChanged(int alignment_type, Character blockId); // gestire con un segnale forse
     bool connectTo(QString host, QString port);    
     bool logIn(QString username, QString passsword);
@@ -64,11 +62,7 @@ public:
     bool sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames);
     bool sendDeleteFile(QString filename);
     void setCrdt(CRDT *crdt);
-
     bool readAlignmentChanged();
-
-
-    User *user = nullptr;
 
 public slots:
     void onReadyRead();
