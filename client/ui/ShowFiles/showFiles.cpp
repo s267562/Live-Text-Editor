@@ -18,6 +18,9 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 	ui->newFile->setPixmap(QPixmap(":/rec/img/new-file.png"));
 	ui->addFile->setPixmap(QPixmap(":/rec/img/addfile.png"));
 	ui->logout->setPixmap(QPixmap(":/rec/img/logout.png"));
+	if (controller->getUser() != nullptr)
+	    changeImage();
+
 	connect(ui->newFile, SIGNAL(clicked()), this, SLOT(on_actionNew_File_triggered()));
 	connect(ui->addFile, SIGNAL(clicked()), this, SLOT(on_actionAdd_File_triggered()));
 	connect(ui->avatar, SIGNAL(clicked()), this, SLOT(editAccount()));
@@ -28,9 +31,10 @@ ShowFiles::ShowFiles(QWidget *parent, Controller *controller) :
 	m_shadowEffect->setXOffset(0);
 	m_shadowEffect->setYOffset(4);
 	m_shadowEffect->setBlurRadius(12);
-// hide shadow
+    // hide shadow
 	m_shadowEffect->setEnabled(true);
 	ui->customToolbar->setGraphicsEffect(m_shadowEffect);
+
 }
 
 ShowFiles::~ShowFiles() {
@@ -99,40 +103,13 @@ void ShowFiles::resizeEvent(QResizeEvent *event) {
 	ui->avatar->setGeometry(width() - 50, 10, 40, 40);
     ui->logout->setGeometry(width() - 95, 14, 35, 35);
     int centralWidgetX = 0;
-    int centralWidgetY = 0;
-    int widgetX = 0;
-    int widgetY = 0;
-
-    /*if (width() > ui->listWidget->width()){
-        centralWidgetX = width()/2 - ui->listWidget->width()/2;
-        widgetX = ui->listWidget->width()/2 - ui->listWidget->width()/2;
-    }else{
-        centralWidgetX = 0;
-        widgetX = width()/2 - ui->listWidget->width()/2;
-    }
-
-    if (height() > ui->listWidget->height()){
-        widgetY = height()/2 - ui->listWidget->height()/2;
-    } else{
-        widgetY = ui->listWidget->geometry().y();
-    }
 
 
-    ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height());*/
     if (width() > ui->listWidget->width()){
         centralWidgetX = width()/2 - ui->listWidget->width()/2;
-        widgetX = ui->listWidget->width()/2 - ui->listWidget->width()/2;
     }else{
         centralWidgetX = 0;
-        widgetX = width()/2 - ui->listWidget->width()/2;
     }
-
-    /*if (height() > ui->widget->height()){
-        widgetY = height()/2 - ui->widget->height()/2;
-    } else{
-        //widgetY = ui->widget->geometry().y();
-    }*/
-
 
     ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height());
 

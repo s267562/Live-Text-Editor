@@ -8,7 +8,6 @@ CustomWidget::CustomWidget(QWidget *parent, QString filename, QString owner, boo
 		QWidget(parent), filename(filename), fileShareCode(sharecode),
 		ui(new Ui::CustomWidget) {
 	ui->setupUi(this);
-	//ui->document->setPixmap(QPixmap(":/rec/img/document_2.png"));
     ui->settings->setPixmap(QPixmap(":/rec/img/menu_2.png"));
 	if (owner == controller->getUser()->getUsername()) {
         ui->owner->setText("You");
