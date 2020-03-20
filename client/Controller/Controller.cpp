@@ -135,7 +135,7 @@ void Controller::editorConnection() {
     connect(crdt, SIGNAL(deleteChar(Pos, QString)), editor, SLOT(deleteChar(Pos, QString)));
     connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
     connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor* , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor* , QString, int )), Qt::QueuedConnection);
-    connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor, int, int, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int, int, int)), Qt::QueuedConnection);
+    //connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor*, int, int, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int, int, int)), Qt::QueuedConnection);
 }
 
 /*  ------------------------------------------------------------- USER */
@@ -152,6 +152,7 @@ void Controller::reciveUser(User *user){
     }else{
         this->user->setUsername(user->getUsername());
         this->user->setAvatar(user->getAvatar());
+        this->crdt->setSiteId(user->getUsername());
         stopLoadingPopup();
         if (now == finder)
             this->finder->closeEditAccount();

@@ -113,9 +113,9 @@ void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::C
 	    std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
         /* disconnect from main thread */
         disconnect(*connectReadyRead);
-        disconnect(*connectDisconnected);
 	    if (readFileName(socketDescriptor, soc)) {
-			delete connectReadyRead;
+            disconnect(*connectDisconnected);
+            delete connectReadyRead;
 			delete connectDisconnected;
 			socketsState.erase(socketDescriptor);
 			qDebug() << "                              socketsSize: " << socketsState.size();

@@ -96,7 +96,7 @@ private:
 public slots:
     void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
     void totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars,  int position);
-    void totalLocalStyleChange(int charsAdded, QTextCursor cursor,  int position, int cursorPos, int selectionPos);
+    void totalLocalStyleChange(int charsAdded, QTextCursor *cursor,  int position, int cursorPos, int selectionPos);
     void localDelete(Pos startPos, Pos endPos);
     void newMessage(Message message);
 
