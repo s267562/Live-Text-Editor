@@ -462,7 +462,7 @@ bool Thread::readDelete(QTcpSocket *soc) {
  * @param character
  * @return result of writing on socket
  */
-bool Thread::writeInsert(QTcpSocket *soc, Character character) {
+bool Thread::writeInsert(QTcpSocket *soc, Character& character) {
 	qDebug() << "Thread.cpp - writeInsert()     ---------- WRITE INSERT ----------";
     if (soc == nullptr)
         return false;
@@ -494,7 +494,7 @@ bool Thread::writeInsert(QTcpSocket *soc, Character character) {
     return true;
 }
 
-bool Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
+bool Thread::writeStyleChanged(QTcpSocket *soc, Character& character) {
 	qDebug() << "Thread.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
     if (soc == nullptr)
         return false;
@@ -527,7 +527,7 @@ bool Thread::writeStyleChanged(QTcpSocket *soc, Character character) {
     return true;
 }
 
-bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId){
+bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character& blockId){
     qDebug() << "Thread.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
     if (soc == nullptr)
         return false;
@@ -565,7 +565,7 @@ bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blo
  * @param character
  * @return result of writing on socket
  */
-bool Thread::writeDelete(QTcpSocket *soc, Character character) {
+bool Thread::writeDelete(QTcpSocket *soc, Character& character) {
 	qDebug() << "Thread.cpp - writeDelete()     ---------- WRITE DELETE ----------";
     if (soc == nullptr)
         return false;

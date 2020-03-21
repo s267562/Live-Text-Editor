@@ -325,7 +325,7 @@ void Editor::textAlign(QAction *a) {
 	int endBlock = this->textCursor.blockNumber();
 
 	for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
-		this->controller->alignChange(alCode, blockNum);
+        QMetaObject::invokeMethod(controller->getCrdt(), "alignChange", Qt::QueuedConnection, Q_ARG(int, alCode), Q_ARG(int, blockNum));
 		qDebug() << alCode << blockNum;
 	}
 

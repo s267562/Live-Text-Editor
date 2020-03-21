@@ -107,7 +107,7 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
-    void alignChange(int alignment_type, int blockNumber);
+    //void alignChange(int alignment_type, int blockNumber);
 
 signals:
     void userRecived();

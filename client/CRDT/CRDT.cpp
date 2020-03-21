@@ -17,6 +17,7 @@ CRDT::CRDT(QObject *parent, Messanger *messanger): QObject(parent) {
     this->structure = {};
     this->messanger = messanger;
     qRegisterMetaType<Character>("Character");
+    qRegisterMetaType<Character>("Character&");
     qRegisterMetaType<QTextCharFormat>("QTextCharFormat");
 }
 
@@ -515,12 +516,13 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
     // send insert at the server.
-    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character, character));
+    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
     qDebug() << "Pos"<<position << "Chars added"<< charsAdded;
+
     for(int i=0; i<charsAdded; i++) {
         // for each char added
         qDebug()<< cursor->position();
@@ -536,7 +538,7 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
         Character character = handleLocalInsert(chars.at(i).toLatin1(), charFormat, startPos);
 
         // send insert at the server.
-        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character, character));
+        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
     }
     delete cursor;
 }
@@ -581,7 +583,7 @@ void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor* cursor, int positi
                 Character character = getCharacter(pos);
 
                 // send insert at the server.
-                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character&, character));
             }
         }
     }
@@ -601,7 +603,7 @@ void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor* cursor, int positi
                 Character character = getCharacter(pos);
 
                 // send insert at the server.
-                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
+                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character&, character));
             }
         }
     }
@@ -612,12 +614,21 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
     std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
 
     for(Character c : removedChars) {
-        QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character, c));
+        QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
     }
 }
 
+void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
+
+    // send insert at the server.
+    //TODO Check this
+    Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
+
+    this->messanger->writeAlignmentChanged(alignment_type, blockId);
+    QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
+}
+
 void CRDT::newMessage(Message message) {
-    // Message message = this->messanger->getMessage();
     qDebug() << "CRDT: " << QThread::currentThreadId();
 
     if(message.getType() == INSERT) {
@@ -629,7 +640,6 @@ void CRDT::newMessage(Message message) {
             // local insert - only in the model; the char is already in the view.
         } else {
             // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            //emit insertChar(character.getValue(), character.getTextCharFormat(), pos);
             QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()), Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos), Q_ARG(QString, message.getSender()));
         }
     } else if(message.getType() == STYLE_CHANGED) {
@@ -637,7 +647,6 @@ void CRDT::newMessage(Message message) {
 
         if(pos) {
             // delete from the editor.
-            //emit changeStyle(pos, message.getCharacter().getTextCharFormat());
             QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()), Q_ARG(QString, message.getSender()));
         }
     } else if(message.getType() == DELETE) {
@@ -646,13 +655,11 @@ void CRDT::newMessage(Message message) {
 
         if(pos) {
             // delete from the editor.
-            //emit deleteChar(pos);
             QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos),  Q_ARG(QString, message.getSender()));
         }
     } else if(message.getType() == ALIGNMENT_CHANGED) {
         int row = getRow(message.getCharacter());
         if(row>=0){
-            //this->editor->remoteAlignmentChanged(message.getAlignmentType(), row); // Segnale
             QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
         }
 
@@ -664,10 +671,6 @@ void CRDT::setEditor(Editor *editor) {
 }
 
 void CRDT::insertBlock(Character character, Pos position) {
-
-   /* if( position.getLine()==this->style.size() ) {
-        this->style.push_back(std::pair<Character, int>());
-    }*/
     if( position.getCh()==0 ){
         Pos blockPos(0,position.getLine());
 
@@ -676,17 +679,11 @@ void CRDT::insertBlock(Character character, Pos position) {
                                                                                 0x4));
     }
 
-
-
     if (character.getValue() == '\n') {
         Pos blockPos(0,position.getLine()+1);
         this->style.insert(
                 this->style.begin()+position.getLine(),std::pair<Character,int>(generateChar('-',character.getTextCharFormat(),blockPos,character.getSiteId()), 0x4));
     }
-
-
-
-
 }
 
 Character CRDT::getBlockIdentifier(int blockNumber) {

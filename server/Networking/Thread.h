@@ -42,9 +42,11 @@ private:
     bool readInsert(QTcpSocket *soc);
     bool readStyleChanged(QTcpSocket *soc);
     bool readDelete(QTcpSocket *soc);
-    bool writeInsert(QTcpSocket *soc, Character character);
-    bool writeStyleChanged(QTcpSocket *soc, Character character);
-    bool writeDelete(QTcpSocket *soc, Character character);
+    bool readAlignmentChanged(QTcpSocket *soc);
+    bool writeInsert(QTcpSocket *soc, Character& character);
+    bool writeStyleChanged(QTcpSocket *soc, Character& character);
+    bool writeDelete(QTcpSocket *soc, Character& character);
+    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character& blockId);
     bool sendNewUser(QTcpSocket *soc);                                              // sync ok
     bool sendFile(QTcpSocket *soc);
     bool readShareCode(QTcpSocket *soc);                                            // sync ok
@@ -55,8 +57,7 @@ private:
     bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
     bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
     bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
-    bool readAlignmentChanged(QTcpSocket *soc);
-    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character blockId);
+
     void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 public:

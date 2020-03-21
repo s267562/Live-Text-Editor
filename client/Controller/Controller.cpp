@@ -299,7 +299,7 @@ void Controller::showEditor(){
     editor->show();
 }
 
-void Controller::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
+/*void Controller::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
 
     // send insert at the server.
     //TODO Check this
@@ -307,7 +307,7 @@ void Controller::alignChange(int alignment_type, int blockNumber) { // -> da ges
     //if(blockId.getSiteId()!=-1){
     this->messanger->writeAlignmentChanged(alignment_type,blockId);
     //}
-}
+}*/
 
 /**
  * This method recives a file and handle it a specific way

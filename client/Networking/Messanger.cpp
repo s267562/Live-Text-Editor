@@ -569,7 +569,7 @@ bool Messanger::readFile(){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeInsert(Character character){
+bool Messanger::writeInsert(Character &character){
     qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
     qDebug() << "Messanger: "<< QThread::currentThreadId();
 
@@ -600,7 +600,7 @@ bool Messanger::writeInsert(Character character){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeStyleChanged(Character character){
+bool Messanger::writeStyleChanged(Character& character){
     qDebug() << "Messanger.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -631,7 +631,7 @@ bool Messanger::writeStyleChanged(Character character){
  * @param blockId
  * @return
  */
-bool Messanger::writeAlignmentChanged(int alignment_type, Character blockId){
+bool Messanger::writeAlignmentChanged(int alignment_type, Character& blockId){
     qDebug() << "Messanger.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){
@@ -666,7 +666,7 @@ bool Messanger::writeAlignmentChanged(int alignment_type, Character blockId){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeDelete(Character character){
+bool Messanger::writeDelete(Character& character){
     qDebug() << "Messanger.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
     if (this->socket->state() == QTcpSocket::ConnectedState){

@@ -39,8 +39,7 @@ public:
 
     /* METHODS */
     Messanger(QObject *parent = nullptr);
-    bool writeAlignmentChanged(int alignment_type, Character blockId); // gestire con un segnale forse
-    bool connectTo(QString host, QString port);    
+    bool connectTo(QString host, QString port);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
     bool registration(QString username, QString password, QByteArray avatar);
@@ -68,9 +67,10 @@ public slots:
     void onReadyRead();
     void onDisconnect();
     bool logOut();
-    bool writeInsert(Character character);
-    bool writeStyleChanged(Character character);
-    bool writeDelete(Character character);
+    bool writeInsert(Character &character);
+    bool writeStyleChanged(Character& character);
+    bool writeDelete(Character& character);
+    bool writeAlignmentChanged(int alignment_type, Character& blockId); // gestire con un segnale forse
 
 signals:
     void errorConnection();

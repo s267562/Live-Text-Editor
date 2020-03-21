@@ -98,6 +98,7 @@ public slots:
     void totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars,  int position);
     void totalLocalStyleChange(int charsAdded, QTextCursor *cursor,  int position, int cursorPos, int selectionPos);
     void localDelete(Pos startPos, Pos endPos);
+    void alignChange(int alignment_type, int blockNumber);
     void newMessage(Message message);
 
 signals:
