@@ -11,6 +11,11 @@
 #include <QDebug>
 
 CRDT::CRDT() {
+
+}
+
+
+bool CRDT::addInitialBlock() {
     QTextCharFormat cf;
     Identifier i(0,"Server");
     std::vector<Identifier> in_pos;
@@ -107,7 +112,7 @@ void CRDT::insertChar(Character character, Pos pos) {
 		qDebug() << "Splitting line into two lines";
 		std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(),
 										 structure[pos.getLine()].end()); // get line after.
-        if (lineAfter.size() != 0) {
+        if (!lineAfter.empty()) {
             qDebug().noquote() << "There is something after the newLine inserted";
             structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
@@ -253,7 +258,7 @@ void CRDT::removeEmptyLines() {
 }
 
 void CRDT::mergeLines(int line) {
-	if (structure.size() > line + 1 && structure[line + 1].size() > 0) {
+	if (structure.size() > line + 1 && !structure[line + 1].empty()) {
 		structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
 		structure.erase(structure.begin() + line + 1);
 	}
@@ -483,3 +488,5 @@ void CRDT::printStructures() {
 
     qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine
 }
+
+

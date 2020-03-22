@@ -636,6 +636,7 @@ std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
 	if (!loadedCrdt->loadCRDT(fileName)) {
 		qDebug() << "File need to be created";
 		CRDT *crdt = new CRDT();
+		crdt->addInitialBlock();
 		DB.createFile(fileName, username);
 		/* create new thread */
 		thread = std::make_shared<Thread>(nullptr, crdt, fileName, username, this);

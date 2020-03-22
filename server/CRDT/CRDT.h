@@ -22,6 +22,7 @@ class CRDT {
 public:
     CRDT();
 
+    bool addInitialBlock();
     Pos handleInsert(Character character);
     Pos handleStyleChanged(const Character &character);
     void handleDelete(const Character &character);
