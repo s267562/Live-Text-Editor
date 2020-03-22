@@ -40,11 +40,11 @@ private:
     QString siteId;
 
     /* VIEWS */
-    Editor *editor;
-    Login *login;
-    Connection *connection;
-    Registration *registration;
-    ShowFiles *finder;
+    Editor *editor = nullptr;
+    Login *login = nullptr;
+    Connection *connection = nullptr;
+    Registration *registration = nullptr;
+    ShowFiles *finder = nullptr;
     QWidget *now;
     QMainWindow *GUI = new QMainWindow(this);
 
