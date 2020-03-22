@@ -60,7 +60,7 @@ bool writeMessage(QTcpSocket *soc, QByteArray &message) {
             return false;
         }
         left -= written;
-        message = message.right(size-left);
+        message.right(size-left);
     }
     return true;
 }
