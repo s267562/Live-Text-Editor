@@ -1059,3 +1059,22 @@ void Server::removeThread(const QString& filename){
     deleteFileThread.erase(filename);
     qDebug() << "Thread deleted!";
 }
+
+Server::~Server() {
+    std::unique_lock<std::shared_mutex> threadLok(mutexThread);
+    std::unique_lock<std::shared_mutex> deletedThreadLock(mutexDeleteFileThread);
+    for (std::pair<QString, std::shared_ptr<Thread>> thread : threads) {
+        thread.second->quit();
+        thread.second->requestInterruption();
+        thread.second->wait();
+        threads.erase(thread.first);
+        qDebug() << "Thread deleted! in threads";
+    }
+    for (std::pair<QString, std::shared_ptr<Thread>> thread : deleteFileThread) {
+        thread.second->quit();
+        thread.second->requestInterruption();
+        thread.second->wait();
+        threads.erase(thread.first);
+        qDebug() << "Thread deleted! in deleteFileThread";
+    }
+}

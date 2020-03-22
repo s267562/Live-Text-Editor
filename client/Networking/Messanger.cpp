@@ -32,6 +32,7 @@ bool Messanger::connectTo(QString host, QString port){
         state = UNLOGGED;
         clientIsLogged = false;
         clientIsDisconnected = false;
+        messages = std::queue<QByteArray>();
         qRegisterMetaType<Message>("Message");
 
         /* define connection */
@@ -128,6 +129,7 @@ void Messanger::onReadyRead(){
             }
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE){
             reciveOkMessage = true;
+            despatchMessage();
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS){
             if (!readUsernames()){
                 return;
@@ -165,7 +167,6 @@ void Messanger::onReadyRead(){
         }
     }
 
-    despatchMessage();
     onReadyRead();
 }
 
