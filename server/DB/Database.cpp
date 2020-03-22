@@ -18,7 +18,7 @@
  */
 Database::Database() {
 	connectionName = "conn-MAIN";
-	db = QSqlDatabase::addDatabase("QSQLITE",connectionName);
+	db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
 	db.setDatabaseName("database.sqlite");
 	this->initTables();
 }
@@ -28,8 +28,8 @@ Database::Database() {
  * @param threadID
  */
 Database::Database(QString threadID) {
-	connectionName ="conn-" + threadID;
-	db = QSqlDatabase::addDatabase("QSQLITE",connectionName);
+	connectionName = "conn-" + threadID;
+	db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
 	db.setDatabaseName("database.sqlite");
 
 	// We expect no need of tables initialization
@@ -770,6 +770,33 @@ bool Database::deleteFile(QString filename) {
 	}
 
 	QSqlDatabase::database().commit();
+	db.close();
+	return true;
+}
+
+/**
+ * This function is for rollback purpose when something goes wrong during the registration of a new user.
+ * @param username of the user to delete (should have been registered with success)
+ * @return true if user is deleted false else
+ */
+bool Database::removeUser(QString username) {
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
+
+	QString hashedUsername = hashUsername(username);
+
+	QSqlQuery removeUser(db);
+	removeUser.prepare("DELETE FROM users WHERE username = :hashedUsername");
+	removeUser.bindValue(":hashedUsername",hashedUsername);
+
+	if (!removeUser.exec()) {
+		qDebug() << "Error deleting user: " << username << "\n" << removeUser.lastError();
+		db.close();
+		return false;
+	}
+
 	db.close();
 	return true;
 }

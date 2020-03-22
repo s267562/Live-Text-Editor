@@ -297,7 +297,9 @@ bool Server::registration(QTcpSocket *soc) {
 	bool registeredSuccessfully = DB.registerUser(QString(username), QString(password));
 	if (registeredSuccessfully) {
 	    if (!DB.changeAvatar(QString(username), avatarDef)){
-	        // TODO: rollback nel caso non vada a buon fine
+	    	// Remove the user. So he can make a new registration
+	        DB.removeUser(QString(username));
+	        return false;
 	    }
         usernames[soc->socketDescriptor()] = username;
         allUsernames[soc->socketDescriptor()] = username;
@@ -514,18 +516,33 @@ bool Server::readEditAccount(QTcpSocket *soc) {
                 qDebug() << "Scanning: " << dir.path();
 
                 QStringList fileList = dir.entryList();
+                QList<std::pair<QString,QString>> renamed; // new | old  ---> when rollback rename new to old
                 for (int i=0; i<fileList.count(); i++){
                     QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
                     if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
                         continue;
                     QString newFilename = newUsername + "%_##$$$##_%" + filename;
-                    changeNamethread(fileList[i].split(".json")[0], newFilename);
+					QString &oldFilename = fileList[i].split(".json")[0];
+					changeNamethread(oldFilename, newFilename);
                     qDebug() << "Found file: " << fileList[i];
                     QFile renamefile(fileList[i]);
-                    
                     renamefile.rename(newFilename + ".json");
-                    DB.changeFileName(fileList[i].split(".json")[0], newFilename);
-                    renamefile.close();
+					renamefile.close();
+
+					if(DB.changeFileName(oldFilename, newFilename)) {
+						renamed.append(std::pair(newFilename, oldFilename));
+					}
+					else{
+						// Rollback on all already renamed files!!!!
+						qDebug("Err renaming file. Doing Rollback");
+
+						for(std::pair f : renamed){
+							QFile reRenameFile(f.first+".json");
+							renamefile.rename(f.second + ".json");
+							renamefile.close();
+						}
+						return false;
+					}
 
                     /* trovare tutti gli utenti che hanno in comune i file dell'utente */
                     for (std::pair<qintptr, QString> username : allUsernames) {
@@ -828,7 +845,7 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
             if (!readQString(soc, username, usernameSize)) {
                 return false;
             }
-            qDebug() << "                              usename: " << username;
+            qDebug() << "                              username: " << username;
             DB.removePermission(oldJsonFileName, username);
             removedUsers.append(username);
         }
@@ -838,8 +855,11 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
 
     if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
         QFile saveFile(oldJsonFileName + ".json");
-        DB.changeFileName(oldJsonFileName, newJsonFileName);
-        saveFile.rename(newJsonFileName + ".json");
+        if(!DB.changeFileName(oldJsonFileName, newJsonFileName)) {
+			saveFile.close();
+			return false;
+		}
+		saveFile.rename(newJsonFileName + ".json");
         saveFile.close();
         changeNamethread(oldJsonFileName, newJsonFileName);
 
