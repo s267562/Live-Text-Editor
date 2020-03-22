@@ -67,6 +67,8 @@ public:
 
 	bool deleteFile(QString filename);
 
+	bool removeUser(QString username);
+
 	bool createThreadConnection(QString threadID);
 
 	bool testConnection();
