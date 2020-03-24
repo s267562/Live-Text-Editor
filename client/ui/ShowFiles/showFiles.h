@@ -26,6 +26,7 @@ public:
     void addFile(std::map<QString, bool> l);
     void closeEditAccount();
     QString getFile(QString filename);
+    void closeCreateFile();
 
 public slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem *item);

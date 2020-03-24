@@ -13,9 +13,10 @@ Q_DECLARE_METATYPE(Character);
 Q_DECLARE_METATYPE(QTextCharFormat);
 
 
-CRDT::CRDT(QObject *parent, Messanger *messanger): QObject(parent) {
+CRDT::CRDT(QObject *parent, Messanger *messanger, Controller *controller): QObject(parent) {
     this->structure = {};
     this->messanger = messanger;
+    this->controller = controller;
     qRegisterMetaType<Character>("Character");
     qRegisterMetaType<Character>("Character&");
     qRegisterMetaType<QTextCharFormat>("QTextCharFormat");
@@ -630,6 +631,9 @@ void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire f
 
 void CRDT::newMessage(Message message) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (controller->isRequestFFile())
+        return;
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();

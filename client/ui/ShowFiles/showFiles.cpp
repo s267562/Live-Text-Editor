@@ -129,6 +129,7 @@ void ShowFiles::editAccount() {
 
 void ShowFiles::closeEditAccount() {
     if (this->editAcc != nullptr){
+        createFile->setParent(controller->getGui()->centralWidget());
         editAcc->close();
     }
 }
@@ -161,6 +162,13 @@ void ShowFiles::on_actionAdd_File_triggered(){
 void ShowFiles::closeAddFile(){
     if (addFile1 != nullptr){
         addFile1->close();
+    }
+}
+
+void ShowFiles::closeCreateFile(){
+    if (createFile != nullptr){
+        createFile->setParent(controller->getGui()->centralWidget());
+        createFile->close();
     }
 }
 

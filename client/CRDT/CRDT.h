@@ -18,6 +18,8 @@
 #include <QThread>
 #include <QTextCursor>
 #include <shared_mutex>
+#include "../Controller/Controller.h"
+
 
 class Messanger;
 class Controller;
@@ -27,7 +29,7 @@ class CRDT: public QObject {
     Q_OBJECT;
 public:
     std::shared_mutex mutexCRDT;
-    CRDT(QObject *parent, Messanger *messanger);
+    CRDT(QObject *parent, Messanger *messanger, Controller *controller = nullptr);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
@@ -62,6 +64,7 @@ private:
     std::vector<std::pair<Character,int>> style;
     Messanger *messanger;
     Editor* editor = nullptr;
+    Controller *controller = nullptr;
 
 public:
     void setEditor(Editor *editor);

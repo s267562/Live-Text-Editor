@@ -16,6 +16,8 @@
 #include <iostream>
 #include "CustomWidget/customwidget.h"
 #include "../CRDT/CDRTThread.h"
+#include <shared_mutex>
+
 
 class Editor;
 class CDRTThread;
@@ -38,6 +40,13 @@ private:
     CDRTThread *crdtThread;
     User *user;
     QString siteId;
+    bool requestFFile = false;
+public:
+    bool isRequestFFile() const;
+
+    void setRequestFFile(bool requestFFile);
+
+private:
 
     /* VIEWS */
     Editor *editor = nullptr;
@@ -47,9 +56,17 @@ private:
     ShowFiles *finder = nullptr;
     QWidget *now;
     QMainWindow *GUI = new QMainWindow(this);
+public:
+    QMainWindow *getGui() const;
+
+private:
 
     /* NETWORKING */
     Messanger *messanger;
+public:
+    Messanger *getMessanger() const;
+
+private:
     Loading *loading = nullptr;
     bool loadingPoPupIsenabled = false;
     CustomWidget *customWidget = nullptr;
@@ -67,6 +84,8 @@ private:
     void handleGUI(QMainWindow *window);
 
 public:
+    std::shared_mutex mutexRequestForFile;
+
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
     User* getUser();

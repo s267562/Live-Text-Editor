@@ -752,7 +752,10 @@ void Editor::on_actionShare_file_triggered() {
 }
 
 void Editor::on_actionOpen_triggered() {
-	emit showFinder();
+    if (controller->getMessanger()->messagesIsEmpty())
+	    emit showFinder();
+    else
+        QMessageBox::information(this, "Attendi", "Il programma sta finendo di prcessare i dati!");
 }
 
 void Editor::on_actionSave_as_PDF_triggered() {
@@ -903,20 +906,37 @@ void Editor::setUsers(QStringList users) {
 	ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 	ui->username->setText("Debug");
 #endif
-	this->users = users;
-	ui->userListWidget->addItems(users);
-	controller->stopLoadingPopup();
+	bool isInsert = false;
+	if (users.size() > 1) {
+        ui->userListWidget->clear();
+    } else{
+        if (users.size() != 0)
+            for (QString ur : this->users) {
+               if (ur == users[0]) {
+                   isInsert = true;
+               }
+            }
+	}
+    if (users.size() != 0) {
+        if (!isInsert) {
+            this->users.append(users);
+            ui->userListWidget->addItems(users);
+            std::for_each(users.begin(), users.end(), [this](QString user) {
+                QColor color(colors[colorIndex]);
+                color.setAlpha(128); // opacity
+                otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
+                colorIndex++;
+                if (colorIndex == 14) {
+                    colorIndex = 0;
+                }
 
-	std::for_each(users.begin(), users.end(), [this](QString user) {
-		QColor color(colors[colorIndex]);
-		color.setAlpha(128); // opacity
-		otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
-		colorIndex++;
-		if (colorIndex == 14) {
-			colorIndex = 0;
-		}
+            });
+        }
+    }else{
+        ui->userListWidget->clear();
+    }
+    controller->stopLoadingPopup();
 
-	});
 }
 
 void Editor::saveCursor() {

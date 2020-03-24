@@ -6,10 +6,10 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 
-Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
+Controller::Controller(): messanger(new Messanger(this, this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
-    crdt = new CRDT(nullptr, messanger);
+    crdt = new CRDT(nullptr, messanger, this);
     crdtThread = new CDRTThread(this, crdt);
     crdt->moveToThread(crdtThread);
     crdtThread->start();
@@ -258,6 +258,10 @@ void Controller::showFileFinder(std::map<QString, bool> fileList){
  * This method shows the showFiles for request another view
  */
 void Controller::showFileFinderOtherView(){
+    /*std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = true;*/
+    bool result = this->messanger->requestForFile("**FILE_FITTIZIO**");
+
     if (editor != nullptr) {
         disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
         disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
@@ -278,15 +282,23 @@ void Controller::showFileFinderOtherView(){
  * @param filename
  */
 void Controller::requestForFile(QString filename){
+    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = true;
     bool result = this->messanger->requestForFile(filename);
 
-    if (result){
-        siteId = user->getUsername();
-        editor = new Editor(siteId, nullptr, this);
-        editor->setFilename(filename);
-        editorConnection();
+    if (result) {
+        if (/*editor == nullptr*/true) {
+            siteId = user->getUsername();
+            editor = new Editor(siteId, this, this);
+            editor->setFilename(filename);
+            editorConnection();
+        }/*else{
+            connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+            connect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
+        }*/
 
-        if (editor == now)
+        //if (editor == now)
             disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
         now = editor;
         handleGUI(editor);
@@ -317,9 +329,11 @@ void Controller::showEditor(){
  */
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
     // introdurre sincronizzazione
-    std::unique_lock<std::shared_mutex> uniqueLock(crdt->mutexCRDT);
+    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = false;
     crdt->setStructure(initialStructure);           // fare un segnale
     crdt->setStyle(styleBlocks);                    // fare un segnale
+
     editor->replaceText(this->crdt->getStructure());
     std::vector<int> alignment_block;
     alignment_block.reserve(styleBlocks.size());
@@ -334,8 +348,10 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure, 
 
     if (result != this->user->getFileList().end()){
         this->user->addFile(filename);
-        //this->finder->addFiles(this->user->getFileList());
+        this->finder->addFiles(this->user->getFileList());
     }
+
+    finder->closeCreateFile();
 }
 
 /**
@@ -380,6 +396,7 @@ void Controller::startLoadingPopup(){
 void Controller::stopLoadingPopup(){
     if (loadingPoPupIsenabled && loading != nullptr){
         loadingPoPupIsenabled = false;
+        loading->setParent(now);
         loading->close();
     }
 }
@@ -471,8 +488,28 @@ void Controller::handleGUI(QMainWindow *window) {
     GUI->setMinimumWidth(window->maximumWidth());
     GUI->setMinimumHeight(window->maximumHeight());
     QWidget *w = GUI->centralWidget();
+    if (w != nullptr) {
+        w->setParent(this);
+        w->hide();
+    }
     GUI->setCentralWidget(window);
     GUI->show();
     window->show();
     //w->deleteLater();
+}
+
+bool Controller::isRequestFFile() const {
+    return requestFFile;
+}
+
+void Controller::setRequestFFile(bool requestFFile) {
+    Controller::requestFFile = requestFFile;
+}
+
+QMainWindow *Controller::getGui() const {
+    return GUI;
+}
+
+Messanger *Controller::getMessanger() const {
+    return messanger;
 }
