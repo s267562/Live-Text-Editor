@@ -43,6 +43,8 @@ private:
 
     void connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
+    static bool checkAndCreateSaveDir();
+
 public:
     /* ATTRIBUTES */
     std::shared_mutex mutexThread;
