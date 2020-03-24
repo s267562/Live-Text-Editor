@@ -329,7 +329,7 @@ bool Server::sendUser(QTcpSocket *soc) {
 
 	message.append(" " + usernameSize + " " + usernameByteArray + " " + imageSize + " " + image);
 
-	qDebug() << message;
+//	qDebug() << message;
 
 	return writeMessage(soc, message);
 }
@@ -512,14 +512,13 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	if (DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
 		if (newUsernameSize != 0) {
 			if (DB.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
-				QDir dir;
+				QDir dir("saveData/");
 				dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
 				dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
 				qDebug() << "Scanning: " << dir.path();
 
 				QStringList fileList = dir.entryList();
-				QList<std::pair<QString, QString>> renamed; // new | old  ---> when rollback rename new to old
 				for (int i = 0; i < fileList.count(); i++) {
 					QString filename = fileList[i].split("%_##$$$##_%")[1].split(".json")[0];
 					if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
@@ -528,21 +527,11 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 					QString &oldFilename = fileList[i].split(".json")[0];
 					changeNamethread(oldFilename, newFilename);
 					qDebug() << "Found file: " << fileList[i];
-					QFile renamefile(fileList[i]);
-					renamefile.rename(newFilename + ".json");
-					renamefile.close();
 
 					if (DB.changeFileName(oldFilename, newFilename)) {
-						renamed.append(std::pair(newFilename, oldFilename));
+						renameFileSave(oldFilename, newFilename);
 					} else {
-						// Rollback on all already renamed files!!!!
-						qDebug("Err renaming file. Doing Rollback");
-
-						for (std::pair f : renamed) {
-							QFile reRenameFile(f.first + ".json");
-							renamefile.rename(f.second + ".json");
-							renamefile.close();
-						}
+						qDebug() << "Unknown error renaming files";
 						return false;
 					}
 
@@ -857,14 +846,11 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
 	qDebug() << oldJsonFileName << newJsonFileName;
 
 	if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
-		QFile saveFile(oldJsonFileName + ".json");
-		if (!DB.changeFileName(oldJsonFileName, newJsonFileName)) {
-			saveFile.close();
-			return false;
-		}
-		saveFile.rename(newJsonFileName + ".json");
-		saveFile.close();
-		changeNamethread(oldJsonFileName, newJsonFileName);
+		if (DB.changeFileName(oldJsonFileName, newJsonFileName)) {
+			renameFileSave(oldJsonFileName, newJsonFileName);
+			changeNamethread(oldJsonFileName, newJsonFileName);
+		} else return false;
+
 
 		for (std::pair<qintptr, QString> username : allUsernames) {
 			if (username.first != soc->socketDescriptor()) {
@@ -957,9 +943,8 @@ bool Server::readDeleteFile(QTcpSocket *soc) {
 		return false;
 	}
 
-	QFile deleteFile(jsonFileName + ".json");
-	deleteFile.remove();
-	deleteFile.close();
+	if (!deleteFileSave(jsonFileName))
+		return false;
 
 	sendFileNames(soc);
 
@@ -1088,11 +1073,11 @@ Server::~Server() {
  * @return
  */
 bool Server::checkAndCreateSaveDir() {
-	QString names[] = {"files", "backup1", "backup2"};
+	QString names[] = {"saveData", "backup1", "backup2"};
 	bool result = true;
 
 	// Check existance
-	for (const QString& name : names) {
+	for (const QString &name : names) {
 		QDir dir(name);
 		if (!dir.exists())
 			if (QDir().mkdir(name))
@@ -1103,6 +1088,51 @@ bool Server::checkAndCreateSaveDir() {
 			}
 		else
 			qDebug() << name << " exists";
+	}
+	return result;
+}
+
+/**
+ * This function is used for renaming all saved files (including backup ones)
+ * @return true if renamed, false in case of error
+ */
+bool Server::renameFileSave(QString oldFilename, QString newFilename) {
+	bool result = true;
+	QString directories[] = {"saveData", "backup1", "backup2"};
+
+	for (QString dir : directories) {
+		QFile savefile(dir + "/" + oldFilename + ".json");
+		if (savefile.exists()) {
+			if (!savefile.rename(dir + "/" + newFilename + ".json")) {
+				result = false;
+				qDebug() << "Error renaming: " << savefile.fileName();
+			} else {
+				qDebug() << "Renamed '" + oldFilename + "' into '" + newFilename + "'";
+			}
+		}
+	}
+	return result;
+}
+
+/**
+ * This function delete a file from the server and also from all the backup directories
+ * @param filename
+ * @return true if deleted, false in case of error
+ */
+bool Server::deleteFileSave(QString filename) {
+	bool result = true;
+	QString directories[] = {"saveData", "backup1", "backup2"};
+
+	for (QString dir : directories) {
+		QFile savefile(dir + "/" + filename + ".json");
+		if (savefile.exists()) {
+			if (!savefile.remove()) {
+				result = false;
+				qDebug() << "Error deleting: " << savefile.fileName();
+			}else {
+				qDebug() << "Deleted: " + filename;
+			}
+		}
 	}
 	return result;
 }

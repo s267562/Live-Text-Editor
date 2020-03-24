@@ -60,6 +60,9 @@ private:
 
     void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
+    static bool renameFileSave(QString oldFilename,QString newFilename);
+    static bool deleteFileSave(QString filename);
+
 public:
     /* ATTRIBUTES */
     std::shared_mutex mutexSockets;
