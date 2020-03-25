@@ -79,6 +79,15 @@ void Controller::loginConnection() {
 }
 
 /**
+ *  Handle the disconnection between signal and slot for the login object
+ */
+void Controller::loginDisconnection() {
+    disconnect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
+    disconnect(this->messanger, &Messanger::logout, this, &Controller::showLogin);
+    disconnect(this->login, SIGNAL(showRegistration()), this, SLOT(showRegistration()));
+}
+
+/**
  * Handle the connection between signal and slot for the registration object
  */
 void Controller::registrationConnection() {
@@ -156,8 +165,8 @@ void Controller::reciveUser(User *user){
         stopLoadingPopup();
         if (now == finder)
             this->finder->closeEditAccount();
-        if (this->editor != nullptr && now == editor)
-            this->editor->closeEditAccount();
+        //if (this->editor != nullptr && now == editor)
+            //this->editor->closeEditAccount();
     }
     emit userRecived();
 }
@@ -202,6 +211,9 @@ void Controller::connectClient(QString address, QString port) {
  */
 void Controller::showLogin(){
     /* creation login object */
+    if (login != nullptr){
+        loginDisconnection();
+    }
     login = new Login(this, this);
     now = login;
 

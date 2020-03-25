@@ -701,12 +701,12 @@ bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
 	message.append(" " + usernameSize + " " + usernameByteArray);
 
 	for (auto s : sockets) {
-	    if (s.first != socketDescriptor) {
+	    //if (s.first != socketDescriptor) {
             qDebug() << usernames[s.first];
             if (!writeMessage(s.second, message)) {
                 return false;
             }
-        }
+        //}
 	}
     return true;
 }
@@ -1027,11 +1027,11 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	socket.deleteLater();
 	if (sockets.find(socketDescriptor) != sockets.end()) {
 		sockets.erase(socketDescriptor);
-		sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
 	} else {
 		pendingSocket.erase(socketDescriptor);
-	}
-	server->removeSocket(socketDescriptor);
+    }
+    sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
+    server->removeSocket(socketDescriptor);
 	usernames.erase(socketDescriptor);
 	server->removeUsername(socketDescriptor);
 	qDebug() << usernames;
@@ -1200,6 +1200,7 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 	for (QString removedUsername : removedUsers) {
 		for (std::pair<qintptr, QString> username : usernames) {
 			if (removedUsername == username.second) {
+			    qDebug() << removedUsername;
 				sendRemoveUser(username.first, username.second);
 				addPendingSocket(username.first);
 				break;

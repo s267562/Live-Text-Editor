@@ -1072,5 +1072,5 @@ void Messanger::setCrdt(CRDT *crdt) {
 }
 
 bool Messanger::messagesIsEmpty(){
-    return this->messages.empty();
+    return this->messages.empty() && reciveOkMessage;
 }

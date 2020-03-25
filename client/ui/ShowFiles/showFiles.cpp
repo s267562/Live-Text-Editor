@@ -129,7 +129,7 @@ void ShowFiles::editAccount() {
 
 void ShowFiles::closeEditAccount() {
     if (this->editAcc != nullptr){
-        createFile->setParent(controller->getGui()->centralWidget());
+        editAcc->setParent(controller->getGui()->centralWidget());
         editAcc->close();
     }
 }

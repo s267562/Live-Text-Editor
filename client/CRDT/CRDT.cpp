@@ -518,6 +518,9 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
 
     // send insert at the server.
     QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
@@ -542,6 +545,9 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
         QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
     }
     delete cursor;
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor* cursor, int position, int cursorPos, int startSelection) {
@@ -609,6 +615,9 @@ void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor* cursor, int positi
         }
     }
     delete cursor;
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
@@ -617,6 +626,9 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
     for(Character c : removedChars) {
         QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
     }
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
@@ -625,7 +637,7 @@ void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire f
     //TODO Check this
     Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
 
-    this->messanger->writeAlignmentChanged(alignment_type, blockId);
+    //this->messanger->writeAlignmentChanged(alignment_type, blockId);
     QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
 }
 
@@ -847,4 +859,20 @@ QString CRDT::toString() {
 
 void CRDT::setStyle(std::vector<std::pair<Character, int>> blocks) {
     this->style=blocks;
+}
+
+bool CRDT::isWorking1() const {
+    return isWorking;
+}
+
+void CRDT::setIsWorking(bool isWorking) {
+    CRDT::isWorking = isWorking;
+}
+
+int CRDT::getNumJobs() const {
+    return numJobs;
+}
+
+void CRDT::setNumJobs(int numJobs) {
+    CRDT::numJobs = numJobs;
 }

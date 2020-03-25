@@ -75,6 +75,7 @@ private:
     void networkingConnection();
     void crdtConnection();
     void loginConnection();
+    void loginDisconnection();
     void registrationConnection();
     void registrationDisconnection();
     void finderConnection();

@@ -62,7 +62,7 @@ public slots:
     void removeUser(QString user);
     void setUsers(QStringList user);
     void showError();
-    void editAccountClicked();
+    //void editAccountClicked();
     void changeUser();
     /*MULTI THREAD*/
     void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);

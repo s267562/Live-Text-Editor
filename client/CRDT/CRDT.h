@@ -28,7 +28,7 @@ class Editor;
 class CRDT: public QObject {
     Q_OBJECT;
 public:
-    std::shared_mutex mutexCRDT;
+    std::shared_mutex mutexIsWorking;
     CRDT(QObject *parent, Messanger *messanger, Controller *controller = nullptr);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
@@ -65,6 +65,17 @@ private:
     Messanger *messanger;
     Editor* editor = nullptr;
     Controller *controller = nullptr;
+    bool isWorking = false;
+    int numJobs = 0;
+public:
+    int getNumJobs() const;
+
+    void setNumJobs(int numJobs);
+
+public:
+    bool isWorking1() const;
+
+    void setIsWorking(bool isWorking);
 
 public:
     void setEditor(Editor *editor);
