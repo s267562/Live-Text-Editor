@@ -83,4 +83,27 @@ bool checkAndCreateSaveDir() {
 	return result;
 }
 
+/**
+ * Make a backup of the saved files into backup directory
+ * @param primary true if backup is a primary one (more frequent) false else (less frequent)
+ * @return true if no errors occurred
+ */
+void backupFiles(bool primary) {
+	QDir dataDir(directories[0]);
+	QDir backupDir;
+	if (primary)
+		backupDir = QDir(directories[1]);
+	else
+		backupDir = QDir(directories[2]);
 
+	// Get filenames from data directory
+	for (QString filename : dataDir.entryList(QDir::Files)) {
+//		qDebug() << "File: " + filename;
+		if (backupDir.exists(filename)) {
+			backupDir.remove(filename);
+//			qDebug() << "--Removed";
+		}
+		QFile::copy(dataDir.dirName() + "/" + filename, backupDir.dirName() + "/" + filename);
+//		qDebug() << "++Copied";
+	}
+}

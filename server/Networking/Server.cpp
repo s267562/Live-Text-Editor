@@ -21,6 +21,8 @@ bool Server::startServer(quint16 port) {
 	} else {
 		qDebug() << "Server.cpp - startServer()     Listening to port " << port << "...";
 		qDebug() << ""; // newLine
+		backupFiles();
+		backupFiles(false);
 		return checkAndCreateSaveDir();
 	}
 }
