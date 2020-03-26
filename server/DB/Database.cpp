@@ -677,24 +677,26 @@ bool Database::changeFileName(QString oldFilename, QString newFilename) {
 	QSqlDatabase::database().transaction();
 
 	QSqlQuery filesUpdate(db);
-	filesUpdate.prepare("UPDATE files SET fileID=:fileID1 WHERE fileID=:fileID2");
-	filesUpdate.bindValue(":fileID1", newFilename);
-	filesUpdate.bindValue(":fileID2", oldFilename);
+	filesUpdate.prepare("UPDATE files SET fileID=:newFileID WHERE fileID=:oldFileID");
+	filesUpdate.bindValue(":newFileID", newFilename);
+	filesUpdate.bindValue(":oldFileID", oldFilename);
 
 	if (!filesUpdate.exec()) {
-		qDebug() << "Error getting user list for: " << oldFilename << "\n" << filesUpdate.lastError();
+		qDebug() << "Error renaming FILES from: " << oldFilename << " to: " << newFilename << "\n"
+				 << filesUpdate.lastError();
 		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
 	}
 
 	QSqlQuery sharingUpdate(db);
-	sharingUpdate.prepare("UPDATE sharing SET fileID=:fileID1 WHERE fileID=:fileID2");
-	sharingUpdate.bindValue(":fileID1", newFilename);
-	sharingUpdate.bindValue(":fileID2", oldFilename);
+	sharingUpdate.prepare("UPDATE sharing SET fileID=:newFileID WHERE fileID=:oldFileID");
+	sharingUpdate.bindValue(":newFileID", newFilename);
+	sharingUpdate.bindValue(":oldFileID", oldFilename);
 
 	if (!sharingUpdate.exec()) {
-		qDebug() << "Error getting user list for: " << oldFilename << "\n" << sharingUpdate.lastError();
+		qDebug() << "Error renaming SHARING from: " << oldFilename << " to: " << newFilename << "\n"
+				 << sharingUpdate.lastError();
 		QSqlDatabase::database().rollback();
 		db.close();
 		return false;
@@ -789,7 +791,7 @@ bool Database::removeUser(QString username) {
 
 	QSqlQuery removeUser(db);
 	removeUser.prepare("DELETE FROM users WHERE username = :hashedUsername");
-	removeUser.bindValue(":hashedUsername",hashedUsername);
+	removeUser.bindValue(":hashedUsername", hashedUsername);
 
 	if (!removeUser.exec()) {
 		qDebug() << "Error deleting user: " << username << "\n" << removeUser.lastError();

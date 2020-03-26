@@ -3,6 +3,7 @@
 #include <shared_mutex>
 #include "Server.h"
 #include "../SimpleCrypt/SimpleCrypt.h"
+#include "../Utils/Utilities.h"
 
 Server::Server(QObject *parent) : QTcpServer(parent) {}
 
@@ -524,7 +525,7 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 					if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
 						continue;
 					QString newFilename = newUsername + "%_##$$$##_%" + filename;
-					QString &oldFilename = fileList[i].split(".json")[0];
+					QString oldFilename = fileList[i].split(".json")[0];
 					changeNamethread(oldFilename, newFilename);
 					qDebug() << "Found file: " << fileList[i];
 
@@ -1067,72 +1068,4 @@ Server::~Server() {
 	}
 }
 
-/**
- * Check and create if needed folders for file saving and backups
- * Folders: files - backup1 - backup2
- * @return
- */
-bool Server::checkAndCreateSaveDir() {
-	QString names[] = {"saveData", "backup1", "backup2"};
-	bool result = true;
 
-	// Check existance
-	for (const QString &name : names) {
-		QDir dir(name);
-		if (!dir.exists())
-			if (QDir().mkdir(name))
-				qDebug() << name << " created";
-			else {
-				qDebug() << "Error creating " << name << " check you have permissions!!!";
-				result = false;
-			}
-		else
-			qDebug() << name << " exists";
-	}
-	return result;
-}
-
-/**
- * This function is used for renaming all saved files (including backup ones)
- * @return true if renamed, false in case of error
- */
-bool Server::renameFileSave(QString oldFilename, QString newFilename) {
-	bool result = true;
-	QString directories[] = {"saveData", "backup1", "backup2"};
-
-	for (QString dir : directories) {
-		QFile savefile(dir + "/" + oldFilename + ".json");
-		if (savefile.exists()) {
-			if (!savefile.rename(dir + "/" + newFilename + ".json")) {
-				result = false;
-				qDebug() << "Error renaming: " << savefile.fileName();
-			} else {
-				qDebug() << "Renamed '" + oldFilename + "' into '" + newFilename + "'";
-			}
-		}
-	}
-	return result;
-}
-
-/**
- * This function delete a file from the server and also from all the backup directories
- * @param filename
- * @return true if deleted, false in case of error
- */
-bool Server::deleteFileSave(QString filename) {
-	bool result = true;
-	QString directories[] = {"saveData", "backup1", "backup2"};
-
-	for (QString dir : directories) {
-		QFile savefile(dir + "/" + filename + ".json");
-		if (savefile.exists()) {
-			if (!savefile.remove()) {
-				result = false;
-				qDebug() << "Error deleting: " << savefile.fileName();
-			}else {
-				qDebug() << "Deleted: " + filename;
-			}
-		}
-	}
-	return result;
-}

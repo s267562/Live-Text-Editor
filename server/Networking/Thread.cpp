@@ -1,4 +1,5 @@
 #include "Thread.h"
+#include "../Utils/Utilities.h"
 #include <QDataStream>
 
 class Identifier;
@@ -1304,49 +1305,4 @@ void Thread::deleteFile() {
 	}
 	needToSaveFile = false;
 	fileDeleted = true;
-}
-
-/**
- * This function is used for renaming all saved files (including backup ones)
- * @return true if renamed, false in case of error
- */
-bool Thread::renameFileSave(QString oldFilename, QString newFilename) {
-	bool result = true;
-	QString directories[] = {"saveData", "backup1", "backup2"};
-
-	for (QString dir : directories) {
-		QFile savefile(dir + "/" + oldFilename + ".json");
-		if (savefile.exists()) {
-			if (!savefile.rename(dir + "/" + newFilename + ".json")) {
-				result = false;
-				qDebug() << "Error renaming: " << savefile.fileName();
-			} else {
-				qDebug() << "Renamed '" + oldFilename + "' into '" + newFilename + "'";
-			}
-		}
-	}
-	return result;
-}
-
-/**
- * This function delete a file from the server and also from all the backup directories
- * @param filename
- * @return true if deleted, false in case of error
- */
-bool Thread::deleteFileSave(QString filename) {
-	bool result = true;
-	QString directories[] = {"saveData", "backup1", "backup2"};
-
-	for (QString dir : directories) {
-		QFile savefile(dir + "/" + filename + ".json");
-		if (savefile.exists()) {
-			if (!savefile.remove()) {
-				result = false;
-				qDebug() << "Error deleting: " << savefile.fileName();
-			} else {
-				qDebug() << "Deleted: " + filename;
-			}
-		}
-	}
-	return result;
 }
