@@ -424,15 +424,46 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				// correction when paste something in first position.
 				charsAdded--;
 			}
-            QTextCursor *cursor1 = new QTextCursor{textEdit->textCursor()};
+            QTextCursor cursor= textEdit->textCursor();
 
 			std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
             controller->getCrdt()->setIsWorking(true);
-            controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+            controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
+            isWorkingLock.unlock();
 
-			QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalStyleChange", Qt::QueuedConnection,
-									  Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1), Q_ARG(int, position),
-									  Q_ARG(int, cursorPos), Q_ARG(int, startSelection));
+            if(cursorPos != startSelection){ // Selection forward
+
+                for(int i=0; i<charsAdded; i++) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    QTextCharFormat textCharFormat = cursor.charFormat();
+
+                    QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
+                }
+            }
+            else{ // Selection backward
+                for(int i=charsAdded-1; i>=0; i--) {
+                    // for each char added
+                    cursor.setPosition(position + i);
+                    int line = cursor.blockNumber();
+                    int ch = cursor.positionInBlock();
+                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                    // select char
+                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                    QTextCharFormat textCharFormat = cursor.charFormat();
+
+                    QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
+                }
+            }
+
+
 
 		} else {
 			if (position == 0 && charsAdded > 0 && charsRemoved > 0) {
@@ -512,13 +543,33 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 											  Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
 											  Q_ARG(Pos, startPos));
 				} else {
-                    QTextCursor *cursor1 = new QTextCursor{cursor};
+                    /*QTextCursor *cursor1 = new QTextCursor{cursor};
                     std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
                     controller->getCrdt()->setIsWorking(true);
                     controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
 					QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection,
 											  Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1),
-											  Q_ARG(QString, chars), Q_ARG(int, position));
+											  Q_ARG(QString, chars), Q_ARG(int, position));*/
+                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                    controller->getCrdt()->setIsWorking(true);
+                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
+                    isWorkingLock.unlock();
+
+                    for(int i=0; i<charsAdded; i++) {
+                        // for each char added
+                        qDebug()<< cursor.position();
+                        cursor.setPosition(position + i);
+                        int line = cursor.blockNumber();
+                        int ch = cursor.positionInBlock();
+                        Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                        // select char
+                        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                        QTextCharFormat charFormat = cursor.charFormat();
+
+                        QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                  Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                  Q_ARG(Pos, startPos));
+                    }
 				}
 			}
 		}
@@ -733,7 +784,7 @@ void Editor::onCursorPositionChanged() {
 void Editor::on_actionNew_File_triggered() {
     std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
     if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() && controller->getCrdt()->getNumJobs() == 0) {
-        CreateFile *createFile = new CreateFile(this);
+        CreateFile *createFile = new CreateFile(controller->getGui());
         connect(createFile, SIGNAL(createFile(QString)), this->controller, SLOT(requestForFile(QString)));
         createFile->show();
     }else
@@ -1028,7 +1079,7 @@ void Editor::showError() {
 void Editor::setFilename(QString filename) {
 	this->filename = filename;
     qDebug() << filename << controller->getUser()->getFileList()[filename];
-    if (filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()){
+    if (filename.contains("%_##$$$##_%") && filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()){
         ui->mainToolBar->actions().at(3)->setVisible(false);
     }
 }

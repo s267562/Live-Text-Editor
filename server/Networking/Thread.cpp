@@ -180,7 +180,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			sendUser(soc);
 			server->sendFileNames(soc);
 			if (oldUsername != usernames[soc->socketDescriptor()]) {
-				sendRemoveUser(soc->socketDescriptor(), oldUsername);
+				sendRemoveUser(oldUsername);
 				sendNewUser(soc);
 			}
 		} else {
@@ -691,7 +691,7 @@ bool Thread::sendNewUser(QTcpSocket *soc) {
  * @param socketDescriptor
  * @param username
  */
-bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
+bool Thread::sendRemoveUser(QString username) {
     /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
         return true;*/
     qDebug() << "sendRemoveUser";
@@ -708,6 +708,31 @@ bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
             }
         //}
 	}
+    return true;
+}
+
+/**
+ * This method sends the username, which was disconnected
+ * @param socketDescriptor
+ * @param username
+ */
+bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
+    /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
+        return true;*/
+    qDebug() << "sendRemoveUser";
+    QByteArray message(REMOVE_USER);
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    message.append(" " + usernameSize + " " + usernameByteArray);
+
+    for (auto s : sockets) {
+        if (s.first != socketDescriptor) {
+            qDebug() << usernames[s.first];
+            if (!writeMessage(s.second, message)) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
@@ -1030,7 +1055,7 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	} else {
 		pendingSocket.erase(socketDescriptor);
     }
-    sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
+    sendRemoveUser(usernames[socketDescriptor]);
     server->removeSocket(socketDescriptor);
 	usernames.erase(socketDescriptor);
 	server->removeUsername(socketDescriptor);
@@ -1201,7 +1226,7 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 		for (std::pair<qintptr, QString> username : usernames) {
 			if (removedUsername == username.second) {
 			    qDebug() << removedUsername;
-				sendRemoveUser(username.first, username.second);
+				sendRemoveUser(username.second);
 				addPendingSocket(username.first);
 				break;
 			}

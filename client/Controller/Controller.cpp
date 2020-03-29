@@ -280,6 +280,8 @@ void Controller::showFileFinderOtherView(){
         disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
     }
     now = finder;
+    if (finder != nullptr)
+        finderDisconnection();
     finder = new ShowFiles(this, this);
     finderConnection();
 
@@ -296,6 +298,7 @@ void Controller::showFileFinderOtherView(){
 void Controller::requestForFile(QString filename){
     std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     requestFFile = true;
+    qDebug() << "requestForFile" << filename;
     bool result = this->messanger->requestForFile(filename);
 
     if (result) {
@@ -311,7 +314,7 @@ void Controller::requestForFile(QString filename){
         }*/
 
         //if (editor == now)
-            disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
+        disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
         now = editor;
         handleGUI(editor);
         startLoadingPopup();
