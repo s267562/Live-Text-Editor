@@ -109,7 +109,7 @@ QString Database::generateSalt() {
  * @param username : username to hash
  * @return : hashed username
  */
-QString Database::hashUsername(QString username) {
+QString Database::hashUsername(QString &username) {
 	QString toHash = std::move(username);
 	auto hashedUsername = QCryptographicHash::hash(QByteArray(toHash.toLocal8Bit()), QCryptographicHash::Sha256);
 	return QString(hashedUsername.toHex());
@@ -121,8 +121,8 @@ QString Database::hashUsername(QString username) {
  * @param salt : salt to add to password before hash
  * @return : hashed password SHA256
  */
-QString Database::hashPassword(QString password, QString salt) {
-	QString toHash = std::move(password) + std::move(salt);
+QString Database::hashPassword(QString &password, QString &salt) {
+	QString toHash = password + salt;
 	auto hashedPassword = QCryptographicHash::hash(toHash.toLocal8Bit(), QCryptographicHash::Sha256);
 	return QString(hashedPassword.toHex());
 }
@@ -135,7 +135,7 @@ QString Database::hashPassword(QString password, QString salt) {
  */
 bool Database::registerUser(QString username, QString password) {
 	bool result = false; // result of registration
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -155,7 +155,7 @@ bool Database::registerUser(QString username, QString password) {
 				// Username free for use, we can register the user
 
 				QString salt = generateSalt();
-				QString hashedPassword = hashPassword(std::move(password), salt);
+				QString hashedPassword = hashPassword(password, salt);
 
 				QSqlQuery qry(db);
 				qry.prepare("INSERT INTO users ("
@@ -193,7 +193,7 @@ bool Database::registerUser(QString username, QString password) {
 
 bool Database::authenticateUser(QString username, QString password) {
 	bool result = false;
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -211,7 +211,7 @@ bool Database::authenticateUser(QString username, QString password) {
 			if (authenticationQuery.first()) {
 				// Username is registered
 				QString salt = authenticationQuery.value(2).toString();
-				QString hashedPassword = hashPassword(std::move(password), salt);
+				QString hashedPassword = hashPassword(password, salt);
 				QString passwordFromDB = authenticationQuery.value(1).toString();
 
 				if (passwordFromDB == hashedPassword)
@@ -232,7 +232,7 @@ bool Database::authenticateUser(QString username, QString password) {
  */
 bool Database::changeAvatar(QString username, const QByteArray &image) {
 	bool result = false;
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -260,7 +260,7 @@ bool Database::changeAvatar(QString username, const QByteArray &image) {
  * @return : QbyteArray of the avatar, or "NULL" string if user doesn't have an avatar yet. May be nullptr in case of error
  */
 QByteArray Database::getAvatar(QString username) {
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -290,7 +290,7 @@ QByteArray Database::getAvatar(QString username) {
  */
 bool Database::createFile(QString fileID, QString userOwner) {
 	bool result = false;
-	QString hashedUsername = hashUsername(std::move(userOwner));
+	QString hashedUsername = hashUsername(userOwner);
 
 	// DB opening
 	if (!db.open()) {
@@ -342,7 +342,7 @@ bool Database::createFile(QString fileID, QString userOwner) {
  */
 bool Database::isOwner(QString fileID, QString username) {
 	bool result = false;
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -462,7 +462,7 @@ std::map<QString, bool> Database::getFiles(QString username) {
 	getUserOwnedFiles.bindValue(":username", hashedUsername);
 
 	if (!getUserOwnedFiles.exec()) {
-		qDebug() << "Error getting files for the user: " << username << "\n" << getUserOwnedFiles.lastError();
+		qDebug() << "Error getting files for the user: " << hashedUsername << "\n" << getUserOwnedFiles.lastError();
 		db.close();
 		userFiles["DBERROR"] = false;
 		//return userFiles;
@@ -473,10 +473,10 @@ std::map<QString, bool> Database::getFiles(QString username) {
 
 		QSqlQuery getUserWriteFiles(db);
 		getUserWriteFiles.prepare("SELECT fileID FROM sharing WHERE sharedToUser=:sharedToUser");
-		getUserWriteFiles.bindValue(":sharedToUser", username);
+		getUserWriteFiles.bindValue(":sharedToUser", hashedUsername);
 
 		if (!getUserWriteFiles.exec()) {
-			qDebug() << "Error getting files for the user: " << username << "\n" << getUserWriteFiles.lastError();
+			qDebug() << "Error getting files for the user: " << hashedUsername << "\n" << getUserWriteFiles.lastError();
 			db.close();
 			userFiles.clear();
 			userFiles["DBERROR"] = false;
@@ -580,7 +580,7 @@ bool Database::changeUsername(QString oldUsername, QString newUsername) {
 bool Database::changePassword(QString username, QString newPassword) {
 	qDebug() << username << newPassword;
 	bool result = false;
-	QString hashedUsername = hashUsername(std::move(username));
+	QString hashedUsername = hashUsername(username);
 
 	// DB opening
 	if (!db.open()) {
@@ -608,7 +608,7 @@ bool Database::changePassword(QString username, QString newPassword) {
 		}
 	}
 
-	QString hashedNewPassword = hashPassword(std::move(newPassword), salt);
+	QString hashedNewPassword = hashPassword(newPassword, salt);
 
 	QSqlQuery query(db);
 	query.prepare("UPDATE users SET password=:newPassword WHERE username=:username");
