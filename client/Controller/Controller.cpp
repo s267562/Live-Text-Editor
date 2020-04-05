@@ -528,3 +528,7 @@ QMainWindow *Controller::getGui() const {
 Messanger *Controller::getMessanger() const {
     return messanger;
 }
+
+void Controller::reciveExternalException(){
+    throw "Exception";
+}

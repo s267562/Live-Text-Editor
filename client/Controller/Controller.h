@@ -128,6 +128,7 @@ public slots:
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
     //void alignChange(int alignment_type, int blockNumber);
+    void reciveExternalException();
 
 signals:
     void userRecived();

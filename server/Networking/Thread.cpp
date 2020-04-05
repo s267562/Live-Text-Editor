@@ -15,7 +15,14 @@ Thread::Thread(QObject *parent, CRDT *crdt, QString filename, QString usernameOw
 }
 
 void Thread::run() {
-	exec();
+    try {
+        exec();
+    }catch (...) {
+        std::cout << "something went wrong";
+        saveCRDTToFile();
+        // dire al server di eliminare il thread dalla struttura
+        QMetaObject::invokeMethod(server, "removeThread", Qt::QueuedConnection, Q_ARG(QString, filename));
+    }
 }
 
 /**
@@ -227,12 +234,18 @@ void Thread::saveCRDTToFile() {
 	std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
 	std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
 
-	QString jsonFileName = filename;
-	if (needToSaveFile) {
-		qDebug() << "Saving CRDT for file: " + jsonFileName;
-		crdt->saveCRDT(jsonFileName);
-		needToSaveFile = false;
+	try{
+        QString jsonFileName = filename;
+        if (needToSaveFile) {
+            qDebug() << "Saving CRDT for file: " + jsonFileName;
+            crdt->saveCRDT(jsonFileName);
+            needToSaveFile = false;
+        }
+	}catch (...){
+	    // accungere qualche meccanismo
+	    qDebug() << "Impossibile salvare la struttura!";
 	}
+
 }
 
 /**
