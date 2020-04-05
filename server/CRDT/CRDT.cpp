@@ -38,7 +38,7 @@ Pos CRDT::handleInsert(Character character) {
 	this->insertChar(character, pos);
 
 	// print the structure for debugging
-    //printStructures();
+	//printStructures();
 
 	return pos;
 }
@@ -376,18 +376,32 @@ bool CRDT::saveCRDT(QString filename) {
  * @return
  */
 bool CRDT::loadCRDT(QString filename) {
-	filename = "saveData/" + filename;
 #if binarySave
-	QFile loadFile(filename + ".dat");
+	filename = filename + ".dat";
 #else
-	QFile loadFile(filename + ".json");
+	filename = filename + ".json";
 #endif
 
+	// Check file is not corrupted
+	QString filePath = "saveData/" + filename;
+	QFileInfo fileInfo(filePath);
+	if (fileInfo.size() == 0) {
+		filePath = "backup1/" + filename;
+		fileInfo = QFileInfo(filePath);
+		if (fileInfo.size() == 0) {
+			filePath = "backup2/" + filename;
+			fileInfo = QFileInfo(filePath);
+			if (fileInfo.size() == 0)
+				return false;
+		}
+	}
+
+	QFile loadFile(filePath);
 	if (!loadFile.open(QIODevice::ReadOnly)) {
 		qWarning("Couldn't open save file. [READ]");
 		return false;
 	}
-
+	
 	QByteArray savedData = loadFile.readAll();
 #if binarySave
 	QJsonDocument loadDocument(QJsonDocument::fromBinaryData(savedData));
@@ -452,8 +466,8 @@ std::vector<std::pair<Character, int>> CRDT::getStyle() {
 }
 
 void CRDT::printStructures() {
-    /*QDebug qD(QtDebugMsg);
-    qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
+	/*QDebug qD(QtDebugMsg);
+	qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
 
 
 	for (int i = 0; i < structure.size(); i++) {
@@ -492,7 +506,7 @@ void CRDT::printStructures() {
 		}
 	}
 
-    qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine*/
+	qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine*/
 }
 
 
