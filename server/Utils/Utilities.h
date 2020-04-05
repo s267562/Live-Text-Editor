@@ -21,6 +21,6 @@ bool renameFileSave(QString oldFilename, QString newFilename);
 
 bool checkAndCreateSaveDir();
 
-void backupFiles(bool primary = true);
+void backupFile(QString filename, bool primary = true, bool binary = false);
 
 #endif //TEXTEDITOR_UTILITIES_H

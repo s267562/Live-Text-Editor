@@ -88,7 +88,7 @@ bool checkAndCreateSaveDir() {
  * @param primary true if backup is a primary one (more frequent) false else (less frequent)
  * @return true if no errors occurred
  */
-void backupFiles(bool primary) {
+void backupFile(QString filename, bool primary, bool binary) {
 	QDir dataDir(directories[0]);
 	QDir backupDir;
 	if (primary)
@@ -96,14 +96,15 @@ void backupFiles(bool primary) {
 	else
 		backupDir = QDir(directories[2]);
 
-	// Get filenames from data directory
-	for (QString filename : dataDir.entryList(QDir::Files)) {
-//		qDebug() << "File: " + filename;
-		if (backupDir.exists(filename)) {
-			backupDir.remove(filename);
-//			qDebug() << "--Removed";
-		}
-		QFile::copy(dataDir.dirName() + "/" + filename, backupDir.dirName() + "/" + filename);
-//		qDebug() << "++Copied";
+	if (binary)
+		filename = filename + ".dat";
+	else filename = filename + ".json";
+
+	qDebug() << "File: " + filename;
+	if (backupDir.exists(filename)) {
+		backupDir.remove(filename);
+		qDebug() << "--Removed";
 	}
+	QFile::copy(dataDir.dirName() + "/" + filename, backupDir.dirName() + "/" + filename);
+	qDebug() << "++Copied";
 }
