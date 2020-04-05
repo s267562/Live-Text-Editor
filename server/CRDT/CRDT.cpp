@@ -401,7 +401,7 @@ bool CRDT::loadCRDT(QString filename) {
 		qWarning("Couldn't open save file. [READ]");
 		return false;
 	}
-	
+
 	QByteArray savedData = loadFile.readAll();
 #if binarySave
 	QJsonDocument loadDocument(QJsonDocument::fromBinaryData(savedData));

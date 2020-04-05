@@ -100,7 +100,7 @@ void backupFile(QString filename, bool primary, bool binary) {
 		filename = filename + ".dat";
 	else filename = filename + ".json";
 
-	qDebug() << "File: " + filename;
+	qDebug() << "File: " + filename + " " + primary;
 	if (backupDir.exists(filename)) {
 		backupDir.remove(filename);
 		qDebug() << "--Removed";
