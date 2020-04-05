@@ -18,6 +18,8 @@
 #include <QThread>
 #include <QTextCursor>
 #include <shared_mutex>
+#include "../Controller/Controller.h"
+
 
 class Messanger;
 class Controller;
@@ -26,8 +28,8 @@ class Editor;
 class CRDT: public QObject {
     Q_OBJECT;
 public:
-    std::shared_mutex mutexCRDT;
-    CRDT(QObject *parent, Messanger *messanger);
+    std::shared_mutex mutexIsWorking;
+    CRDT(QObject *parent, Messanger *messanger, Controller *controller = nullptr);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
     void setSiteId(const QString &siteId);
@@ -62,6 +64,18 @@ private:
     std::vector<std::pair<Character,int>> style;
     Messanger *messanger;
     Editor* editor = nullptr;
+    Controller *controller = nullptr;
+    bool isWorking = false;
+    int numJobs = 0;
+public:
+    int getNumJobs() const;
+
+    void setNumJobs(int numJobs);
+
+public:
+    bool isWorking1() const;
+
+    void setIsWorking(bool isWorking);
 
 public:
     void setEditor(Editor *editor);
@@ -96,7 +110,7 @@ private:
 public slots:
     void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
     void totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars,  int position);
-    void totalLocalStyleChange(int charsAdded, QTextCursor *cursor,  int position, int cursorPos, int selectionPos);
+    void localStyleChange(QTextCharFormat textCharFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
     void alignChange(int alignment_type, int blockNumber);
     void newMessage(Message message);

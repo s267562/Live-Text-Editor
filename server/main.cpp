@@ -15,12 +15,20 @@
 int main(int argc, char *argv[]) {
 	QCoreApplication a(argc, argv);
 
-	// Make a server and starts it
-	Server server;
-	if (server.startServer(1234)){
-		/* server is started */
-		return  a.exec();
-	}else{
-		return -1;
-	}
+    while(true){
+        try {
+            // Make a server and starts it
+            Server server;
+            if (server.startServer(1234)){
+                /* server is started */
+                a.exec();
+                break;
+            }else{
+                return -1;
+            }
+        }catch (...) {
+            std::cout << "something went wrong";
+        }
+    }
+    return 0;
 }

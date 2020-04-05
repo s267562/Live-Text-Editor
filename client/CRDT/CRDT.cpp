@@ -13,9 +13,10 @@ Q_DECLARE_METATYPE(Character);
 Q_DECLARE_METATYPE(QTextCharFormat);
 
 
-CRDT::CRDT(QObject *parent, Messanger *messanger): QObject(parent) {
+CRDT::CRDT(QObject *parent, Messanger *messanger, Controller *controller): QObject(parent) {
     this->structure = {};
     this->messanger = messanger;
+    this->controller = controller;
     qRegisterMetaType<Character>("Character");
     qRegisterMetaType<Character>("Character&");
     qRegisterMetaType<QTextCharFormat>("QTextCharFormat");
@@ -517,6 +518,9 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
 
     // send insert at the server.
     QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
@@ -541,73 +545,23 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
         QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
     }
     delete cursor;
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
-void CRDT::totalLocalStyleChange(int charsAdded, QTextCursor* cursor, int position, int cursorPos, int startSelection) {
+void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
 
-    /*for(int i=0; i<charsAdded; i++) {
-        // for each char added
-        cursor->setPosition(position + i);
-        int line = cursor->blockNumber();
-        int ch = cursor->positionInBlock();
-        Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-        // select char
-        cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
+    if(styleChanged(textCharFormat, pos)) {
+        Character character = getCharacter(pos);
 
-        QTextCharFormat textCharFormat = cursor->charFormat();
-
-        if(styleChanged(textCharFormat, pos)) {
-            Character character = getCharacter(pos);
-
-            // send insert at the server.
-            QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character, character));
-        }
-    }*/
-
-
-    if(cursorPos != startSelection){ // Selection forward
-
-        for(int i=0; i<charsAdded; i++) {
-            // for each char added
-            cursor->setPosition(position + i);
-            int line = cursor->blockNumber();
-            int ch = cursor->positionInBlock();
-            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-            // select char
-            cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-            QTextCharFormat textCharFormat = cursor->charFormat();
-
-            if(styleChanged(textCharFormat, pos)) {
-                Character character = getCharacter(pos);
-
-                // send insert at the server.
-                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character&, character));
-            }
-        }
+        // send insert at the server.
+        QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
     }
-    else{ // Selection backward
-        for(int i=charsAdded-1; i>=0; i--) {
-            // for each char added
-            cursor->setPosition(position + i);
-            int line = cursor->blockNumber();
-            int ch = cursor->positionInBlock();
-            Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-            // select char
-            cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-            QTextCharFormat textCharFormat = cursor->charFormat();
-
-            if(styleChanged(textCharFormat, pos)) {
-                Character character = getCharacter(pos);
-
-                // send insert at the server.
-                QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character&, character));
-            }
-        }
-    }
-    delete cursor;
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
@@ -616,6 +570,9 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
     for(Character c : removedChars) {
         QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
     }
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    isWorking = false;
+    numJobs--;
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
@@ -624,12 +581,15 @@ void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire f
     //TODO Check this
     Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
 
-    this->messanger->writeAlignmentChanged(alignment_type, blockId);
+    //this->messanger->writeAlignmentChanged(alignment_type, blockId);
     QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
 }
 
 void CRDT::newMessage(Message message) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (controller->isRequestFFile())
+        return;
 
     if(message.getType() == INSERT) {
         Character character = message.getCharacter();
@@ -843,4 +803,20 @@ QString CRDT::toString() {
 
 void CRDT::setStyle(std::vector<std::pair<Character, int>> blocks) {
     this->style=blocks;
+}
+
+bool CRDT::isWorking1() const {
+    return isWorking;
+}
+
+void CRDT::setIsWorking(bool isWorking) {
+    CRDT::isWorking = isWorking;
+}
+
+int CRDT::getNumJobs() const {
+    return numJobs;
+}
+
+void CRDT::setNumJobs(int numJobs) {
+    CRDT::numJobs = numJobs;
 }

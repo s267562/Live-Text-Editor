@@ -7,5 +7,10 @@
 CDRTThread::CDRTThread(QObject *parent, CRDT *crdt):QThread(parent), crdt(crdt){}
 
 void CDRTThread::run(){
-    exec();
+    try {
+        exec();
+    }catch (...) {
+        std::cout << "something went wrong";
+        QMetaObject::invokeMethod(parent(), "reciveExternalException", Qt::QueuedConnection);
+    }
 }

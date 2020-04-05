@@ -6,10 +6,10 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 
-Controller::Controller(): messanger(new Messanger(this)), connection(new Connection(this)){
+Controller::Controller(): messanger(new Messanger(this, this)), connection(new Connection(this)){
     user = nullptr;
     editor = nullptr;
-    crdt = new CRDT(nullptr, messanger);
+    crdt = new CRDT(nullptr, messanger, this);
     crdtThread = new CDRTThread(this, crdt);
     crdt->moveToThread(crdtThread);
     crdtThread->start();
@@ -76,6 +76,15 @@ void Controller::loginConnection() {
     connect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
     connect(this->messanger, &Messanger::logout, this, &Controller::showLogin);
     connect(this->login, SIGNAL(showRegistration()), this, SLOT(showRegistration()));
+}
+
+/**
+ *  Handle the disconnection between signal and slot for the login object
+ */
+void Controller::loginDisconnection() {
+    disconnect(this->messanger, &Messanger::loginFailed, this->login, &Login::loginFailed);
+    disconnect(this->messanger, &Messanger::logout, this, &Controller::showLogin);
+    disconnect(this->login, SIGNAL(showRegistration()), this, SLOT(showRegistration()));
 }
 
 /**
@@ -156,8 +165,8 @@ void Controller::reciveUser(User *user){
         stopLoadingPopup();
         if (now == finder)
             this->finder->closeEditAccount();
-        if (this->editor != nullptr && now == editor)
-            this->editor->closeEditAccount();
+        //if (this->editor != nullptr && now == editor)
+            //this->editor->closeEditAccount();
     }
     emit userRecived();
 }
@@ -202,6 +211,9 @@ void Controller::connectClient(QString address, QString port) {
  */
 void Controller::showLogin(){
     /* creation login object */
+    if (login != nullptr){
+        loginDisconnection();
+    }
     login = new Login(this, this);
     now = login;
 
@@ -258,12 +270,18 @@ void Controller::showFileFinder(std::map<QString, bool> fileList){
  * This method shows the showFiles for request another view
  */
 void Controller::showFileFinderOtherView(){
+    /*std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = true;*/
+    bool result = this->messanger->requestForFile("**FILE_FITTIZIO**");
+
     if (editor != nullptr) {
         disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
         disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
         disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
     }
     now = finder;
+    if (finder != nullptr)
+        finderDisconnection();
     finder = new ShowFiles(this, this);
     finderConnection();
 
@@ -278,16 +296,25 @@ void Controller::showFileFinderOtherView(){
  * @param filename
  */
 void Controller::requestForFile(QString filename){
+    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = true;
+    qDebug() << "requestForFile" << filename;
     bool result = this->messanger->requestForFile(filename);
 
-    if (result){
-        siteId = user->getUsername();
-        editor = new Editor(siteId, nullptr, this);
-        editor->setFilename(filename);
-        editorConnection();
+    if (result) {
+        if (/*editor == nullptr*/true) {
+            siteId = user->getUsername();
+            editor = new Editor(siteId, this, this);
+            editor->setFilename(filename);
+            editorConnection();
+        }/*else{
+            connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+            connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+            connect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
+        }*/
 
-        if (editor == now)
-            disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
+        //if (editor == now)
+        disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
         now = editor;
         handleGUI(editor);
         startLoadingPopup();
@@ -317,9 +344,11 @@ void Controller::showEditor(){
  */
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
     // introdurre sincronizzazione
-    std::unique_lock<std::shared_mutex> uniqueLock(crdt->mutexCRDT);
+    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    requestFFile = false;
     crdt->setStructure(initialStructure);           // fare un segnale
     crdt->setStyle(styleBlocks);                    // fare un segnale
+
     editor->replaceText(this->crdt->getStructure());
     std::vector<int> alignment_block;
     alignment_block.reserve(styleBlocks.size());
@@ -334,8 +363,10 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure, 
 
     if (result != this->user->getFileList().end()){
         this->user->addFile(filename);
-        //this->finder->addFiles(this->user->getFileList());
+        this->finder->addFiles(this->user->getFileList());
     }
+
+    finder->closeCreateFile();
 }
 
 /**
@@ -380,6 +411,7 @@ void Controller::startLoadingPopup(){
 void Controller::stopLoadingPopup(){
     if (loadingPoPupIsenabled && loading != nullptr){
         loadingPoPupIsenabled = false;
+        loading->setParent(now);
         loading->close();
     }
 }
@@ -471,8 +503,32 @@ void Controller::handleGUI(QMainWindow *window) {
     GUI->setMinimumWidth(window->maximumWidth());
     GUI->setMinimumHeight(window->maximumHeight());
     QWidget *w = GUI->centralWidget();
+    if (w != nullptr) {
+        w->setParent(this);
+        w->hide();
+    }
     GUI->setCentralWidget(window);
     GUI->show();
     window->show();
     //w->deleteLater();
+}
+
+bool Controller::isRequestFFile() const {
+    return requestFFile;
+}
+
+void Controller::setRequestFFile(bool requestFFile) {
+    Controller::requestFFile = requestFFile;
+}
+
+QMainWindow *Controller::getGui() const {
+    return GUI;
+}
+
+Messanger *Controller::getMessanger() const {
+    return messanger;
+}
+
+void Controller::reciveExternalException(){
+    throw "Exception";
 }
