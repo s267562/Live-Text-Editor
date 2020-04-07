@@ -41,12 +41,6 @@ private:
     User *user;
     QString siteId;
     bool requestFFile = false;
-public:
-    bool isRequestFFile() const;
-
-    void setRequestFFile(bool requestFFile);
-
-private:
 
     /* VIEWS */
     Editor *editor = nullptr;
@@ -56,17 +50,10 @@ private:
     ShowFiles *finder = nullptr;
     QWidget *now;
     QMainWindow *GUI = new QMainWindow(this);
-public:
-    QMainWindow *getGui() const;
-
-private:
 
     /* NETWORKING */
     Messanger *messanger;
-public:
-    Messanger *getMessanger() const;
 
-private:
     Loading *loading = nullptr;
     bool loadingPoPupIsenabled = false;
     CustomWidget *customWidget = nullptr;
@@ -95,6 +82,10 @@ public:
     void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
     void sendDeleteFile(QString filename);
     CRDT *getCrdt() const;
+    bool isRequestFFile() const;
+    void setRequestFFile(bool requestFFile);
+    QMainWindow *getGui() const;
+    Messanger *getMessanger() const;
     ~Controller();
 
 public slots:
@@ -127,7 +118,6 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
-    //void alignChange(int alignment_type, int blockNumber);
     void reciveExternalException();
 
 signals:

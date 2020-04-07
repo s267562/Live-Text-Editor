@@ -227,7 +227,7 @@ void Controller::showLogin(){
     registrationConnection();
 
     /* creation showfiles object */
-    if (finder == nullptr) {
+    if (finder != nullptr) {
         finderDisconnection();
     }
     finder = new ShowFiles(this, this);
@@ -270,8 +270,6 @@ void Controller::showFileFinder(std::map<QString, bool> fileList){
  * This method shows the showFiles for request another view
  */
 void Controller::showFileFinderOtherView(){
-    /*std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
-    requestFFile = true;*/
     bool result = this->messanger->requestForFile("**FILE_FITTIZIO**");
 
     if (editor != nullptr) {
@@ -302,18 +300,11 @@ void Controller::requestForFile(QString filename){
     bool result = this->messanger->requestForFile(filename);
 
     if (result) {
-        if (/*editor == nullptr*/true) {
-            siteId = user->getUsername();
-            editor = new Editor(siteId, this, this);
-            editor->setFilename(filename);
-            editorConnection();
-        }/*else{
-            connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-            connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-            connect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
-        }*/
+        siteId = user->getUsername();
+        editor = new Editor(siteId, this, this);
+        editor->setFilename(filename);
+        editorConnection();
 
-        //if (editor == now)
         disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
         now = editor;
         handleGUI(editor);
@@ -326,16 +317,6 @@ void Controller::showEditor(){
     editor->show();
 }
 
-/*void Controller::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
-
-    // send insert at the server.
-    //TODO Check this
-    Character blockId=this->crdt->getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
-    //if(blockId.getSiteId()!=-1){
-    this->messanger->writeAlignmentChanged(alignment_type,blockId);
-    //}
-}*/
-
 /**
  * This method recives a file and handle it a specific way
  * @param initialStructure
@@ -343,7 +324,6 @@ void Controller::showEditor(){
  * @param filename
  */
 void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
-    // introdurre sincronizzazione
     std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     requestFFile = false;
     crdt->setStructure(initialStructure);           // fare un segnale
@@ -510,7 +490,6 @@ void Controller::handleGUI(QMainWindow *window) {
     GUI->setCentralWidget(window);
     GUI->show();
     window->show();
-    //w->deleteLater();
 }
 
 bool Controller::isRequestFFile() const {

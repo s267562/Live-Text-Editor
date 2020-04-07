@@ -19,8 +19,8 @@ Registration::~Registration() {
 	delete ui;
 }
 
-void Registration::setClient(Messanger *messanger) {  //TODO: da rimuovere...
-	this->messanger = messanger;
+void Registration::setClient(Messanger *messanger) {
+    this->messanger = messanger;
 }
 
 
