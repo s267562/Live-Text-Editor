@@ -27,19 +27,11 @@ public:
     void reset();
     ~Login();
 
-private:
-    void closeEvent(QCloseEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-
 public slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
     void errorConnection();
     void loginFailed();
-   // void loginDone();
-   // void onOkButtonClicked();
-
 
 signals:
     void disconnect();
@@ -50,6 +42,10 @@ private:
     Ui::Login *ui;
     Messanger* messanger;
     Controller *controller;
+
+    void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // MAINWINDOW_H
