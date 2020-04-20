@@ -37,7 +37,7 @@ Pos CRDT::handleInsert(Character character) {
 	this->insertChar(character, pos);
 
 	// print the structure for debugging
-	printStructures();
+    //printStructures();
 
 	return pos;
 }
@@ -446,7 +446,7 @@ std::vector<std::pair<Character,int>> CRDT::getStyle() {
 }
 
 void CRDT::printStructures() {
-    QDebug qD(QtDebugMsg);
+    /*QDebug qD(QtDebugMsg);
     qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
 
 
@@ -486,7 +486,7 @@ void CRDT::printStructures() {
         }
     }
 
-    qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine
+    qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine*/
 }
 
 

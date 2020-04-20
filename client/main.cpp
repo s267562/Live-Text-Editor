@@ -10,10 +10,12 @@ int main(int argc, char *argv[]) {
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 
+
+    while(true){
 #if UI
-    Controller controller;
+        Controller controller;
 #else
-    #if REGISTRATION_TEST
+        #if REGISTRATION_TEST
         /* TEST: REGISTRATION FEATURE */
         Messanger messanger;
         messanger.connectTo("127.0.0.1", "1234");
@@ -60,5 +62,12 @@ int main(int argc, char *argv[]) {
         editor.show();
     #endif
 #endif
-    return app.exec();
+        try {
+            app.exec();
+            break;
+        }catch (...) {
+            std::cout << "something went wrong";
+        }
+    }
+    return 0;
 }

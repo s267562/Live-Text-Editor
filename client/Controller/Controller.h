@@ -16,6 +16,8 @@
 #include <iostream>
 #include "CustomWidget/customwidget.h"
 #include "../CRDT/CDRTThread.h"
+#include <shared_mutex>
+
 
 class Editor;
 class CDRTThread;
@@ -38,6 +40,7 @@ private:
     CDRTThread *crdtThread;
     User *user;
     QString siteId;
+    bool requestFFile = false;
 
     /* VIEWS */
     Editor *editor = nullptr;
@@ -50,6 +53,7 @@ private:
 
     /* NETWORKING */
     Messanger *messanger;
+
     Loading *loading = nullptr;
     bool loadingPoPupIsenabled = false;
     CustomWidget *customWidget = nullptr;
@@ -58,6 +62,7 @@ private:
     void networkingConnection();
     void crdtConnection();
     void loginConnection();
+    void loginDisconnection();
     void registrationConnection();
     void registrationDisconnection();
     void finderConnection();
@@ -67,6 +72,8 @@ private:
     void handleGUI(QMainWindow *window);
 
 public:
+    std::shared_mutex mutexRequestForFile;
+
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
     User* getUser();
@@ -75,6 +82,10 @@ public:
     void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
     void sendDeleteFile(QString filename);
     CRDT *getCrdt() const;
+    bool isRequestFFile() const;
+    void setRequestFFile(bool requestFFile);
+    QMainWindow *getGui() const;
+    Messanger *getMessanger() const;
     ~Controller();
 
 public slots:
@@ -107,7 +118,7 @@ public slots:
     void okEditAccount();
     void sendShareCode(QString sharecode);
     void shareCodeFailed();
-    //void alignChange(int alignment_type, int blockNumber);
+    void reciveExternalException();
 
 signals:
     void userRecived();

@@ -78,6 +78,7 @@ public:
     std::map<qintptr, QTcpSocket *> getSockets();                                   // sync
     void changeFileName(QString filename);                                          // sync ok
     bool sendRemoveUser(qintptr socketDescriptor, QString username);               // sync ok
+    bool sendRemoveUser(QString username);
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok

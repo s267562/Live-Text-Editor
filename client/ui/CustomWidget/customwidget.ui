@@ -43,7 +43,7 @@ font-weight: bold;</string>
   <widget class="ClickableLabel" name="share">
    <property name="geometry">
     <rect>
-     <x>530</x>
+     <x>525</x>
      <y>20</y>
      <width>20</width>
      <height>20</height>
@@ -129,7 +129,7 @@ font-weight: bold;</string>
   <widget class="ClickableLabel" name="settings">
    <property name="geometry">
     <rect>
-     <x>550</x>
+     <x>545</x>
      <y>17</y>
      <width>25</width>
      <height>25</height>

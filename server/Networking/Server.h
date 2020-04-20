@@ -69,6 +69,8 @@ public:
     void addDeleteFileThread(const QString& filename);                                     // sync ok
     void removeDeleteFileThread(const QString& filename);                                  // sync -> da fare
 
+    ~Server();
+
 public slots:
     void connection();
     void removeThread(const QString& filename);

@@ -15,7 +15,14 @@ Thread::Thread(QObject *parent, CRDT *crdt, QString filename, QString usernameOw
 }
 
 void Thread::run() {
-	exec();
+    try {
+        exec();
+    }catch (...) {
+        std::cout << "something went wrong";
+        saveCRDTToFile();
+        // dire al server di eliminare il thread dalla struttura
+        QMetaObject::invokeMethod(server, "removeThread", Qt::QueuedConnection, Q_ARG(QString, filename));
+    }
 }
 
 /**
@@ -98,6 +105,9 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 	qDebug() << ""; // newLine
 	std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
 	if (data.toStdString() == INSERT_MESSAGE && !fileDeleted) {
+        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
 		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readInsert(soc)) {
 			writeErrMessage(soc, INSERT_MESSAGE);
@@ -105,26 +115,35 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		}
 		writeOkMessage(soc);
         needToSaveMutex.unlock();
-        readyRead(soc, connectReadyRead, connectDisconnected);
+        //readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE && !fileDeleted) {
-		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readStyleChanged(soc)) {
 			writeErrMessage(soc);
             return;
 		}
 		writeOkMessage(soc);
         needToSaveMutex.unlock();
-        readyRead(soc, connectReadyRead, connectDisconnected);
+        //readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == DELETE_MESSAGE && !fileDeleted) {
-		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
 		if (!readDelete(soc)) {
 			writeErrMessage(soc, DELETE_MESSAGE);
             return;
 		}
         writeOkMessage(soc);
         needToSaveMutex.unlock();
-		readyRead(soc, connectReadyRead, connectDisconnected);
+		//readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
         std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
         if (!readAlignmentChanged(soc)) {
             writeErrMessage(soc);
@@ -132,7 +151,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
         }
         writeOkMessage(soc);
         needToSaveMutex.unlock();
-        readyRead(soc, connectReadyRead, connectDisconnected);
+        //readyRead(soc, connectReadyRead, connectDisconnected);
     } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
 		std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
 		std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
@@ -144,6 +163,12 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
             writeErrMessage(soc, REQUEST_FILE_MESSAGE);
             return;
         }
+		socketsLock.unlock();
+		pendingSocketsLock.unlock();
+        usernamesLock.unlock();
+        filenameLock.unlock();
+        threadsMutex.unlock();
+        readyRead(soc, connectReadyRead, connectDisconnected);
 	} else if (data.toStdString() == SHARE_CODE) {
 		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
 		if (!readShareCode(soc)) {
@@ -162,7 +187,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			sendUser(soc);
 			server->sendFileNames(soc);
 			if (oldUsername != usernames[soc->socketDescriptor()]) {
-				sendRemoveUser(soc->socketDescriptor(), oldUsername);
+				sendRemoveUser(oldUsername);
 				sendNewUser(soc);
 			}
 		} else {
@@ -195,7 +220,8 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 			writeErrMessage(soc, DELETE_FILE);
 		}
 	} else {
-		writeErrMessage(soc);
+	    if (!fileDeleted)
+		    writeErrMessage(soc);
 	}
 }
 
@@ -208,12 +234,18 @@ void Thread::saveCRDTToFile() {
 	std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
 	std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
 
-	QString jsonFileName = filename;
-	if (needToSaveFile) {
-		qDebug() << "Saving CRDT for file: " + jsonFileName;
-		crdt->saveCRDT(jsonFileName);
-		needToSaveFile = false;
+	try{
+        QString jsonFileName = filename;
+        if (needToSaveFile) {
+            qDebug() << "Saving CRDT for file: " + jsonFileName;
+            crdt->saveCRDT(jsonFileName);
+            needToSaveFile = false;
+        }
+	}catch (...){
+	    // accungere qualche meccanismo
+	    qDebug() << "Impossibile salvare la struttura!";
 	}
+
 }
 
 /**
@@ -253,9 +285,19 @@ bool Thread::readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReady
             if (!sendNewUser(soc))
                 return false;
         } else {
+            if (!sendFile(soc))
+                return false;
             if (!sendListOfUsers(soc))
                 return false;
+            if (!sendNewUser(soc))
+                return false;
         }
+        return true;
+    }
+
+    if (jsonFileName == "**FILE_FITTIZIO**"){
+        pendingSocket[soc->socketDescriptor()] = soc;
+        sockets.erase(soc->socketDescriptor());
         return true;
     }
 
@@ -268,7 +310,6 @@ bool Thread::readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReady
     }
 
     disconnect(*connectReadyRead);
-    disconnect(*connectDisconnected);
 
     std::shared_ptr<Thread> thread = server->getThread(jsonFileName);
 
@@ -287,17 +328,24 @@ bool Thread::readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReady
             std::unique_lock<std::shared_mutex> pendingSocketsLock(thread->mutexPendingSockets);
             std::unique_lock<std::shared_mutex> usernamesLock(thread->mutexUsernames);
             std::shared_lock<std::shared_mutex> filenameLock(thread->mutexFilename);
-        }
-        if (!thread->addSocket(soc, usernames[soc->socketDescriptor()])) {
-            connectSlot(soc, connectReadyRead, connectDisconnected);
-            return false;
+            if (!thread->addSocket(soc, usernames[soc->socketDescriptor()])) {
+                connectSlot(soc, connectReadyRead, connectDisconnected);
+                return false;
+            }
+        }else {
+            if (!thread->addSocket(soc, usernames[soc->socketDescriptor()])) {
+                connectSlot(soc, connectReadyRead, connectDisconnected);
+                return false;
+            }
         }
     }
+    disconnect(*connectDisconnected);
     delete connectReadyRead;
     delete connectDisconnected;
 
     usernames.erase(soc->socketDescriptor());
     sockets.erase(soc->socketDescriptor());
+    pendingSocket.erase(soc->socketDescriptor());
     return true;
 }
 
@@ -484,10 +532,10 @@ bool Thread::writeInsert(QTcpSocket *soc, Character& character) {
 
     //broadcast
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        if(socket.first != soc->socketDescriptor()) {
+        if(socket.first != soc->socketDescriptor() && pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
             qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             if (!writeMessage(socket.second, message)){
-                return false;
+                //return false;
             }
         }
     }
@@ -518,9 +566,9 @@ bool Thread::writeStyleChanged(QTcpSocket *soc, Character& character) {
 
     /* broadcast */
     for(std::pair<qintptr, QTcpSocket*> socket : sockets) {
-        if(socket.first != soc->socketDescriptor()) {
+        if(socket.first != soc->socketDescriptor()  && pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
             if (!writeMessage(socket.second, message)) {
-                return false;
+                //return false;
             }
         }
     }
@@ -553,9 +601,10 @@ bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character& bl
 
     /* broadcast */
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
-        if (!writeMessage(socket.second, message)) {
-            return false;
-        }
+        if (pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end())
+            if (!writeMessage(socket.second, message)) {
+                //return false;
+            }
     }
     return true;
 }
@@ -587,10 +636,10 @@ bool Thread::writeDelete(QTcpSocket *soc, Character& character) {
     /* broadcast */
     for(std::pair<qintptr, QTcpSocket*> socket : sockets){
         qDebug() << "userrname of user that send the delete message: " << usernames[soc->socketDescriptor()];
-        if(socket.first != soc->socketDescriptor()) {
+        if(socket.first != soc->socketDescriptor() && pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
             qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
             if (!writeMessage(socket.second, message)) {
-                return false;
+                //return false;
             }
         }
     }
@@ -655,9 +704,9 @@ bool Thread::sendNewUser(QTcpSocket *soc) {
  * @param socketDescriptor
  * @param username
  */
-bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
-    if (sockets.size() == 1 && sockets.find(socketDescriptor) != sockets.end())
-        return true;
+bool Thread::sendRemoveUser(QString username) {
+    /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
+        return true;*/
     qDebug() << "sendRemoveUser";
 	QByteArray message(REMOVE_USER);
 	QByteArray usernameByteArray = convertionQString(username);
@@ -665,13 +714,38 @@ bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
 	message.append(" " + usernameSize + " " + usernameByteArray);
 
 	for (auto s : sockets) {
-	    if (s.first != socketDescriptor) {
+	    //if (s.first != socketDescriptor) {
+            qDebug() << usernames[s.first];
+            if (!writeMessage(s.second, message)) {
+                return false;
+            }
+        //}
+	}
+    return true;
+}
+
+/**
+ * This method sends the username, which was disconnected
+ * @param socketDescriptor
+ * @param username
+ */
+bool Thread::sendRemoveUser(qintptr socketDescriptor, QString username) {
+    /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
+        return true;*/
+    qDebug() << "sendRemoveUser";
+    QByteArray message(REMOVE_USER);
+    QByteArray usernameByteArray = convertionQString(username);
+    QByteArray usernameSize = convertionNumber(usernameByteArray.size());
+    message.append(" " + usernameSize + " " + usernameByteArray);
+
+    for (auto s : sockets) {
+        if (s.first != socketDescriptor) {
             qDebug() << usernames[s.first];
             if (!writeMessage(s.second, message)) {
                 return false;
             }
         }
-	}
+    }
     return true;
 }
 
@@ -991,11 +1065,11 @@ void Thread::disconnected(QTcpSocket *soc, qintptr socketDescriptor, QMetaObject
 	socket.deleteLater();
 	if (sockets.find(socketDescriptor) != sockets.end()) {
 		sockets.erase(socketDescriptor);
-		sendRemoveUser(socketDescriptor, usernames[socketDescriptor]);
 	} else {
 		pendingSocket.erase(socketDescriptor);
-	}
-	server->removeSocket(socketDescriptor);
+    }
+    sendRemoveUser(usernames[socketDescriptor]);
+    server->removeSocket(socketDescriptor);
 	usernames.erase(socketDescriptor);
 	server->removeUsername(socketDescriptor);
 	qDebug() << usernames;
@@ -1164,7 +1238,8 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 	for (QString removedUsername : removedUsers) {
 		for (std::pair<qintptr, QString> username : usernames) {
 			if (removedUsername == username.second) {
-				sendRemoveUser(username.first, username.second);
+			    qDebug() << removedUsername;
+				sendRemoveUser(username.second);
 				addPendingSocket(username.first);
 				break;
 			}
@@ -1224,6 +1299,8 @@ bool Thread::readDeleteFile(QTcpSocket *soc) {
 	deletefile.remove();
 	deletefile.close();
 
+    server->sendFileNames(soc);
+
 	auto thread = server->getThread(jsonFileName);
 	if (thread != nullptr) {
 		if (thread.get() != this) {
@@ -1282,16 +1359,23 @@ void Thread::addPendingSocket(qintptr socketDescriptor) {
 void Thread::deleteFile() {
 	// Gestire la concorrenza
 	for (std::pair<qintptr, QString> user: usernames) {
+	    qDebug() << user.second;
 		QByteArray message(REMOVE_USER);
 		QByteArray usernameByteArray = convertionQString(user.second);
 		QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 		message.append(" " + usernameSize + " " + usernameByteArray);
 
-		if (!writeMessage(sockets[user.first], message)) {
-			return;
+		if (sockets.find(user.first) != sockets.end()) {
+            if (!writeMessage(sockets[user.first], message)) {
+                return;
+            }
+            pendingSocket[user.first] = sockets[user.first];
+            sockets.erase(user.first);
+        }else{
+            if (!writeMessage(pendingSocket[user.first], message)) {
+                return;
+            }
 		}
-		pendingSocket[user.first] = sockets[user.first];
-		sockets.erase(user.first);
 	}
 	needToSaveFile = false;
 	fileDeleted = true;

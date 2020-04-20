@@ -5,13 +5,14 @@
 
 Q_DECLARE_METATYPE(Message);
 
-Messanger::Messanger(QObject *parent) : QObject(parent) {
+Messanger::Messanger(QObject *parent, Controller* controller) : QObject(parent) {
     this->socket = new QTcpSocket(this);
     /* define initial state */
     reciveOkMessage = false;
     state = UNLOGGED;
     clientIsLogged = false;
     clientIsDisconnected = false;
+    this->controller = controller;
     qRegisterMetaType<Message>("Message");
 
     /* define connection */
@@ -32,6 +33,7 @@ bool Messanger::connectTo(QString host, QString port){
         state = UNLOGGED;
         clientIsLogged = false;
         clientIsDisconnected = false;
+        messages = std::queue<QByteArray>();
         qRegisterMetaType<Message>("Message");
 
         /* define connection */
@@ -115,19 +117,24 @@ void Messanger::onReadyRead(){
             }
             state = EDIT_FILE_STATE;
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == INSERT_MESSAGE){
+            qDebug () << state << EDIT_FILE_STATE;
             if (!readInsert()){
                 return;
             }
+            //return;
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == DELETE_MESSAGE){
             if (!readDelete()){
                 return;
             }
+            //return;
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == REMOVE_USER){
             if (!readRemoveUser()){
                 return;
             }
+            //return;
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE){
             reciveOkMessage = true;
+            despatchMessage();
         }else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS){
             if (!readUsernames()){
                 return;
@@ -164,8 +171,13 @@ void Messanger::onReadyRead(){
             }
         }
     }
+    qDebug () << state << EDIT_FILE_STATE;
+    /*if (datas.toStdString() == INSERT_MESSAGE) {
+        if (!readInsert()) {
+            return;
+        }
+    }*/
 
-    despatchMessage();
     onReadyRead();
 }
 
@@ -436,8 +448,8 @@ bool Messanger::requestForFile(QString fileName){
         if (!writeMessage(socket, message)){
             return false;
         }
-
-        state = WAITING_LIST_OF_ONLINE_USERS;
+        if (state != EDIT_FILE_STATE)
+            state = WAITING_LIST_OF_ONLINE_USERS;
         return true;
     }else{
         return false;
@@ -723,8 +735,13 @@ bool Messanger::readInsert(){
 
     Message message(character, socket->socketDescriptor(), INSERT, username);
 
-    //emit newMessage(message);
-    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (!controller->isRequestFFile())
+        QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+    else{
+        qDebug() << "Ignorato";
+    }
+
     return true;
 }
 
@@ -762,7 +779,10 @@ bool Messanger::readStyleChanged(){
 
     Message message(character, socket->socketDescriptor(), STYLE_CHANGED, username);
 
-    emit newMessage(message);
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (!controller->isRequestFFile())
+        QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+
     return true;
 }
 
@@ -807,7 +827,11 @@ bool Messanger::readAlignmentChanged(){
 
     Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
-    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (!controller->isRequestFFile()) {
+        QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+    }
+
     return true;
 }
 
@@ -842,7 +866,10 @@ bool Messanger::readDelete(){
 
     Message message(character, socket->socketDescriptor(), DELETE, username);
 
-    QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    if (!controller->isRequestFFile())
+        QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+
     return true;
 }
 
@@ -1042,4 +1069,8 @@ bool Messanger::sendDeleteFile(QString filename){
 
 void Messanger::setCrdt(CRDT *crdt) {
     Messanger::crdt = crdt;
+}
+
+bool Messanger::messagesIsEmpty(){
+    return this->messages.empty() && reciveOkMessage;
 }

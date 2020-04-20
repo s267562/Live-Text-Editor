@@ -149,7 +149,7 @@ background: rgb(255, 255, 255);
        <x>0</x>
        <y>0</y>
        <width>150</width>
-       <height>400</height>
+       <height>441</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -175,9 +175,9 @@ background: rgb(255, 255, 255);
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>400</y>
+       <y>439</y>
        <width>151</width>
-       <height>100</height>
+       <height>61</height>
       </rect>
      </property>
      <widget class="QLabel" name="username">
@@ -214,44 +214,14 @@ border-radius: 10px;
      <widget class="QLabel" name="loading">
       <property name="geometry">
        <rect>
-        <x>8</x>
-        <y>65</y>
-        <width>131</width>
-        <height>21</height>
+        <x>-2</x>
+        <y>5</y>
+        <width>151</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>loadingBar</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="editAccount">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>60</y>
-        <width>150</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{  
-background-color: black;  
-border: none;
-color: white;
-text-align: center;
-margin: 4px 2px;
-opacity: 0.6;
-text-decoration: none;
-}
-QPushButton:hover{
-margin: 2px 1px;
-}</string>
-      </property>
-      <property name="text">
-       <string>Edit your account</string>
+       <string>   Loading...</string>
       </property>
      </widget>
     </widget>
@@ -262,7 +232,7 @@ margin: 2px 1px;
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/new-file.png</normaloff>:/rec/img/new-file.png</iconset>
    </property>
    <property name="text">
@@ -274,7 +244,7 @@ margin: 2px 1px;
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/folder.png</normaloff>:/rec/img/folder.png</iconset>
    </property>
    <property name="text">
@@ -286,7 +256,7 @@ margin: 2px 1px;
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/pdf.png</normaloff>:/rec/img/pdf.png</iconset>
    </property>
    <property name="text">
@@ -298,7 +268,7 @@ margin: 2px 1px;
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/share.png</normaloff>:/rec/img/share.png</iconset>
    </property>
    <property name="text">
@@ -313,7 +283,7 @@ margin: 2px 1px;
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/logout.png</normaloff>:/rec/img/logout.png</iconset>
    </property>
    <property name="text">
@@ -322,7 +292,7 @@ margin: 2px 1px;
   </action>
   <action name="actionAvatar">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset>
      <normaloff>:/rec/img/share.png</normaloff>:/rec/img/share.png</iconset>
    </property>
    <property name="text">

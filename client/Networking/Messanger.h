@@ -13,8 +13,10 @@
 #include "../CRDT/CRDT.h"
 #include "../User/User.h"
 #include "../../common/commonFunctions.h"
+#include "../Controller/Controller.h"
 
 class CRDT;
+class Controller;
 
 class Messanger: public QObject{
     Q_OBJECT
@@ -29,6 +31,7 @@ private:
     std::queue<QByteArray> messages;
     CRDT *crdt = nullptr;
     bool clientIsDisconnected;
+    Controller* controller = nullptr;
 
     QMetaObject::Connection connectReadyRead;
     QMetaObject::Connection connectDisconnected;
@@ -38,7 +41,7 @@ public:
     User *user = nullptr;
 
     /* METHODS */
-    Messanger(QObject *parent = nullptr);
+    Messanger(QObject *parent = nullptr, Controller* controller = nullptr);
     bool connectTo(QString host, QString port);
     bool logIn(QString username, QString passsword);
     bool readFileNames();
@@ -62,6 +65,7 @@ public:
     bool sendDeleteFile(QString filename);
     void setCrdt(CRDT *crdt);
     bool readAlignmentChanged();
+    bool messagesIsEmpty();
 
 public slots:
     void onReadyRead();

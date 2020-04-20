@@ -77,29 +77,6 @@ void Login::reset(){
     ui->password->clear();
 }
 
-/**
-void Login::onOkButtonClicked()
-{
-    QString username = ui->username->text();
-    QString password = ui->password->text();
-
-    if (username == "test" &&
-        password == "test") {
-        emit loginSuccessful();
-    } else {
-            QMessageBox::warning(this, tr("Error"), tr("Invalid username/password combination"));
-        ui->username->clear();
-        ui->password->clear();
-    }
-}
-
-
-void Login::loginDone(){
-    //this->messanger->requestForFile("CiaoTy!");
-    emit loginSuccessful();
-}
- */
-
 void Login::resizeEvent(QResizeEvent *event) {
     int centralWidgetX = 0;
     int centralWidgetY = 0;
