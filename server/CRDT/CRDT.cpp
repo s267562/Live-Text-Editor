@@ -67,7 +67,7 @@ Pos CRDT::findInsertPosition(Character character) {
 		lastChar = currentLine[currentLine.size() - 1];
 
 		if (character.compareTo(lastChar) == 0) {
-			return Pos{midLine, (int) currentLine.size() - 1};
+			return Pos{(int) currentLine.size() - 1, midLine};
 		} else if (character.compareTo(lastChar) < 0) {
 			maxLine = midLine;
 		} else {
