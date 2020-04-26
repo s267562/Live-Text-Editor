@@ -14,14 +14,15 @@ CRDT::CRDT() {
 
 }
 
-
+// TODO: added return true even if ignored
 bool CRDT::addInitialBlock() {
-    QTextCharFormat cf;
-    Identifier i(0,"Server");
-    std::vector<Identifier> in_pos;
-    in_pos.emplace_back(i);
-    Character initialBlock=Character('\r',cf,-1,"None",in_pos);
-    this->style.emplace_back(std::pair<Character,int> {initialBlock,17});
+	QTextCharFormat cf;
+	Identifier i(0, "Server");
+	std::vector<Identifier> in_pos;
+	in_pos.emplace_back(i);
+	Character initialBlock = Character('\r', cf, -1, "None", in_pos);
+	this->style.emplace_back(std::pair<Character, int>{initialBlock, 17});
+	return true;
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {
@@ -37,7 +38,7 @@ Pos CRDT::handleInsert(Character character) {
 	this->insertChar(character, pos);
 
 	// print the structure for debugging
-    //printStructures();
+	//printStructures();
 
 	return pos;
 }
@@ -103,32 +104,35 @@ void CRDT::insertChar(Character character, Pos pos) {
 
 	qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
 
-    if( structure.empty() || pos.getLine() == structure.size()){
-        structure.emplace_back(std::vector<Character> {}); // pushing a new line.
-    }
+	if (structure.empty() || pos.getLine() == structure.size()) {
+		structure.emplace_back(std::vector<Character>{}); // pushing a new line.
+	}
 
 	// if inserting a newline, split line into two lines.
 	if (character.getValue() == '\n') {
 		qDebug() << "Splitting line into two lines";
 		std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(),
 										 structure[pos.getLine()].end()); // get line after.
-        if (!lineAfter.empty()) {
-            qDebug().noquote() << "There is something after the newLine inserted";
-            structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(), structure[pos.getLine()].end()); // delete line after.
-            structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
-            auto previousLine=this->style.begin() + pos.getLine();
-            int alignment=previousLine->second; // Get only alignment
-            this->style.insert(this->style.begin() + pos.getLine()+1, std::pair<Character,int>(character,alignment));
+		if (!lineAfter.empty()) {
+			qDebug().noquote() << "There is something after the newLine inserted";
+			structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(),
+										   structure[pos.getLine()].end()); // delete line after.
+			structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
+			auto previousLine = this->style.begin() + pos.getLine();
+			int alignment = previousLine->second; // Get only alignment
+			this->style.insert(this->style.begin() + pos.getLine() + 1,
+							   std::pair<Character, int>(character, alignment));
 
-        } else {
-            qDebug().noquote() << "There is nothing after the char \n inserted";
-            auto previousLine=this->style.begin() + pos.getLine();
-            int alignment=previousLine->second; // Get only alignment
-            style.emplace_back(std::pair<Character,int>(character, alignment));
-        }
+		} else {
+			qDebug().noquote() << "There is nothing after the char \n inserted";
+			auto previousLine = this->style.begin() + pos.getLine();
+			int alignment = previousLine->second; // Get only alignment
+			style.emplace_back(std::pair<Character, int>(character, alignment));
+		}
 	}
 
-    structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(), character); // insert the character in the pos.
+	structure[pos.getLine()].insert(structure[pos.getLine()].begin() + pos.getCh(),
+									character); // insert the character in the pos.
 
 }
 
@@ -145,25 +149,25 @@ Pos CRDT::handleStyleChanged(const Character &character) {
 // handle delete
 
 void CRDT::handleDelete(const Character &character) {
-    Pos pos = this->findPosition(character);
+	Pos pos = this->findPosition(character);
 
-    if (pos) {
-        this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
+	if (pos) {
+		this->structure[pos.getLine()].erase(this->structure[pos.getLine()].begin() + pos.getCh());
 
-        if (character.getValue() == '\n') {
-            qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
-            this->mergeLines(pos.getLine());
+		if (character.getValue() == '\n') {
+			qDebug() << "Deleting: " << character.getValue() << "in pos: " << pos.getLine() << pos.getCh();
+			this->mergeLines(pos.getLine());
 
-            if(style.size() > pos.getLine() + 1) {
-                this->removeStyleLine(pos.getLine()+1);
-            }
-        }
+			if (style.size() > pos.getLine() + 1) {
+				this->removeStyleLine(pos.getLine() + 1);
+			}
+		}
 
-        this->removeEmptyLines();
-    }
+		this->removeEmptyLines();
+	}
 
 	// print the structure for debugging
-    printStructures();
+	printStructures();
 
 }
 
@@ -284,16 +288,16 @@ void CRDT::write(QJsonObject &json) const {
 	}
 	json["structure"] = vectorVectors;
 
-    QJsonArray vectorStyle;
-    for (std::pair<Character,int> p : style) {
-        QJsonObject line;
-        QJsonObject character;
-        p.first.write(character);
-        line["character"] = character;
-        line["line"] = p.second;
-        vectorStyle.append(line);
-    }
-    json["style"] = vectorStyle;
+	QJsonArray vectorStyle;
+	for (std::pair<Character, int> p : style) {
+		QJsonObject line;
+		QJsonObject character;
+		p.first.write(character);
+		line["character"] = character;
+		line["line"] = p.second;
+		vectorStyle.append(line);
+	}
+	json["style"] = vectorStyle;
 }
 
 /**
@@ -322,20 +326,20 @@ void CRDT::read(const QJsonObject &json) {
 		}
 	}
 
-    if (json.contains("style") && json["style"].isArray()) {
-        QJsonArray vectorStyle = json["style"].toArray();
-        //structure.clear();
-        style.reserve(vectorStyle.size());
-        for (int vectorIndex = 0; vectorIndex < vectorStyle.size(); vectorIndex++) {
-            QJsonObject jsonObject = vectorStyle[vectorIndex].toObject();
-            QJsonObject characterJson = jsonObject["character"].toObject();
-            Character character;
-            character.read(characterJson);
-            int i = jsonObject["line"].toInt();
+	if (json.contains("style") && json["style"].isArray()) {
+		QJsonArray vectorStyle = json["style"].toArray();
+		//structure.clear();
+		style.reserve(vectorStyle.size());
+		for (int vectorIndex = 0; vectorIndex < vectorStyle.size(); vectorIndex++) {
+			QJsonObject jsonObject = vectorStyle[vectorIndex].toObject();
+			QJsonObject characterJson = jsonObject["character"].toObject();
+			Character character;
+			character.read(characterJson);
+			int i = jsonObject["line"].toInt();
 
-            style.emplace_back(std::make_pair(character, i));
-        }
-    }
+			style.emplace_back(std::make_pair(character, i));
+		}
+	}
 
 }
 
@@ -344,10 +348,11 @@ void CRDT::read(const QJsonObject &json) {
  * @return
  */
 bool CRDT::saveCRDT(QString filename) {
+	filename = "saveData/" + filename;
 #if binarySave
-		QFile saveFile(filename + ".dat");
+	QFile saveFile(filename + ".dat");
 #else
-		QFile saveFile(filename + ".json");
+	QFile saveFile(filename + ".json");
 #endif
 
 	if (!saveFile.open(QIODevice::WriteOnly)) {
@@ -372,11 +377,26 @@ bool CRDT::saveCRDT(QString filename) {
  */
 bool CRDT::loadCRDT(QString filename) {
 #if binarySave
-	QFile loadFile(filename + ".dat");
+	filename = filename + ".dat";
 #else
-	QFile loadFile(filename + ".json");
+	filename = filename + ".json";
 #endif
 
+	// Check file is not corrupted
+	QString filePath = "saveData/" + filename;
+	QFileInfo fileInfo(filePath);
+	if (fileInfo.size() == 0) {
+		filePath = "backup1/" + filename;
+		fileInfo = QFileInfo(filePath);
+		if (fileInfo.size() == 0) {
+			filePath = "backup2/" + filename;
+			fileInfo = QFileInfo(filePath);
+			if (fileInfo.size() == 0)
+				return false;
+		}
+	}
+
+	QFile loadFile(filePath);
 	if (!loadFile.open(QIODevice::ReadOnly)) {
 		qWarning("Couldn't open save file. [READ]");
 		return false;
@@ -392,101 +412,101 @@ bool CRDT::loadCRDT(QString filename) {
 	return true;
 }
 
-void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
+void CRDT::handleAlignmentChanged(int alignment, int blockNumber) {
 
-    Qt::Alignment a(alignment);
+	Qt::Alignment a(alignment);
 
-    qDebug() << a;
+	qDebug() << a;
 
-    if(blockNumber < this->style.size()) {
-        this->style[blockNumber].second=alignment;
-    }
+	if (blockNumber < this->style.size()) {
+		this->style[blockNumber].second = alignment;
+	}
 }
 
 int CRDT::getRow(Character blockId) {
-    if (this->style.empty() || blockId.compareTo(this->style[0].first) < 0) {
-        return -1;
-    }
+	if (this->style.empty() || blockId.compareTo(this->style[0].first) < 0) {
+		return -1;
+	}
 
-    int minLine = 0;
-    int totalLines = this->style.size();
-    int maxLine = totalLines - 1;
+	int minLine = 0;
+	int totalLines = this->style.size();
+	int maxLine = totalLines - 1;
 
-    Character lastBlockId = style[maxLine].first;
+	Character lastBlockId = style[maxLine].first;
 
-    // char is greater than all existing chars (insert at end)
-    if (blockId.compareTo(lastBlockId) > 0) {
-        return -1;
-    }
+	// char is greater than all existing chars (insert at end)
+	if (blockId.compareTo(lastBlockId) > 0) {
+		return -1;
+	}
 
-    // binary search
-    while (minLine <= maxLine) {
-        int midLine = std::floor((minLine + maxLine) / 2);
+	// binary search
+	while (minLine <= maxLine) {
+		int midLine = std::floor((minLine + maxLine) / 2);
 
-        lastBlockId = style[midLine].first;
+		lastBlockId = style[midLine].first;
 
-        if (blockId.compareTo(lastBlockId) == 0) {
-            return midLine;
-        } else if (blockId.compareTo(lastBlockId) < 0) {
-            maxLine = midLine-1;
-        } else {
-            minLine = midLine+1;
-        }
-    }
+		if (blockId.compareTo(lastBlockId) == 0) {
+			return midLine;
+		} else if (blockId.compareTo(lastBlockId) < 0) {
+			maxLine = midLine - 1;
+		} else {
+			minLine = midLine + 1;
+		}
+	}
 
-    return -1;
+	return -1;
 }
 
 void CRDT::removeStyleLine(int i) {
-    this->style.erase(this->style.begin()+1);
+	this->style.erase(this->style.begin() + 1);
 }
 
-std::vector<std::pair<Character,int>> CRDT::getStyle() {
-    return this->style;
+std::vector<std::pair<Character, int>> CRDT::getStyle() {
+	return this->style;
 }
 
 void CRDT::printStructures() {
-    /*QDebug qD(QtDebugMsg);
-    qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
+	/*QDebug qD(QtDebugMsg);
+	qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
 
 
-    for (int i = 0; i < structure.size(); i++) {
-        QString value="";
-        char val_line = style[i].first.getValue();
+	for (int i = 0; i < structure.size(); i++) {
+		QString value = "";
+		char val_line = style[i].first.getValue();
 
-        if(val_line == '\n') {
-            value += "\n";
-        }else {
-            value += val_line;
-        }
+		if (val_line == '\n') {
+			value += "\n";
+		} else {
+			value += val_line;
+		}
 
-        qD << "\n\tLINE ID:\tvalue:" << value << "\tposition: ";
-        std::vector<Identifier> line = style[i].first.getPosition();
-        for (Identifier id : line) {
-            qD << id.getDigit();
-        }
-        qD << "\n";
-        qD << "\t\tCHARACTERS:\n";
-        for (int j = 0; j < structure[i].size(); j++) {
+		qD << "\n\tLINE ID:\tvalue:" << value << "\tposition: ";
+		std::vector<Identifier> line = style[i].first.getPosition();
+		for (Identifier id : line) {
+			qD << id.getDigit();
+		}
+		qD << "\n";
+		qD << "\t\tCHARACTERS:\n";
+		for (int j = 0; j < structure[i].size(); j++) {
 
-            QString value="";
+			QString value = "";
 
-            char val_char = structure[i][j].getValue();
+			char val_char = structure[i][j].getValue();
 
-            int counter = structure[i][j].getCounter();
+			int counter = structure[i][j].getCounter();
 
-            QString siteId = structure[i][j].getSiteId();
-            if(val_char == '\n') value += "\n"; else value += val_char;
-            qD << "\t\t\tval: " << value << "\t\tsiteId: " << siteId << "\t\tcounter: " << counter << "\t\tposition: ";
-            std::vector<Identifier> identifier = structure[i][j].getPosition();
-            for (Identifier id : identifier) {
-                qD << id.getDigit();
-            }
-            qD << "\n";
-        }
-    }
+			QString siteId = structure[i][j].getSiteId();
+			if (val_char == '\n') value += "\n"; else value += val_char;
+			qD << "\t\t\tval: " << value << "\t\tsiteId: " << siteId << "\t\tcounter: " << counter << "\t\tposition: ";
+			std::vector<Identifier> identifier = structure[i][j].getPosition();
+			for (Identifier id : identifier) {
+				qD << id.getDigit();
+			}
+			qD << "\n";
+		}
+	}
 
-    qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine*/
+	qD << "\nNumber of rows in STYLE: "<< this->style.size() << "\tNumber of rows in STRUCTURE: "<< this->structure.size() <<"\n\n"; // newLine*/
 }
 
 

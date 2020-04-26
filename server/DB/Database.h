@@ -28,9 +28,9 @@ private:
 
 	static QString generateSalt();
 
-	static QString hashUsername(QString username);
+	static QString hashUsername(QString &username);
 
-	static QString hashPassword(QString password, QString salt);
+	static QString hashPassword(QString &password, QString &salt);
 
 	void initTables();
 
