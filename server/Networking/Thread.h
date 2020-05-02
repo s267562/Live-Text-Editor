@@ -50,10 +50,10 @@ private:
     bool sendNewUser(QTcpSocket *soc);                                              // sync ok
     bool sendFile(QTcpSocket *soc);
     bool readShareCode(QTcpSocket *soc);                                            // sync ok
-    bool sendAddFile(QTcpSocket *soc, QString filename);
+    static bool sendAddFile(QTcpSocket *soc, const QString& filename);
     bool readEditAccount(QTcpSocket *soc);                                          // sync ok
     bool sendUser(QTcpSocket *soc);                                                 // sync ok
-    bool readRequestUsernameList(QTcpSocket *soc);
+    static bool readRequestUsernameList(QTcpSocket *soc);
     bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
     bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
     bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
@@ -77,8 +77,8 @@ public:
 	bool sendListOfUsers(QTcpSocket *soc);                                          // sync ok
     std::map<qintptr, QTcpSocket *> getSockets();                                   // sync
     void changeFileName(QString filename);                                          // sync ok
-    bool sendRemoveUser(qintptr socketDescriptor, QString username);               // sync ok
-    bool sendRemoveUser(QString username);
+    bool sendRemoveUser(qintptr socketDescriptor, const QString& username);               // sync ok
+    bool sendRemoveUser(const QString& username);
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok
@@ -93,6 +93,7 @@ public slots:
 	void
 	disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);                 // sync
 	void saveCRDTToFile();                                                                                                              // sync ok
+    void deleteThisThread();
 };
 
 #endif // THREAD_H
