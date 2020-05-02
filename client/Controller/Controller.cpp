@@ -5,6 +5,7 @@
 #include "Controller.h"
 #include <QMessageBox>
 #include <QDesktopWidget>
+#include <utility>
 
 Controller::Controller(): messanger(new Messanger(this, this)), connection(new Connection(this)){
     user = nullptr;
@@ -154,7 +155,7 @@ void Controller::editorConnection() {
  * @param user
  */
 void Controller::reciveUser(User *user){
-    if (this->user == nullptr || this->user->isIsLogged() != true){
+    if (this->user == nullptr || !this->user->isIsLogged()){
         this->user = user;
         this->crdt->setSiteId(user->getUsername());
         this->user->setIsLogged(true);
@@ -196,7 +197,7 @@ void Controller::errorConnection(){
  * @param port
  */
 void Controller::connectClient(QString address, QString port) {
-    bool res = this->messanger->connectTo(address, port);
+    bool res = this->messanger->connectTo(std::move(address), port);
 
     if (res) {
         /* creation login object */
@@ -252,7 +253,7 @@ void Controller::showRegistration(){
  * This method recives the list of files
  * @param fileList
  */
-void Controller::showFileFinder(std::map<QString, bool> fileList){
+void Controller::showFileFinder(const std::map<QString, bool>& fileList){
     stopLoadingPopup();
 
     if (now != editor){
@@ -293,7 +294,7 @@ void Controller::showFileFinderOtherView(){
  * This method handles the request for a specific file
  * @param filename
  */
-void Controller::requestForFile(QString filename){
+void Controller::requestForFile(const QString& filename){
     std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     requestFFile = true;
     qDebug() << "requestForFile" << filename;
@@ -323,7 +324,7 @@ void Controller::showEditor(){
  * @param styleBlocks
  * @param filename
  */
-void Controller::openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
+void Controller::openFile(const std::vector<std::vector<Character>>& initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename) {
     std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     requestFFile = false;
     crdt->setStructure(initialStructure);           // fare un segnale
@@ -356,8 +357,8 @@ void Controller::openFile(std::vector<std::vector<Character>> initialStructure, 
  * @param oldPassword
  * @param avatar
  */
-void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
-    messanger->sendEditAccount(username, newPassword, oldPassword, avatar);
+void Controller::sendEditAccount(QString username, QString newPassword, QString oldPassword, const QByteArray& avatar){
+    messanger->sendEditAccount(std::move(username), std::move(newPassword), std::move(oldPassword), avatar);
     startLoadingPopup();
 }
 
@@ -400,7 +401,7 @@ void Controller::stopLoadingPopup(){
  * This method sends the share code
  * @param sharecode
  */
-void Controller::sendShareCode(QString sharecode){
+void Controller::sendShareCode(const QString& sharecode){
     messanger->sendShareCode(sharecode);
     startLoadingPopup();
 }
@@ -418,7 +419,7 @@ void Controller::shareCodeFailed(){
  * @param filenames
  */
 void Controller::addFileNames(std::map<QString, bool> filenames){
-    finder->addFile(filenames);
+    finder->addFile(std::move(filenames));
     finder->closeAddFile();
     stopLoadingPopup();
 }
@@ -431,7 +432,7 @@ void Controller::addFileNames(std::map<QString, bool> filenames){
 void Controller::requestForUsernameList(QString filename, CustomWidget *customWideget){
     this->customWidget = customWideget;
     // Effettua la rischiesta al server
-    this->messanger->requestForUsernameList(filename);
+    this->messanger->requestForUsernameList(std::move(filename));
     startLoadingPopup();
 }
 
@@ -440,9 +441,9 @@ void Controller::requestForUsernameList(QString filename, CustomWidget *customWi
  * @param filename
  * @param userlist
  */
-void Controller::reciveUsernameList(QString filename, QStringList userlist){
+void Controller::reciveUsernameList(const QString& filename, QStringList userlist){
     stopLoadingPopup();
-    this->customWidget->createFileInformation(userlist);
+    this->customWidget->createFileInformation(std::move(userlist));
 }
 
 /**
@@ -451,8 +452,8 @@ void Controller::reciveUsernameList(QString filename, QStringList userlist){
  * @param newFileaname
  * @param usernames
  */
-void Controller::sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames){
-    this->messanger->sendFileInfomationChanges(oldFileaname, newFileaname, usernames);
+void Controller::sendFileInformationChanges(QString oldFileaname, QString newFileaname, const QStringList& usernames){
+    this->messanger->sendFileInfomationChanges(std::move(oldFileaname), std::move(newFileaname), usernames);
     startLoadingPopup();
 }
 
@@ -461,7 +462,7 @@ void Controller::sendFileInformationChanges(QString oldFileaname, QString newFil
  * @param filename
  */
 void Controller::sendDeleteFile(QString filename){
-    this->messanger->sendDeleteFile(filename);
+    this->messanger->sendDeleteFile(std::move(filename));
     startLoadingPopup();
 }
 

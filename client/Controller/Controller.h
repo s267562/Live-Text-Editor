@@ -79,7 +79,7 @@ public:
     User* getUser();
     void startLoadingPopup();
     void stopLoadingPopup();
-    void sendFileInformationChanges(QString oldFileaname, QString newFileaname, QStringList usernames);
+    void sendFileInformationChanges(QString oldFileaname, QString newFileaname, const QStringList& usernames);
     void sendDeleteFile(QString filename);
     CRDT *getCrdt() const;
     bool isRequestFFile() const;
@@ -102,23 +102,23 @@ public slots:
     void showRegistration();
 
     /* ------------------------------------------------------------- SHOW FILES */
-    void showFileFinder(std::map<QString, bool>);
+    void showFileFinder(const std::map<QString, bool>&);
     void showFileFinderOtherView();
-    void requestForFile(QString filename);
+    void requestForFile(const QString& filename);
     void addFileNames(std::map<QString, bool> filenames);
     void requestForUsernameList(QString filename, CustomWidget *customWideget);
-    void reciveUsernameList(QString filename, QStringList userlist);
+    void reciveUsernameList(const QString& filename, QStringList userlist);
 
     /* ------------------------------------------------------------- EDITOR */
     void showEditor();
-    void openFile(std::vector<std::vector<Character>> initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename);
+    void openFile(const std::vector<std::vector<Character>>& initialStructure, std::vector<std::pair<Character,int>> styleBlocks, QString filename);
     void reciveUser(User *user);
-    void sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
+    void sendEditAccount(QString username, QString newPassword, QString oldPassword, const QByteArray& avatar);
     void errorEditAccount();
     void okEditAccount();
-    void sendShareCode(QString sharecode);
+    void sendShareCode(const QString& sharecode);
     void shareCodeFailed();
-    void reciveExternalException();
+    static void reciveExternalException();
 
 signals:
     void userRecived();

@@ -13,11 +13,11 @@
 class User {
     QString username;
     std::map<QString, bool> fileList;
-    bool isLogged;
+    bool isLogged{};
     QPixmap avatar;
 
 public:
-    User(QString username, QPixmap avatar);
+    User(QString username, const QPixmap& avatar);
     void setUsername(const QString &username);
     void setFileList(std::map<QString, bool> fileList);
     void setIsLogged(bool isLogged);
@@ -26,7 +26,7 @@ public:
     const QPixmap &getAvatar() const;
     void setAvatar(const QPixmap &avatar);
     std::map<QString, bool> getFileList() const;
-    void addFile(QString file);
+    void addFile(const QString& file);
 };
 
 

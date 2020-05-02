@@ -34,9 +34,9 @@ private:
     bool readFileName(qintptr socketDescriptor, QTcpSocket *soc);       // sync ok
     bool registration(QTcpSocket *soc);                                 // sync ok
     bool readEditAccount(QTcpSocket *soc);                              // sync ok, fare anche per il filename nella struttura del thread
-    static std::pair<QString,QString> getInfoFromShareCode(QString shareCode);
+    static std::pair<QString,QString> getInfoFromShareCode(const QString& shareCode);
     bool readShareCode(QTcpSocket *soc);                                // sync ok
-    bool sendAddFile(QTcpSocket *soc, QString filename);
+    static bool sendAddFile(QTcpSocket *soc, const QString& filename);
     bool readRequestUsernameList(QTcpSocket *soc);
     bool readFileInformationChanges(QTcpSocket *soc);                   // sync ok
     bool readDeleteFile(QTcpSocket *soc);                               // sync ok
@@ -54,9 +54,9 @@ public:
     /* METHODS */
     explicit Server(QObject *parent = nullptr);
     bool startServer(quint16 port);
-    std::shared_ptr<Thread> getThread(QString fileName);                            // sync
-    std::shared_ptr<Thread> addThread(QString fileName, QString username);          // sync
-    bool handleShareCode(QString username, QString shareCode, QString &filename);
+    std::shared_ptr<Thread> getThread(const QString& fileName);                            // sync
+    std::shared_ptr<Thread> addThread(const QString& fileName, const QString& username);          // sync
+    bool handleShareCode(QString username, const QString& shareCode, QString &filename);
     Database getDb() const;
     bool sendFileNames(QTcpSocket *soc);                                            // sync ok
     const std::map<qintptr, QTcpSocket *> &getSockets() const;                      // sync

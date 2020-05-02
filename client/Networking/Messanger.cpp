@@ -5,7 +5,7 @@
 
 Q_DECLARE_METATYPE(Message);
 
-Messanger::Messanger(QObject *parent, Controller* controller) : QObject(parent) {
+Messanger::Messanger(QObject *parent, Controller *controller) : QObject(parent) {
     this->socket = new QTcpSocket(this);
     /* define initial state */
     reciveOkMessage = false;
@@ -26,8 +26,8 @@ Messanger::Messanger(QObject *parent, Controller* controller) : QObject(parent) 
  * @param port
  * @return result of connection
  */
-bool Messanger::connectTo(QString host, QString port){
-    if (clientIsDisconnected){
+bool Messanger::connectTo(QString host, QString port) {
+    if (clientIsDisconnected) {
         this->socket = new QTcpSocket(this);
         reciveOkMessage = false;
         state = UNLOGGED;
@@ -49,7 +49,7 @@ bool Messanger::connectTo(QString host, QString port){
         if (socket->waitForConnected(TIMEOUT)) {
             break;
         }
-        if (i == 4){
+        if (i == 4) {
             emit errorConnection();
             return false;
         }
@@ -68,116 +68,105 @@ bool Messanger::connectTo(QString host, QString port){
  * this method allows to start reading from socket and calls different methods
  * that handles different type of message.
  */
-void Messanger::onReadyRead(){
-    if (socket->bytesAvailable() == 0){
+void Messanger::onReadyRead() {
+    if (socket->bytesAvailable() == 0) {
         return;
     }
 
     QByteArray datas;
-    if (!readChunck(socket, datas, 5)){
+    if (!readChunck(socket, datas, 5)) {
         return;
     }
 
     qDebug() << "Messanger.cpp - onReadyRead()     msg received:" << datas;
     qDebug() << ""; // newLine
 
-    if (!clientIsLogged){
-        if (state == UNLOGGED && datas.toStdString() == AVATAR_MESSAGE){
-            if (!readUser()){
+    if (!clientIsLogged) {
+        if (state == UNLOGGED && datas.toStdString() == AVATAR_MESSAGE) {
+            if (!readUser()) {
                 return;
             }
             state = WAITING_LIST_OF_FILE;
-        }else if (state == WAITING_LIST_OF_FILE && datas.toStdString() == LIST_OF_FILE){
-            if (!readFileNames()){
+        } else if (state == WAITING_LIST_OF_FILE && datas.toStdString() == LIST_OF_FILE) {
+            if (!readFileNames()) {
                 return;
             }
             clientIsLogged = true;
             state = LIST_OF_FILE_RECIVED;
-            #if !UI
-                        requestForFile("prova");         /* TEST: TEXT EDITOR */
-            #endif
-        }else if (datas.toStdString() == ERR_MESSAGE){
-            if (!readError()){
+#if !UI
+            requestForFile("prova");         /* TEST: TEXT EDITOR */
+#endif
+        } else if (datas.toStdString() == ERR_MESSAGE) {
+            if (!readError()) {
                 return;
             }
         }
-    }else{
-        if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == AVATAR_MESSAGE){
-            if (!readUser()){
+    } else {
+        if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == AVATAR_MESSAGE) {
+            if (!readUser()) {
                 return;
             }
-        }else if (datas.toStdString() == SENDING_FILE){
-            if (!readFile()){
+        } else if (datas.toStdString() == SENDING_FILE) {
+            if (!readFile()) {
                 return;
             }
             state = WAITING_LIST_OF_ONLINE_USERS;
-        }else if (state == WAITING_LIST_OF_ONLINE_USERS && datas.toStdString() == LIST_OF_USERS){
-            if (!readUsernames()){
+        } else if (state == WAITING_LIST_OF_ONLINE_USERS && datas.toStdString() == LIST_OF_USERS) {
+            if (!readUsernames()) {
                 return;
             }
             state = EDIT_FILE_STATE;
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == INSERT_MESSAGE){
-            qDebug () << state << EDIT_FILE_STATE;
-            if (!readInsert()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == INSERT_MESSAGE) {
+            qDebug() << state << EDIT_FILE_STATE;
+            if (!readInsert()) {
                 return;
             }
-            //return;
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == DELETE_MESSAGE){
-            if (!readDelete()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == DELETE_MESSAGE) {
+            if (!readDelete()) {
                 return;
             }
-            //return;
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == REMOVE_USER){
-            if (!readRemoveUser()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == REMOVE_USER) {
+            if (!readRemoveUser()) {
                 return;
             }
-            //return;
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE) {
             reciveOkMessage = true;
             despatchMessage();
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS){
-            if (!readUsernames()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS) {
+            if (!readUsernames()) {
                 return;
             }
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == STYLE_CAHNGED_MESSAGE){
-            if (!readStyleChanged()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == STYLE_CAHNGED_MESSAGE) {
+            if (!readStyleChanged()) {
                 return;
             }
-        }else if (state == EDIT_FILE_STATE && datas.toStdString() == AVATAR_MESSAGE){
-            if (!readUser()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == AVATAR_MESSAGE) {
+            if (!readUser()) {
                 return;
             }
-        }else  if (datas.toStdString() == ADD_FILE){
-            if (!readAddFile()){
+        } else if (datas.toStdString() == ADD_FILE) {
+            if (!readAddFile()) {
                 return;
             }
-        }
-        else if(state == EDIT_FILE_STATE && datas.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
-            if (!readAlignmentChanged()){
+        } else if (state == EDIT_FILE_STATE && datas.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+            if (!readAlignmentChanged()) {
                 return;
             }
-        }
-        else if (datas.toStdString() == ERR_MESSAGE){
-            if (!readError()){
+        } else if (datas.toStdString() == ERR_MESSAGE) {
+            if (!readError()) {
                 return;
             }
-        }else if (datas.toStdString() == USERNAME_LIST_FOR_FILE){
-            if (!readUsernameList()){
+        } else if (datas.toStdString() == USERNAME_LIST_FOR_FILE) {
+            if (!readUsernameList()) {
                 return;
             }
-        } else if (datas.toStdString() == LIST_OF_FILE){
-            if (!readFileNames()){
+        } else if (datas.toStdString() == LIST_OF_FILE) {
+            if (!readFileNames()) {
                 return;
             }
         }
     }
-    qDebug () << state << EDIT_FILE_STATE;
-    /*if (datas.toStdString() == INSERT_MESSAGE) {
-        if (!readInsert()) {
-            return;
-        }
-    }*/
-
+    qDebug() << state << EDIT_FILE_STATE;
     onReadyRead();
 }
 
@@ -185,43 +174,44 @@ void Messanger::onReadyRead(){
  * This method handles different error's cases
  * @return result of reading from socket
  */
-bool Messanger::readError(){
+bool Messanger::readError() {
     qDebug() << "Messanger.cpp - readError()     ---------- READ ERROR ----------";
     QByteArray type;
-    readSpace(socket);
-    if (!readChunck(socket, type, 5)){
+    if (!readSpace(socket))
+        return false;
+    if (!readChunck(socket, type, 5)) {
         return false;
     }
 
-    if (type.toStdString() == LOGIN_MESSAGE){
+    if (type.toStdString() == LOGIN_MESSAGE) {
         emit loginFailed();
-    }else if (type.toStdString() == REGISTRATION_MESSAGE){
+    } else if (type.toStdString() == REGISTRATION_MESSAGE) {
         emit registrationFailed();
-    }else if (type.toStdString() == REQUEST_FILE_MESSAGE) {
+    } else if (type.toStdString() == REQUEST_FILE_MESSAGE) {
         emit requestForFileFailed();
-    }else if (type.toStdString() == INSERT_MESSAGE){
+    } else if (type.toStdString() == INSERT_MESSAGE) {
         emit insertFailed();
-    }else if (type.toStdString() == DELETE_MESSAGE){
+    } else if (type.toStdString() == DELETE_MESSAGE) {
         emit deleteFailed();
-    }else if (type.toStdString() == EDIT_ACCOUNT){
+    } else if (type.toStdString() == EDIT_ACCOUNT) {
         emit editAccountFailed();
-    }else if (type.toStdString() == SHARE_CODE){
+    } else if (type.toStdString() == SHARE_CODE) {
         emit shareCodeFailed();
     }
 
     return true;
 }
 
-bool Messanger::despatchMessage(){
-    if (!messages.empty()){
+bool Messanger::despatchMessage() {
+    if (!messages.empty()) {
         QByteArray message = messages.front();
         messages.pop();
-        if (!writeMessage(socket, message)){
+        if (!writeMessage(socket, message)) {
             messages.push(message);
             return false;
         }
         reciveOkMessage = false;
-    }else{
+    } else {
         reciveOkMessage = true;
     }
     return true;
@@ -243,12 +233,11 @@ bool Messanger::logIn(QString username, QString password) {
         QByteArray usernameSize = convertionNumber(usernameByteArray.size());
         QByteArray passwordSize = convertionNumber(passwordByteArray.size());
 
-
-        message.append(" " + usernameSize + " " + usernameByteArray  + " " + passwordSize + " " + passwordByteArray);
+        message.append(" " + usernameSize + " " + usernameByteArray + " " + passwordSize + " " + passwordByteArray);
         qDebug() << "                        " << message;
         qDebug() << ""; // newLine
 
-        if (!writeMessage(socket, message)){
+        if (!writeMessage(socket, message)) {
             return false;
         }
     }
@@ -261,7 +250,7 @@ bool Messanger::logIn(QString username, QString password) {
  * @param password
  * @return result of writing on socket
  */
-bool Messanger::registration(QString username, QString password, QByteArray avatar){
+bool Messanger::registration(QString username, QString password, QByteArray avatar) {
     qDebug() << "Messanger.cpp - registration()     ---------- REGISTRATION ----------";
 
     QByteArray message(REGISTRATION_MESSAGE);
@@ -272,16 +261,14 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
     QByteArray passwordSize = convertionNumber(passwordByteArray.size());
     QByteArray imageSize = convertionNumber(avatar.size());
 
-    message.append(" " + usernameSize + " " + usernameByteArray + " " + passwordSize + " " + passwordByteArray + " " + imageSize + " " + avatar);
+    message.append(" " + usernameSize + " " + usernameByteArray + " " + passwordSize + " " + passwordByteArray + " " +
+                   imageSize + " " + avatar);
 
-    qDebug() << "                                " << "username: " << username << " password: " << password << " avatarSize: " << avatar.size();
+    qDebug() << "                                " << "username: " << username << " password: " << password
+             << " avatarSize: " << avatar.size();
     qDebug() << ""; // newLine
 
-    if (!writeMessage(socket, message)){
-        return false;
-    }
-
-    return true;
+    return writeMessage(socket, message);
 }
 
 /**
@@ -292,31 +279,28 @@ bool Messanger::registration(QString username, QString password, QByteArray avat
  * @param avatar
  * @return result of writing on socket
  */
-bool Messanger::sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar){
+bool Messanger::sendEditAccount(QString username, QString newPassword, QString oldPassword, const QByteArray& avatar) {
     qDebug() << "Messanger.cpp - sendEditAccount()     ---------- SEND EDIT ACCOUNT ----------";
 
     QByteArray message(EDIT_ACCOUNT);
 
-    QByteArray usernameByteArray = convertionQString(username);
-    QByteArray oldPasswordByteArray = convertionQString(oldPassword);
-    QByteArray newPasswordByteArray = convertionQString(newPassword);
+    QByteArray usernameByteArray = convertionQString(std::move(username));
+    QByteArray oldPasswordByteArray = convertionQString(std::move(oldPassword));
+    QByteArray newPasswordByteArray = convertionQString(std::move(newPassword));
 
     QByteArray usernameSize = convertionNumber(usernameByteArray.size());
     QByteArray newPasswordSize = convertionNumber(newPasswordByteArray.size());
     QByteArray oldPasswordSize = convertionNumber(oldPasswordByteArray.size());
     QByteArray imageSize = convertionNumber(avatar.size());
 
-    message.append(" " + usernameSize + " " + usernameByteArray + " " + newPasswordSize + " " + newPasswordByteArray + " "
-    + oldPasswordSize + " " + oldPasswordByteArray + " " + imageSize + " " + avatar);
+    message.append(
+            " " + usernameSize + " " + usernameByteArray + " " + newPasswordSize + " " + newPasswordByteArray + " "
+            + oldPasswordSize + " " + oldPasswordByteArray + " " + imageSize + " " + avatar);
 
     qDebug() << "                                " << message;
     qDebug() << ""; // newLine
 
-    if (!writeMessage(socket, message)){
-        return false;
-    }
-
-    return true;
+    return writeMessage(socket, message);
 }
 
 /**
@@ -325,22 +309,26 @@ bool Messanger::sendEditAccount(QString username, QString newPassword, QString o
  */
 bool Messanger::readUser() {
     qDebug() << "Messanger.cpp - readUser()     ---------- READUSER ----------";
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int usernameSize = readNumberFromSocket(socket);
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QString username;
     if (!readQString(socket, username, usernameSize)) {
         return false;
     }
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int imageSize = readNumberFromSocket(socket);
 
     qDebug() << imageSize;
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     QByteArray avatar;
 
     if (!readChunck(socket, avatar, imageSize)) {
@@ -363,27 +351,31 @@ bool Messanger::readUser() {
  * This method reads the list of file name.
  * @return result of reading from socket
  */
-bool Messanger::readFileNames(){
+bool Messanger::readFileNames() {
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";
     QStringList fileList;
     std::map<QString, bool> files; // pair : (filename , ownership)
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int numFiles = readNumberFromSocket(socket);
 
     qDebug() << "                                numFiles: " << numFiles;
 
-    for (int i = 0; i < numFiles; i++){
-        readSpace(socket);
+    for (int i = 0; i < numFiles; i++) {
+        if (!readSpace(socket))
+            return false;
         int fileNameSize = readNumberFromSocket(socket);
-        readSpace(socket);
+        if (!readSpace(socket))
+            return false;
         QString fileName;
-        if (!readQString(socket, fileName, fileNameSize)){
+        if (!readQString(socket, fileName, fileNameSize)) {
             return false;
         }
-        readSpace(socket);
+        if (!readSpace(socket))
+            return false;
         QByteArray flag;
-        if (!readChunck(socket, flag, 1)){
+        if (!readChunck(socket, flag, 1)) {
             return false;
         }
 
@@ -396,7 +388,6 @@ bool Messanger::readFileNames(){
     qDebug() << ""; // newLine
 
     emit fileNames(files);
-
     return true;
 }
 
@@ -404,14 +395,14 @@ bool Messanger::readFileNames(){
  * This method allows logout feature
  * @return result of connectTo
  */
-bool Messanger::logOut(){
-    if (clientIsLogged){
+bool Messanger::logOut() {
+    if (clientIsLogged) {
         disconnect(connectReadyRead);
         disconnect(connectDisconnected);
         socket->deleteLater();
 
         socket = new QTcpSocket(this);
-        if (!connectTo(serverIP, serverPort)){
+        if (!connectTo(serverIP, serverPort)) {
             qDebug() << "Connesione fallita";
             return false;
         }
@@ -431,12 +422,12 @@ bool Messanger::logOut(){
  * @param fileName
  * @return result of writing on socket
  */
-bool Messanger::requestForFile(QString fileName){
+bool Messanger::requestForFile(QString fileName) {
     qDebug() << "Messanger.cpp - requestForFile()     ---------- REQUEST FOR FILE ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(REQUEST_FILE_MESSAGE);
-        QByteArray fileNameByteArray = convertionQString(fileName);
+        QByteArray fileNameByteArray = convertionQString(std::move(fileName));
         QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 
         message.append(" " + fileNameSize + " " + fileNameByteArray);
@@ -445,13 +436,13 @@ bool Messanger::requestForFile(QString fileName){
 
 
         reciveOkMessage = true;
-        if (!writeMessage(socket, message)){
+        if (!writeMessage(socket, message)) {
             return false;
         }
         if (state != EDIT_FILE_STATE)
             state = WAITING_LIST_OF_ONLINE_USERS;
         return true;
-    }else{
+    } else {
         return false;
     }
 }
@@ -460,25 +451,28 @@ bool Messanger::requestForFile(QString fileName){
  * This method reads the list of online users
  * @return result of reading from socket
  */
-bool Messanger::readUsernames(){
+bool Messanger::readUsernames() {
     qDebug() << "Messanger.cpp - readUsernames()     ---------- READ USERNAMES ----------";
     QStringList usernames;
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int usernamesSize = readNumberFromSocket(socket);
 
     qDebug() << usernamesSize;
 
-    if (usernamesSize != 0){
-        for (int i = 0; i < usernamesSize; i++){
-            readSpace(socket);
+    if (usernamesSize != 0) {
+        for (int i = 0; i < usernamesSize; i++) {
+            if (!readSpace(socket))
+                return false;
             int usernameSize = readNumberFromSocket(socket);
             qDebug() << usernameSize;
-            readSpace(socket);
+            if (!readSpace(socket))
+                return false;
             QString username;
-            if (!readQString(socket, username, usernameSize)){
+            if (!readQString(socket, username, usernameSize)) {
                 return false;
             }
-            qDebug() << "                              usename: "<<username;
+            qDebug() << "                              usename: " << username;
             usernames.append(username);
         }
     }
@@ -491,14 +485,16 @@ bool Messanger::readUsernames(){
  * This method reads the username that is not online
  * @return result of reading from socket
  */
-bool Messanger::readRemoveUser(){
+bool Messanger::readRemoveUser() {
     qDebug() << "Messanger.cpp - readRemoveUser()     ---------- READ REMOVE USER ----------";
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int usernameSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QString username;
-    if (!readQString(socket, username, usernameSize)){
+    if (!readQString(socket, username, usernameSize)) {
         return false;
     }
 
@@ -510,31 +506,37 @@ bool Messanger::readRemoveUser(){
  * This method receives the complite file, that was requested
  * @return result of reading from socket
  */
-bool Messanger::readFile(){
+bool Messanger::readFile() {
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int filenameSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     QString filename;
-    if (!readQString(socket, filename, filenameSize)){
+    if (!readQString(socket, filename, filenameSize)) {
         return false;
     }
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int numLines = readNumberFromSocket(socket);
 
-    for (int i = 0; i < numLines; i++){
+    for (int i = 0; i < numLines; i++) {
         std::vector<Character> line;
-        readSpace(socket);
+        if (!readSpace(socket))
+            return false;
         int numCharacters = readNumberFromSocket(socket);
 
-        for (int j = 0; j < numCharacters; j++){
-            readSpace(socket);
+        for (int j = 0; j < numCharacters; j++) {
+            if (!readSpace(socket))
+                return false;
             int messageSize = readNumberFromSocket(socket);
-            readSpace(socket);
+            if (!readSpace(socket))
+                return false;
 
             QByteArray characterByteFormat;
-            if (!readChunck(socket, characterByteFormat, messageSize)){
+            if (!readChunck(socket, characterByteFormat, messageSize)) {
                 return false;
             }
 
@@ -547,28 +549,32 @@ bool Messanger::readFile(){
         writeOkMessage(socket);
     }
 
-    std::vector<std::pair<Character,int>> styleBlocks;
+    std::vector<std::pair<Character, int>> styleBlocks;
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int numBlocks = readNumberFromSocket(socket);
 
     QByteArray characterByteFormat;
 
-    for (int j = 0; j < numBlocks; j++){
-        readSpace(socket);
+    for (int j = 0; j < numBlocks; j++) {
+        if (!readSpace(socket))
+            return false;
         int messageSize = readNumberFromSocket(socket);
-        readSpace(socket);
+        if (!readSpace(socket))
+            return false;
 
-        if (!readChunck(socket, characterByteFormat, messageSize)){
+        if (!readChunck(socket, characterByteFormat, messageSize)) {
             return false;
         }
 
         QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
         Character character = Character::toCharacter(jsonDocument);
 
-        readSpace(socket);
+        if (!readSpace(socket))
+            return false;
         int alignment = readNumberFromSocket(socket);
-        styleBlocks.emplace_back(character,alignment);
+        styleBlocks.emplace_back(character, alignment);
         writeOkMessage(socket);
     }
 
@@ -581,11 +587,11 @@ bool Messanger::readFile(){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeInsert(Character &character){
+bool Messanger::writeInsert(Character &character) {
     qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
-    qDebug() << "Messanger: "<< QThread::currentThreadId();
+    qDebug() << "Messanger: " << QThread::currentThreadId();
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(INSERT_MESSAGE);
         QByteArray characterByteFormat = character.toQByteArray();
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
@@ -596,9 +602,9 @@ bool Messanger::writeInsert(Character &character){
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (reciveOkMessage){
+        if (reciveOkMessage) {
             reciveOkMessage = false;
-            if (!writeMessage(socket, message)){
+            if (!writeMessage(socket, message)) {
                 return false;
             }
             messages.pop();
@@ -612,10 +618,10 @@ bool Messanger::writeInsert(Character &character){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeStyleChanged(Character& character){
+bool Messanger::writeStyleChanged(Character &character) {
     qDebug() << "Messanger.cpp - writeStyleChanged()     ---------- WRITE STYLE CHANGED ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(STYLE_CAHNGED_MESSAGE);
         QByteArray characterByteFormat = character.toQByteArray();
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
@@ -626,9 +632,9 @@ bool Messanger::writeStyleChanged(Character& character){
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (reciveOkMessage){
+        if (reciveOkMessage) {
             reciveOkMessage = false;
-            if (!writeMessage(socket, message)){
+            if (!writeMessage(socket, message)) {
                 return false;
             }
             messages.pop();
@@ -643,13 +649,13 @@ bool Messanger::writeStyleChanged(Character& character){
  * @param blockId
  * @return
  */
-bool Messanger::writeAlignmentChanged(int alignment_type, Character& blockId){
+bool Messanger::writeAlignmentChanged(int alignment_type, Character &blockId) {
     qDebug() << "Messanger.cpp - writeAlignmentChanged()     ---------- WRITE ALIGNMENT CHANGED ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(ALIGNMENT_CHANGED_MESSAGE);
-        QByteArray alignmentByteFormat=convertionNumber(alignment_type);
-        QByteArray blockIdByteFormat=blockId.toQByteArray();
+        QByteArray alignmentByteFormat = convertionNumber(alignment_type);
+        QByteArray blockIdByteFormat = blockId.toQByteArray();
         //QByteArray sizeOfMessageAt = convertionNumber(alignmentByteFormat.size());
         QByteArray sizeBlockId = convertionNumber(blockIdByteFormat.size());
 
@@ -662,9 +668,9 @@ bool Messanger::writeAlignmentChanged(int alignment_type, Character& blockId){
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (reciveOkMessage){
+        if (reciveOkMessage) {
             reciveOkMessage = false;
-            if (!writeMessage(socket, message)){
+            if (!writeMessage(socket, message)) {
                 return false;
             }
             messages.pop();
@@ -678,10 +684,10 @@ bool Messanger::writeAlignmentChanged(int alignment_type, Character& blockId){
  * @param character
  * @return result of writing on socket
  */
-bool Messanger::writeDelete(Character& character){
+bool Messanger::writeDelete(Character &character) {
     qDebug() << "Messanger.cpp - writeDelete()     ---------- WRITE DELETE ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(DELETE_MESSAGE);
         QByteArray characterByteFormat = character.toQByteArray();
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
@@ -705,24 +711,28 @@ bool Messanger::writeDelete(Character& character){
  * This method reads the character, that was added from other users
  * @return result of reading from socket
  */
-bool Messanger::readInsert(){
+bool Messanger::readInsert() {
     qDebug() << "Messanger.cpp - readInsert()     ---------- READ INSERT ----------";
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int messageSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray characterByteFormat;
-    if (!readChunck(socket, characterByteFormat, messageSize)){
+    if (!readChunck(socket, characterByteFormat, messageSize)) {
         return false;
     }
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int sizeOfsender = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray usernameByteFormat;
-    if (!readChunck(socket, usernameByteFormat, sizeOfsender)){
+    if (!readChunck(socket, usernameByteFormat, sizeOfsender)) {
         return false;
     }
 
@@ -738,10 +748,6 @@ bool Messanger::readInsert(){
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
     if (!controller->isRequestFFile())
         QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
-    else{
-        qDebug() << "Ignorato";
-    }
-
     return true;
 }
 
@@ -749,24 +755,28 @@ bool Messanger::readInsert(){
  * This method reads the style changes
  * @return
  */
-bool Messanger::readStyleChanged(){
+bool Messanger::readStyleChanged() {
     qDebug() << "Messanger.cpp - readStyleChanged()     ---------- READ STYLE CHANGED ----------";
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int messageSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray characterByteFormat;
-    if (!readChunck(socket, characterByteFormat, messageSize)){
+    if (!readChunck(socket, characterByteFormat, messageSize)) {
         return false;
     }
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int sizeOfsender = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray usernameByteFormat;
-    if (!readChunck(socket, usernameByteFormat, sizeOfsender)){
+    if (!readChunck(socket, usernameByteFormat, sizeOfsender)) {
         return false;
     }
 
@@ -782,7 +792,6 @@ bool Messanger::readStyleChanged(){
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
     if (!controller->isRequestFFile())
         QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
-
     return true;
 }
 
@@ -790,32 +799,37 @@ bool Messanger::readStyleChanged(){
  * This method reads the alignment changes
  * @return
  */
-bool Messanger::readAlignmentChanged(){
+bool Messanger::readAlignmentChanged() {
 
     qDebug() << "Messanger.cpp - readAlignmentChanged()     ---------- READ ALIGNMENT CHANGED ----------";
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int alignType = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     int sizeBlockId = readNumberFromSocket(socket);
 
-    readSpace(socket);
-    
+    if (!readSpace(socket))
+        return false;
+
     QByteArray characterByteFormat;
-    if (!readChunck(socket, characterByteFormat, sizeBlockId)){
+    if (!readChunck(socket, characterByteFormat, sizeBlockId)) {
         return false;
     }
 
     QJsonDocument jsonFormatBlockId = QJsonDocument::fromBinaryData(characterByteFormat);
     Character blockId = Character::toCharacter(jsonFormatBlockId);
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int sizeOfsender = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray usernameByteFormat;
-    if (!readChunck(socket, usernameByteFormat, sizeOfsender)){
+    if (!readChunck(socket, usernameByteFormat, sizeOfsender)) {
         return false;
     }
 
@@ -828,10 +842,8 @@ bool Messanger::readAlignmentChanged(){
     Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
-    if (!controller->isRequestFFile()) {
+    if (!controller->isRequestFFile())
         QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
-    }
-
     return true;
 }
 
@@ -839,23 +851,27 @@ bool Messanger::readAlignmentChanged(){
  * This method reads the character, that was removed from other users
  * @return result of reading from socket
  */
-bool Messanger::readDelete(){
+bool Messanger::readDelete() {
     qDebug() << "Messanger.cpp - readDelete()     ---------- READ DELETE ----------";
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int messageSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QByteArray characterByteFormat;
-    if (!readChunck(socket, characterByteFormat, messageSize)){
+    if (!readChunck(socket, characterByteFormat, messageSize)) {
         return false;
     }
 
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int sizeOfsender = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     QByteArray usernameByteFormat;
-    if (!readChunck(socket, usernameByteFormat, sizeOfsender)){
+    if (!readChunck(socket, usernameByteFormat, sizeOfsender)) {
         return false;
     }
 
@@ -869,47 +885,45 @@ bool Messanger::readDelete(){
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
     if (!controller->isRequestFFile())
         QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
-
     return true;
 }
 
-bool Messanger::sendShareCode(QString shareCode){
+bool Messanger::sendShareCode(const QString& shareCode) {
     qDebug() << "Messanger.cpp - sendShareCode()     ---------- SEND SHARECODE ----------";
     QByteArray message(SHARE_CODE);
 
     QByteArray shareCodeSize = convertionNumber(shareCode.size());
 
-    message.append( " " + shareCodeSize + " " + shareCode.toUtf8());
+    message.append(" " + shareCodeSize + " " + shareCode.toUtf8());
 
     qDebug() << "                                " << message;
     qDebug() << ""; // newLine
 
-    if (!writeMessage(socket, message)){
-        return false;
-    }
-
-    return true;
+    return writeMessage(socket, message);
 }
 
 /**
  * This method reads the file added
  * @return
  */
-bool Messanger::readAddFile(){
+bool Messanger::readAddFile() {
     qDebug() << "Messanger.cpp - readAddFile()     ---------- READ ADDFILE ----------";
 
     std::map<QString, bool> files;                      // pair : (filename , ownership)
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int fileNameSize = readNumberFromSocket(socket);
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
 
     QString fileName;
-    if (!readQString(socket, fileName, fileNameSize)){
+    if (!readQString(socket, fileName, fileNameSize)) {
         return false;
     }
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     QByteArray flag;
-    if (!readChunck(socket, flag, 1)){
+    if (!readChunck(socket, flag, 1)) {
         return false;
     }
 
@@ -922,8 +936,8 @@ bool Messanger::readAddFile(){
 /**
  * This method is called when the socket disconnects
  */
-void Messanger::onDisconnect(){
-    qDebug() << "Messanger.cpp - onDisconnect()     " << socketDescriptor <<" Disconnected";
+void Messanger::onDisconnect() {
+    qDebug() << "Messanger.cpp - onDisconnect()     " << socketDescriptor << " Disconnected";
     qDebug() << ""; // newLine
 
     QTcpSocket soc;
@@ -938,12 +952,12 @@ void Messanger::onDisconnect(){
  * @param fileName
  * @return
  */
-bool Messanger::requestForUsernameList(QString fileName){
+bool Messanger::requestForUsernameList(QString fileName) {
     qDebug() << "Messanger.cpp - requestForUsernameList()     ---------- REQUEST FOR USERNAME LIST ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(REQUEST_USERNAME_LIST_MESSAGE);
-        QByteArray fileNameByteArray = convertionQString(fileName);
+        QByteArray fileNameByteArray = convertionQString(std::move(fileName));
         QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 
         message.append(" " + fileNameSize + " " + fileNameByteArray);
@@ -952,13 +966,8 @@ bool Messanger::requestForUsernameList(QString fileName){
 
 
         reciveOkMessage = true;
-        if (!writeMessage(socket, message)){
-            return false;
-        }
-
-        //state = WAITING_LIST_OF_ONLINE_USERS;
-        return true;
-    }else{
+        return writeMessage(socket, message);
+    } else {
         return false;
     }
 }
@@ -967,25 +976,28 @@ bool Messanger::requestForUsernameList(QString fileName){
  * This method reads the usernames list
  * @return
  */
-bool Messanger::readUsernameList(){
+bool Messanger::readUsernameList() {
     qDebug() << "Messanger.cpp - readUsernameList()     ---------- READ USERNAME LIST ----------";
     QStringList usernames;
-    readSpace(socket);
+    if (!readSpace(socket))
+        return false;
     int usernamesSize = readNumberFromSocket(socket);
 
     qDebug() << usernamesSize;
 
-    if (usernamesSize != 0){
-        for (int i = 0; i < usernamesSize; i++){
-            readSpace(socket);
+    if (usernamesSize != 0) {
+        for (int i = 0; i < usernamesSize; i++) {
+            if (!readSpace(socket))
+                return false;
             int usernameSize = readNumberFromSocket(socket);
             qDebug() << usernameSize;
-            readSpace(socket);
+            if (!readSpace(socket))
+                return false;
             QString username;
-            if (!readQString(socket, username, usernameSize)){
+            if (!readQString(socket, username, usernameSize)) {
                 return false;
             }
-            qDebug() << "                              usename: "<<username;
+            qDebug() << "                              usename: " << username;
             usernames.append(username);
         }
     }
@@ -1001,16 +1013,17 @@ bool Messanger::readUsernameList(){
  * @param usernames
  * @return
  */
-bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames){
+bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilename, const QStringList& usernames) {
     qDebug() << "Messanger.cpp - sendFileInfomationChanges()     ---------- SEND FILE INFORMATION CHANGES ----------";
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(FILE_INFORMATION_CHANGES);
-        QByteArray oldFileNameByteArray = convertionQString(oldFilename);
+        QByteArray oldFileNameByteArray = convertionQString(std::move(oldFilename));
         QByteArray oldFileNameSize = convertionNumber(oldFileNameByteArray.size());
-        QByteArray newFileNameByteArray = convertionQString(newFilename);
+        QByteArray newFileNameByteArray = convertionQString(std::move(newFilename));
         QByteArray newFileNameSize = convertionNumber(newFileNameByteArray.size());
 
-        message.append(" " + oldFileNameSize + " " + oldFileNameByteArray + " " + newFileNameSize + " " + newFileNameByteArray);
+        message.append(" " + oldFileNameSize + " " + oldFileNameByteArray + " " + newFileNameSize + " " +
+                       newFileNameByteArray);
         qDebug() << "                                 " << message;
         qDebug() << ""; // newLine
 
@@ -1019,20 +1032,15 @@ bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilena
 
         message.append(" " + numUsers);
 
-        for (QString username : usernames){
+        for (const QString& username : usernames) {
             QByteArray usernameQBytearray = convertionQString(username);
             QByteArray usernameSize = convertionNumber(usernameQBytearray.size());
             message.append(" " + usernameSize + " " + usernameQBytearray);
         }
 
         reciveOkMessage = true;
-        if (!writeMessage(socket, message)){
-            return false;
-        }
-
-        //state = WAITING_LIST_OF_ONLINE_USERS;
-        return true;
-    }else{
+        return writeMessage(socket, message);
+    } else {
         return false;
     }
 }
@@ -1042,12 +1050,12 @@ bool Messanger::sendFileInfomationChanges(QString oldFilename, QString newFilena
  * @param filename
  * @return
  */
-bool Messanger::sendDeleteFile(QString filename){
+bool Messanger::sendDeleteFile(QString filename) {
     qDebug() << "Messanger.cpp - sendDeleteFile()     ---------- SEND DELETE FILE ----------";
 
-    if (this->socket->state() == QTcpSocket::ConnectedState){
+    if (this->socket->state() == QTcpSocket::ConnectedState) {
         QByteArray message(DELETE_FILE);
-        QByteArray fileNameByteArray = convertionQString(filename);
+        QByteArray fileNameByteArray = convertionQString(std::move(filename));
         QByteArray fileNameSize = convertionNumber(fileNameByteArray.size());
 
         message.append(" " + fileNameSize + " " + fileNameByteArray);
@@ -1056,13 +1064,8 @@ bool Messanger::sendDeleteFile(QString filename){
 
 
         reciveOkMessage = true;
-        if (!writeMessage(socket, message)){
-            return false;
-        }
-
-        //state = WAITING_LIST_OF_ONLINE_USERS;
-        return true;
-    }else{
+        return writeMessage(socket, message);
+    } else {
         return false;
     }
 }
@@ -1071,6 +1074,6 @@ void Messanger::setCrdt(CRDT *crdt) {
     Messanger::crdt = crdt;
 }
 
-bool Messanger::messagesIsEmpty(){
+bool Messanger::messagesIsEmpty() {
     return this->messages.empty() && reciveOkMessage;
 }

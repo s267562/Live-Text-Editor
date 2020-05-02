@@ -49,7 +49,7 @@ bool readSpace(QTcpSocket *soc) {
 bool writeMessage(QTcpSocket *soc, QByteArray &message) {
 	if (soc == nullptr)
 		return false;
-	int size = message.size();
+    qint64 size = message.size();
 	qint64 left = size;
 
 	while (left != 0) {
@@ -82,7 +82,7 @@ bool writeOkMessage(QTcpSocket *soc) {
 	}
 }
 
-bool writeErrMessage(QTcpSocket *soc, QString type) {
+bool writeErrMessage(QTcpSocket *soc, const QString& type) {
 	if (soc == nullptr) {
 		return false;
 	}
@@ -136,7 +136,7 @@ bool readQString(QTcpSocket *soc, QString &in, int size) {
 	return true;
 }
 
-QByteArray convertionQString(QString str) {
+QByteArray convertionQString(const QString& str) {
 	QByteArray returnValue(reinterpret_cast<const char *>(str.utf16()), str.size() * 2);
 	return returnValue;
 }

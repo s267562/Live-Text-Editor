@@ -12,11 +12,11 @@ bool readChunck(QTcpSocket *soc, QByteArray& result,qsizetype size);
 bool readSpace(QTcpSocket *soc);
 bool writeMessage(QTcpSocket *soc, QByteArray& message);
 bool writeOkMessage(QTcpSocket *soc);
-bool writeErrMessage(QTcpSocket *soc, QString type = "");
+bool writeErrMessage(QTcpSocket *soc, const QString& type = "");
 QByteArray convertionNumber(int number);
 int readNumberFromSocket(QTcpSocket *socket);
 bool readQString(QTcpSocket *soc,QString &in, int size);
-QByteArray convertionQString(QString str);
+QByteArray convertionQString(const QString& str);
 
 
 #endif //TEXTEDITOR_COMMONFUNCTIONS_H

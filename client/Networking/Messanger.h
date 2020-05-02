@@ -56,12 +56,12 @@ public:
     bool despatchMessage();
     bool readError();
     bool readUser();
-    bool sendEditAccount(QString username, QString newPassword, QString oldPassword, QByteArray avatar);
-    bool sendShareCode(QString shareCode);
+    bool sendEditAccount(QString username, QString newPassword, QString oldPassword, const QByteArray& avatar);
+    bool sendShareCode(const QString& shareCode);
     bool readAddFile();
     bool requestForUsernameList(QString fileName);
     bool readUsernameList();
-    bool sendFileInfomationChanges(QString oldFilename, QString newFilename, QStringList usernames);
+    bool sendFileInfomationChanges(QString oldFilename, QString newFilename, const QStringList& usernames);
     bool sendDeleteFile(QString filename);
     void setCrdt(CRDT *crdt);
     bool readAlignmentChanged();

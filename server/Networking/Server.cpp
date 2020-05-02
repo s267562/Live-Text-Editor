@@ -1,6 +1,7 @@
 #include <QDataStream>
 
 #include <shared_mutex>
+#include <utility>
 #include "Server.h"
 #include "../SimpleCrypt/SimpleCrypt.h"
 
@@ -34,8 +35,8 @@ void Server::connection() {
 	qintptr socketDescriptor = soc->socketDescriptor();
 	socketsState[socketDescriptor] = UNLOGGED;
 	sockets[socketDescriptor] = soc;
-	QMetaObject::Connection *connectReadyRead = new QMetaObject::Connection();
-	QMetaObject::Connection *connectDisconnected = new QMetaObject::Connection();
+	auto *connectReadyRead = new QMetaObject::Connection();
+	auto *connectDisconnected = new QMetaObject::Connection();
 	soc->setParent(nullptr);
 
     connectionSlot(soc, connectReadyRead, connectDisconnected);
@@ -614,7 +615,7 @@ void Server::disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject
  * @param fileName
  * @return Thread with a specific ID
  */
-std::shared_ptr<Thread> Server::getThread(QString fileName) {
+std::shared_ptr<Thread> Server::getThread(const QString& fileName) {
 	auto result = threads.find(fileName);
 
 	if (result != threads.end()) {
@@ -629,7 +630,7 @@ std::shared_ptr<Thread> Server::getThread(QString fileName) {
  * @param fileName
  * @return new Thread
  */
-std::shared_ptr<Thread> Server::addThread(QString fileName, QString username) {
+std::shared_ptr<Thread> Server::addThread(const QString& fileName, const QString& username) {
 	CRDT* loadedCrdt = new CRDT();
 	std::shared_ptr<Thread> thread;                        /* create new thread */
 
@@ -684,7 +685,7 @@ bool Server::readShareCode(QTcpSocket *soc) {
     }
 }
 
-bool Server::handleShareCode(QString username, QString shareCode, QString &filename) {
+bool Server::handleShareCode(QString username, const QString& shareCode, QString &filename) {
     std::pair<QString, QString> pair = getInfoFromShareCode(shareCode);
     QString usernameOwner = pair.first;                    // TODO check problem in DB structure
     filename = pair.second;
@@ -693,7 +694,7 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
         return false;
     }
 
-    return DB.addPermission(filename, usernameOwner, username);
+    return DB.addPermission(filename, usernameOwner, std::move(username));
 }
 
 /**
@@ -702,7 +703,7 @@ bool Server::handleShareCode(QString username, QString shareCode, QString &filen
  * @param filename
  * @return bool
  */
-bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
+bool Server::sendAddFile(QTcpSocket *soc, const QString& filename) {
     qDebug() << "Server.cpp - sendAddFile()     ---------- SEND ADD FILE ----------";
     if (soc == nullptr)
         return false;
@@ -725,7 +726,7 @@ bool Server::sendAddFile(QTcpSocket *soc, QString filename) {
  * @param shareCode : shareCode to decrypt
  * @return : pair <Username , Filename>
  */
-std::pair<QString, QString> Server::getInfoFromShareCode(QString shareCode) {
+std::pair<QString, QString> Server::getInfoFromShareCode(const QString& shareCode) {
 	SimpleCrypt crypto;
 	crypto.setKey(0xf55f15758b7e0153);
 	QString decrypted = crypto.decryptToString(shareCode);
@@ -778,7 +779,7 @@ bool Server::readRequestUsernameList(QTcpSocket *soc) {
 
     message.append(" " + numUsers);
 
-    for (QString username : userlist){
+    for (const QString& username : userlist){
         QByteArray usernameQBytearray = convertionQString(username);
         QByteArray usernameSize = convertionNumber(usernameQBytearray.size());
         message.append(" " + usernameSize + " " + usernameQBytearray);
@@ -879,7 +880,7 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
 
     }
 
-    for (QString removedUsername : removedUsers) {
+    for (const QString& removedUsername : removedUsers) {
         for (std::pair<qintptr, QString> username : allUsernames) {
             if (username.first != soc->socketDescriptor() || removedUsername == username.second) {
                 if (!sendFileNames(sockets[username.first])) {
@@ -897,7 +898,7 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
         std::map<qintptr, QString> usernames = thread->getUsernames();
         std::map<qintptr, QTcpSocket *> threadSockets = thread->getSockets();
 
-        for (QString removedUsername : removedUsers) {
+        for (const QString& removedUsername : removedUsers) {
             for (std::pair<qintptr, QString> username : usernames) {
                 if (removedUsername == username.second) {
                     thread->sendRemoveUser(username.first, username.second);
