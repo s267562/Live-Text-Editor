@@ -58,12 +58,17 @@ void Registration::keyPressEvent(QKeyEvent *event) {
 void Registration::on_pushButton_registration_clicked() {
 	QString username = ui->username->text();
 	QString password = ui->password->text();
-	QPixmap avatar = ui->label->pixmap()->copy(); // TODO controllare se giusto. Togliendo il copy abbiamo un QPixmap*
+	QPixmap avatar = ui->label->pixmap()->copy();
+    QRegExp rx("^[a-zA-Z0-9]*$");
 
 	if (username == "" || password == "" || avatar.toImage().sizeInBytes() == 0) {
 		ui->error->setVisible(true);
 		ui->error->setText("Compile form!");
 		return;
+	}else if (rx.indexIn(username) == -1) {
+        ui->error->setVisible(true);
+        ui->error->setText("Insert valid username");
+        return;
 	}
 
 	ui->error->setVisible(false);

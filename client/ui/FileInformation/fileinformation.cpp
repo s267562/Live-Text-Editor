@@ -1,6 +1,7 @@
 #include "fileinformation.h"
 #include "ui_fileinformation.h"
 #include <QDebug>
+#include <QMessageBox>
 
 FileInformation::FileInformation(QWidget *parent, QString fileName, QStringList usernameList, Controller *controller, bool isOwner) :
     QDialog(parent),
@@ -49,6 +50,12 @@ void FileInformation::addRemoveUser(QString username){
 
 void FileInformation::pushSaveButton(){
     qDebug() << oldFilename << ui->lineEdit->text();
+    QRegExp rx("^[A-Za-z0-9 ]*[A-Za-z0-9][A-Za-z0-9 ]*$");
+    if (ui->lineEdit->text() == "" || rx.indexIn(ui->lineEdit->text()) == -1) {
+        QMessageBox::warning(this, "Error filename", "Insert a valid filename!");
+        return;
+    }
+
     if (!this->usernames.empty() || oldFilename != ui->lineEdit->text()){
         QString owner = controller->getUser()->getUsername();
         QString newFilename = oldFilename != ui->lineEdit->text()? owner + "%_##$$$##_%" + ui->lineEdit->text() : "";

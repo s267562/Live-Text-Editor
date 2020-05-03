@@ -1,5 +1,7 @@
+#include <QMessageBox>
 #include "createfile.h"
 #include "ui_createfile.h"
+#include <QDebug>
 
 CreateFile::CreateFile(QWidget *parent) :
     QDialog(parent),
@@ -20,6 +22,10 @@ void CreateFile::keyPressEvent(QKeyEvent *event) {
 
 void CreateFile::on_pushButton_clicked()
 {
-    if (ui->fileName->text() != "")
+    QRegExp rx("^[A-Za-z0-9 ]*[A-Za-z0-9][A-Za-z0-9 ]*$");
+    if (ui->fileName->text() != "" && rx.indexIn(ui->fileName->text()) != -1)
         emit createFile(ui->fileName->text());
+    else {
+        QMessageBox::warning(this, "Error filename", "Insert a valid filename!");
+    }
 }

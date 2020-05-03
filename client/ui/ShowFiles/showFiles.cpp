@@ -121,7 +121,7 @@ void ShowFiles::showError() {
 }
 
 void ShowFiles::editAccount() {
-	this->editAcc = new EditAccount(this, controller->getUser());
+	this->editAcc = new EditAccount(controller->getGui(), controller->getUser());
 	connect(editAcc, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
 			SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
 	editAcc->show();

@@ -1385,3 +1385,12 @@ void Thread::deleteFile() {
 	needToSaveFile = false;
 	fileDeleted = true;
 }
+
+Thread::~Thread() {
+    for (auto soc: sockets) {
+        soc.second->deleteLater();
+    }
+    for (auto soc: pendingSocket) {
+        soc.second->deleteLater();
+    }
+}

@@ -82,6 +82,7 @@ public:
     void addPendingSocket(qintptr socketDescriptor);                                // sync ok
     const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
     void deleteFile();                                                              // sync ok
+    ~Thread();
 
 signals:
     void error(QTcpSocket::SocketError socketerror);

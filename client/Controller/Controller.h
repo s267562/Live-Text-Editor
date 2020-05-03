@@ -119,6 +119,7 @@ public slots:
     void sendShareCode(const QString& sharecode);
     void shareCodeFailed();
     static void reciveExternalException();
+    void inviledateTextEditor();
 
 signals:
     void userRecived();

@@ -41,6 +41,7 @@ void EditAccount::keyPressEvent(QKeyEvent *event) {
 }
 
 void EditAccount::sendEdit(){
+    QRegExp rx("^[a-zA-Z0-9]*$");
     if (ui->username->text() == user->getUsername() && ui->newPassword->text() == ""
                     && ui->avatar->pixmap()->toImage() == user->getAvatar().toImage()){
         ui->error->setText("Please, edit your account!");
@@ -49,6 +50,10 @@ void EditAccount::sendEdit(){
     }else if (ui->oldPassword->text() == ""){
         ui->error->setText("Please, insert your current password!");
         ui->error->setVisible(true);
+        return;
+    }else if (rx.indexIn(ui->username->text()) == -1) {
+        ui->error->setVisible(true);
+        ui->error->setText("Insert valid username");
         return;
     }
 

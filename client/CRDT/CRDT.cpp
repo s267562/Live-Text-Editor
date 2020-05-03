@@ -521,6 +521,9 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     isWorking = false;
     numJobs--;
+    if (numJobs == 0) {
+        //QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
+    }
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {

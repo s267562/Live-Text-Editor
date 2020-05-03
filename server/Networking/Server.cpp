@@ -417,7 +417,9 @@ bool Server::readFileName(qintptr socketDescriptor, QTcpSocket *soc) {
         }
 	} else {
 	    std::shared_ptr<Thread> thread = addThread(key, username);
-		thread->addSocket(soc,usernames[socketDescriptor]);                                                 /* socket transition to secondary thread */
+        if (!thread->addSocket(soc,usernames[socketDescriptor])) {
+		    return false;
+		}                                                 /* socket transition to secondary thread */
 
 		thread->moveToThread(thread.get());
 		thread->start();
@@ -901,7 +903,7 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
         for (const QString& removedUsername : removedUsers) {
             for (std::pair<qintptr, QString> username : usernames) {
                 if (removedUsername == username.second) {
-                    thread->sendRemoveUser(username.first, username.second);
+                    thread->sendRemoveUser(username.second);
                     thread->addPendingSocket(username.first);
                     break;
                 }
@@ -1063,7 +1065,7 @@ void Server::removeThread(const QString& filename){
 }
 
 Server::~Server() {
-    std::unique_lock<std::shared_mutex> threadLok(mutexThread);
+    std::unique_lock<std::shared_mutex> threadLock(mutexThread);
     std::unique_lock<std::shared_mutex> deletedThreadLock(mutexDeleteFileThread);
     for (std::pair<QString, std::shared_ptr<Thread>> thread : threads) {
         thread.second->quit();
@@ -1078,5 +1080,9 @@ Server::~Server() {
         thread.second->wait();
         threads.erase(thread.first);
         qDebug() << "Thread deleted! in deleteFileThread";
+    }
+
+    for (auto soc: sockets) {
+        soc.second->deleteLater();
     }
 }

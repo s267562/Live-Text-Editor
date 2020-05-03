@@ -18,8 +18,8 @@ class Server: public QTcpServer{
     Q_OBJECT
 private:
     /* ATTRIBUTES */
-    std::map<QString,std::shared_ptr<Thread>> threads;                       // sync
-    std::map<QString,std::shared_ptr<Thread>> deleteFileThread;              // sync
+    std::map<QString, std::shared_ptr<Thread>> threads;                       // sync
+    std::map<QString, std::shared_ptr<Thread>> deleteFileThread;              // sync
     std::map<qintptr, SocketState> socketsState;
     std::map<qintptr, QString> usernames;                                    // sync ??
     std::map<qintptr, QString> allUsernames;                                 // sync

@@ -23,23 +23,27 @@ void Login::keyPressEvent(QKeyEvent *event) {
         on_pushButton_clicked();
 }
 
-void Login::on_pushButton_clicked(){
+void Login::on_pushButton_clicked() {
     QString username = ui->username->text();
     QString password = ui->password->text();
-
-    if (ui->username->text() == "" && ui->password->text() == ""){
+    QRegExp rx("^[a-zA-Z0-9]*$");
+    if (ui->username->text() == "" && ui->password->text() == "") {
         ui->label_3->setText("Insert username and password");
         ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
         ui->label_3->setVisible(true);
-    }else if (ui->username->text() == ""){
+    } else if (ui->username->text() == "") {
         ui->label_3->setText("Insert username");
         ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
         ui->label_3->setVisible(true);
-    }else if (ui->password->text() == "") {
+    } else if (ui->password->text() == "") {
         ui->label_3->setText("Insert password");
         ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
         ui->label_3->setVisible(true);
-    }else{
+    } else if (rx.indexIn(ui->username->text()) == -1) {
+        ui->label_3->setText("Insert valid username");
+        ui->label_3->setStyleSheet(QStringLiteral("QLabel{color: red;}"));
+        ui->label_3->setVisible(true);
+    } else {
 
         bool result = messanger->logIn(username,password);
 

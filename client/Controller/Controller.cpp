@@ -187,6 +187,7 @@ void Controller::errorConnection(){
     connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
     now = connection;
     handleGUI(connection);
+    stopLoadingPopup();
 }
 
 /*  -------------------------------------------------------------  CONNECTION */
@@ -366,7 +367,7 @@ void Controller::sendEditAccount(QString username, QString newPassword, QString 
  * This method, in case of error, shows an error message
  */
 void Controller::errorEditAccount() {
-    QMessageBox::warning(now, "Edit account", "Try again, Edit account!");
+    QMessageBox::warning(GUI, "Edit account", "Try again, Edit account!");
     stopLoadingPopup();
 }
 
@@ -381,7 +382,7 @@ void Controller::okEditAccount(){
  * This mathod starts the loading pop up
  */
 void Controller::startLoadingPopup(){
-    loading = new Loading(now);
+    loading = new Loading(GUI);
     loadingPoPupIsenabled = true;
     loading->show();
 }
@@ -392,7 +393,7 @@ void Controller::startLoadingPopup(){
 void Controller::stopLoadingPopup(){
     if (loadingPoPupIsenabled && loading != nullptr){
         loadingPoPupIsenabled = false;
-        loading->setParent(now);
+        loading->setParent(GUI);
         loading->close();
     }
 }
@@ -410,7 +411,7 @@ void Controller::sendShareCode(const QString& sharecode){
  * this method shows an error message
  */
 void Controller::shareCodeFailed(){
-    QMessageBox::warning(now, "Share Code", "Share code is wrong! Try again!");
+    QMessageBox::warning(GUI, "Share Code", "Share code is wrong! Try again!");
     stopLoadingPopup();
 }
 
@@ -511,4 +512,9 @@ Messanger *Controller::getMessanger() const {
 
 void Controller::reciveExternalException(){
     throw "Exception";
+}
+
+void Controller::inviledateTextEditor() {
+    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    editor->replaceText(this->crdt->getStructure());
 }
