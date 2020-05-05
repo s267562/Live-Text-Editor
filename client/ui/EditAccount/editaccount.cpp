@@ -13,6 +13,7 @@ EditAccount::EditAccount(QWidget *parent, User *user) :
     ui->avatar->setPixmap(user->getAvatar());
     connect(ui->editButton, SIGNAL(clicked()), this, SLOT(sendEdit()));
     connect(ui->avatar, SIGNAL(clicked()), this, SLOT(on_label_clicked()));
+    connect(    ui->removeButton, SIGNAL(clicked()), this, SLOT(removeImage()));
 }
 
 EditAccount::~EditAccount()
@@ -75,4 +76,10 @@ void EditAccount::sendEdit(){
     }
 
     emit edit(username, ui->newPassword->text(), ui->oldPassword->text(), avatar);
+}
+
+void EditAccount::removeImage() {
+    QPixmap pix(":/rec/img/user.png");
+    ui->avatar->setPixmap(pix);
+    ui->avatar->setGeometry(ui->avatar->geometry().x(), ui->avatar->geometry().y(), 80, 80);
 }

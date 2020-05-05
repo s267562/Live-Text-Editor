@@ -20,6 +20,7 @@ public:
 public slots:
     void sendEdit();
     void on_label_clicked();
+    void removeImage();
 
 signals:
     void edit(QString username, QString newPassword, QString oldPassword, QByteArray avatar);

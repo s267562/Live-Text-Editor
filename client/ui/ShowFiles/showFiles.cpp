@@ -88,7 +88,7 @@ void ShowFiles::addFile(std::map<QString, bool> l) {
 }
 
 void ShowFiles::on_actionNew_File_triggered() {
-	createFile = new CreateFile(this);
+	createFile = new CreateFile(controller->getGui());
 	connect(createFile, SIGNAL(createFile(QString)), controller, SLOT(requestForFile(QString)));
 	createFile->show();
 }
@@ -154,7 +154,7 @@ QString ShowFiles::getShareCode(const QString &username, const QString &filename
 }
 
 void ShowFiles::on_actionAdd_File_triggered(){
-	addFile1 = new AddFile(this);
+	addFile1 = new AddFile(controller->getGui());
 	connect(addFile1, SIGNAL(sendShareCode(QString)), controller, SLOT(sendShareCode(QString)));
     addFile1->show();
 }
