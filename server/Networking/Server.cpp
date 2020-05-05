@@ -1055,12 +1055,17 @@ void Server::removeDeleteFileThread(const QString& filename){
 void Server::removeThread(const QString& filename){
     std::unique_lock<std::shared_mutex> threadLok(mutexThread);
     std::unique_lock<std::shared_mutex> deletedThreadLock(mutexDeleteFileThread);
-
-    threads[filename]->quit();
-    threads[filename]->requestInterruption();
-    threads[filename]->wait();
-    threads.erase(filename);
-    deleteFileThread.erase(filename);
+    if (deleteFileThread.find(filename) != deleteFileThread.end()) {
+        deleteFileThread[filename]->quit();
+        deleteFileThread[filename]->requestInterruption();
+        deleteFileThread[filename]->wait();
+        deleteFileThread.erase(filename);
+    }else {
+        threads[filename]->quit();
+        threads[filename]->requestInterruption();
+        threads[filename]->wait();
+        threads.erase(filename);
+    }
     qDebug() << "Thread deleted!";
 }
 
