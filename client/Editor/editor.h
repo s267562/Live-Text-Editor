@@ -19,9 +19,12 @@
 #include <QLabel>
 #include "../utils/OtherCursor.h"
 #include "EditAccount/editaccount.h"
+#include "TextEdit.h"
+
 
 
 class Controller;
+class TextEdit;
 
 namespace Ui {
     class Editor;
@@ -95,7 +98,7 @@ private slots:
 
 private:
     Ui::Editor *ui;
-    QTextEdit *textEdit;
+    TextEdit *textEdit;
     QTextDocument *textDocument;
     QTextCursor textCursor;
     int cursorPos;

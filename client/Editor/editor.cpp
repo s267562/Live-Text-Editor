@@ -29,7 +29,7 @@ Q_DECLARE_METATYPE(QTextCursor);
 //Q_DECLARE_METATYPE(Pos);
 
 
-Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new QTextEdit(this)),
+Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new TextEdit(this, controller)),
 																		  textDocument(textEdit->document()),
 																		  siteId(siteId), QMainWindow(parent),
 																		  ui(new Ui::Editor), controller(controller),
@@ -643,7 +643,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
 
 
-	textCursor.setPosition(textCursor.position() - 1, QTextCursor::KeepAnchor);
+	//textCursor.setPosition(textCursor.position() - 1, QTextCursor::KeepAnchor);
 	textCursor.mergeCharFormat(textCharFormat);
 	textEdit->mergeCurrentCharFormat(textCharFormat);
 
