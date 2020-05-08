@@ -447,9 +447,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
                 }
             }
+
             else{ // Selection backward
                 for(int i=charsAdded-1; i>=0; i--) {
                     // for each char added
+
                     cursor.setPosition(position + i);
                     int line = cursor.blockNumber();
                     int ch = cursor.positionInBlock();
@@ -528,6 +530,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				qDebug() << "Editor: " << QThread::currentThreadId();
 
 				if (charsAdded == 1) {
+                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                    controller->getCrdt()->setIsWorking(true);
+                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                    if (count != pendingChar.size()) {
+                        count = pendingChar.size();
+                    }
+
 					cursor.setPosition(position);
 					int line = cursor.blockNumber();
 					int ch = cursor.positionInBlock();
@@ -536,12 +545,10 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 					cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
 					QTextCharFormat charFormat = cursor.charFormat();
 					//emit localInsert(chars.at(i), charFormat, startPos);
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
-                    QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                    controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
+                    /*QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
 											  Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
-											  Q_ARG(Pos, startPos));
+											  Q_ARG(Pos, startPos), Q_ARG(bool, conflict));*/
 				} else {
                     /*QTextCursor *cursor1 = new QTextCursor{cursor};
                     std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
@@ -550,10 +557,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 					QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection,
 											  Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1),
 											  Q_ARG(QString, chars), Q_ARG(int, position));*/
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                    //std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
                     controller->getCrdt()->setIsWorking(true);
                     controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
-                    isWorkingLock.unlock();
+                    //controller->getCrdt()->copy = true;
+                    std::cout << "Position Cursor: " << textEdit->position << " " << position;
 
                     for(int i=0; i<charsAdded; i++) {
                         // for each char added
@@ -566,10 +574,22 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                         cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
                         QTextCharFormat charFormat = cursor.charFormat();
 
-                        QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
-                                                  Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
-                                                  Q_ARG(Pos, startPos));
+                        if (i == charsAdded - 1) {
+                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                      Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                      Q_ARG(Pos, startPos), Q_ARG(bool, true));
+
+                        } else if (i == 0) {
+                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                     Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                     Q_ARG(Pos, startPos), Q_ARG(bool, true));
+                        } else {
+                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                      Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                      Q_ARG(Pos, startPos), Q_ARG(bool, false));
+                        }
                     }
+                    //isInvalid = true;
 				}
 			}
 		}
@@ -611,13 +631,12 @@ void Editor::updateOtherCursorPosition() {
 }
 
 
-void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
-	int oldCursorPos = textCursor.position();
-
-	textCursor.movePosition(QTextCursor::Start);
-	textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
-	textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
-
+void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId, Character c) {
+    if (isInvalid) {
+        controller->inviledateTextEditor();
+        isInvalid = false;
+        return;
+    }
 
 	QTextDocument *doc = textEdit->document();
 	disconnect(doc, &QTextDocument::contentsChange,
@@ -625,6 +644,23 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 
 	disconnect(textEdit, &QTextEdit::cursorPositionChanged,
 			   this, &Editor::onCursorPositionChanged);
+
+    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+    if (controller->getCrdt()->copy || count > 0) {
+        if (count > 0) {
+            count--;
+        }
+        std::cout << "Editor" << c.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+        pos = controller->getCrdt()->findPosition(c);
+        std::cout << "Editor" << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+    }
+    controller->editor->pendingChar.pop_front();
+
+    int oldCursorPos = textCursor.position();
+
+    textCursor.movePosition(QTextCursor::Start);
+    textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+    textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
 
     textCursor.insertText(QString::fromLatin1(&character, 1));
 
@@ -643,7 +679,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
 
 
-	//textCursor.setPosition(textCursor.position() - 1, QTextCursor::KeepAnchor);
+	textCursor.setPosition(textCursor.position() - 1, QTextCursor::KeepAnchor);
 	textCursor.mergeCharFormat(textCharFormat);
 	textEdit->mergeCurrentCharFormat(textCharFormat);
 
@@ -653,8 +689,9 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 
-
-	textCursor.setPosition(oldCursorPos);
+    //if (!controller->getCrdt()->copy) {
+        textCursor.setPosition(oldCursorPos);
+    //}
 
 	connect(textEdit, &QTextEdit::cursorPositionChanged,
 			this, &Editor::onCursorPositionChanged);

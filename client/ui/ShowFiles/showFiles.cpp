@@ -111,8 +111,7 @@ void ShowFiles::resizeEvent(QResizeEvent *event) {
         centralWidgetX = 0;
     }
 
-    ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height());
-
+    ui->listWidget->setGeometry(centralWidgetX, 65, ui->listWidget->width(), height()-65);
 }
 
 

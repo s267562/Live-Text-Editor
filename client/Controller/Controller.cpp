@@ -140,7 +140,7 @@ void Controller::editorConnection() {
     }
     /* MULTI THREAD */
     crdt->setEditor(editor);
-    connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos, QString)), editor, SLOT(insertChar(char, QTextCharFormat, Pos, QString)));
+    //connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos, QString)), editor, SLOT(insertChar(char, QTextCharFormat, Pos, QString)));
     connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&, QString)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&, QString)));
     connect(crdt, SIGNAL(deleteChar(Pos, QString)), editor, SLOT(deleteChar(Pos, QString)));
     connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
@@ -515,6 +515,7 @@ void Controller::reciveExternalException(){
 }
 
 void Controller::inviledateTextEditor() {
-    std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    std::shared_lock<std::shared_mutex> requestLock(mutexRequestForFile);
+    std::shared_lock<std::shared_mutex> isWorkingLock(getCrdt()->mutexIsWorking);
     editor->replaceText(this->crdt->getStructure());
 }

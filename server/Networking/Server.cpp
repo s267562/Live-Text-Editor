@@ -13,7 +13,7 @@ Server::Server(QObject *parent) : QTcpServer(parent) {}
  * @return
  */
 bool Server::startServer(quint16 port) {
-	connect(this, SIGNAL(newConnection()), this, SLOT(connection()));
+	connect(this, SIGNAL(newConnection()), this, SLOT(connection()), Qt::QueuedConnection);
 	if (!this->listen(QHostAddress::Any, port)) {
 		qDebug() << "Server.cpp - startServer()     Could not start server";
 		qDebug() << ""; // newLine

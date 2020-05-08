@@ -42,6 +42,7 @@ private:
     QString siteId;
     bool requestFFile = false;
 
+public:
     /* VIEWS */
     Editor *editor = nullptr;
     Login *login = nullptr;

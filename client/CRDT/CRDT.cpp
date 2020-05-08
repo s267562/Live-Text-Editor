@@ -512,18 +512,35 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
     return pos;
 }
 
-void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos) {
-    qDebug() << "CRDT: " << QThread::currentThreadId();
-    Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
 
-    // send insert at the server.
-    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
+void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool ultimo) {
+    qDebug() << "CRDT: " << QThread::currentThreadId();
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+    localInsert(val, textCharFormat, pos);
+
+    if (ultimo && copy && numJobs == 0) {
+        for (auto c: queueInsertMessage) {
+            pos = handleRemoteInsert(c);
+            editor->pendingChar.push_back(c);
+            std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
+            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
+                                      Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
+                                      Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));
+        }
+        queueInsertMessage.clear();
+        copy = false;
+    }
+    if (ultimo) {
+        QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
+    }
+}
+
+void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos) {
+    Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
+    // send insert at the server.
+    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
     isWorking = false;
     numJobs--;
-    if (numJobs == 0) {
-        //QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
-    }
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
@@ -595,15 +612,24 @@ void CRDT::newMessage(Message message) {
         return;
 
     if(message.getType() == INSERT) {
+        std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
         Character character = message.getCharacter();
 
-        Pos pos = handleRemoteInsert(character);
 
         if(character.getSiteId() == getSiteId()) {
             // local insert - only in the model; the char is already in the view.
         } else {
-            // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()), Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos), Q_ARG(QString, message.getSender()));
+            if (copy) {
+                //std::cout << character.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+                queueInsertMessage.push_back(character);
+            }else {
+                Pos pos = handleRemoteInsert(character);
+                editor->pendingChar.push_back(character);
+                // remote insert - the char is to insert in the model and in the view. Insert into the editor.
+                QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
+                                          Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
+                                          Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+            }
         }
     } else if(message.getType() == STYLE_CHANGED) {
         Pos pos = handleRemoteStyleChanged(message.getCharacter());
@@ -691,7 +717,7 @@ int CRDT::getRow(Character blockId) {
 
 
 void CRDT::printStructures() {
-
+    return;
     QDebug qD(QtDebugMsg);
     qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
     if (style.size() == 0)

@@ -29,6 +29,8 @@ class CRDT: public QObject {
     Q_OBJECT;
 public:
     std::shared_mutex mutexIsWorking;
+    bool copy = false;
+    std::list<Character> queueInsertMessage;
     CRDT(QObject *parent, Messanger *messanger, Controller *controller = nullptr);
 
     void setStructure(const std::vector<std::vector<Character>> &initialStructure);
@@ -80,7 +82,7 @@ public:
 public:
     void setEditor(Editor *editor);
 
-private:
+public:
 
     // insert
     const Character generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId);
@@ -106,9 +108,10 @@ private:
     void insertBlock(Character character, Pos position);
 
     void removeStyleLine(int i);
+    void localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos);
 
 public slots:
-    void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos);
+    void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool invalid);
     void totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars,  int position);
     void localStyleChange(QTextCharFormat textCharFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
@@ -123,6 +126,7 @@ signals:
     void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString);
     void changeStyle(Pos pos, const QTextCharFormat&format, QString);
     void deleteChar(Pos pos, QString);
+
 };
 
 

@@ -68,7 +68,7 @@ public slots:
     //void editAccountClicked();
     void changeUser();
     /*MULTI THREAD*/
-    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId);
+    void insertChar(char character, QTextCharFormat charFormat, Pos pos, QString siteId, Character c);
     void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
     void deleteChar(Pos pos, QString sender);
     void remoteAlignmentChanged(int alignment, int blockNumber);
@@ -81,7 +81,7 @@ signals:
     void totalLocalStyleChange(int charsAdded, QTextCursor cursor, int position, int, int);
     void localDelete(Pos startPos, Pos endPos);
 
-private slots:
+public slots:
     void onTextChanged(int position, int charsRemoved, int charsAdded);
     void onCursorPositionChanged();
     void textBold();
@@ -117,6 +117,8 @@ private:
 
 public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;
+    std::list<Character> pendingChar;
+    int count = 0;
     
 private:
     std::vector<QString> colors;
@@ -151,6 +153,7 @@ private:
     QGraphicsDropShadowEffect *m_shadowEffect1;
     QGraphicsDropShadowEffect *m_shadowEffect2;
     QString filename;
+    bool isInvalid = false;
 
 
 };
