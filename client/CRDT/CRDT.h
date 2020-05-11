@@ -30,6 +30,7 @@ class CRDT: public QObject {
 public:
     std::shared_mutex mutexIsWorking;
     bool copy = false;
+    bool waitForInvalidate = false;
     std::list<Character> queueInsertMessage;
     CRDT(QObject *parent, Messanger *messanger, Controller *controller = nullptr);
 

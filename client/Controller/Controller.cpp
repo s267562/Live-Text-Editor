@@ -518,4 +518,15 @@ void Controller::inviledateTextEditor() {
     std::shared_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     std::shared_lock<std::shared_mutex> isWorkingLock(getCrdt()->mutexIsWorking);
     editor->replaceText(this->crdt->getStructure());
+
+    // TODO: vedere se mantiene l'alineamento!
+    auto styleBlocks = crdt->getStyle();
+    std::vector<int> alignment_block;
+    alignment_block.reserve(styleBlocks.size());
+
+    for(std::pair<Character,int> & block : styleBlocks){
+        alignment_block.emplace_back(block.second);
+    }
+    editor->formatText(alignment_block);
+    crdt->waitForInvalidate = false;
 }

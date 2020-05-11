@@ -523,14 +523,15 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
             pos = handleRemoteInsert(c);
             editor->pendingChar.push_back(c);
             std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
-            QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
+            /*QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
                                       Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
-                                      Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));
+                                      Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));*/
         }
         queueInsertMessage.clear();
         copy = false;
     }
     if (ultimo) {
+        waitForInvalidate = true;
         QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
     }
 }
@@ -624,11 +625,13 @@ void CRDT::newMessage(Message message) {
                 queueInsertMessage.push_back(character);
             }else {
                 Pos pos = handleRemoteInsert(character);
-                editor->pendingChar.push_back(character);
-                // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-                QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
-                                          Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
-                                          Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+                if (!waitForInvalidate) {
+                    editor->pendingChar.push_back(character);
+                    // remote insert - the char is to insert in the model and in the view. Insert into the editor.
+                    QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
+                                              Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
+                                              Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+                }
             }
         }
     } else if(message.getType() == STYLE_CHANGED) {

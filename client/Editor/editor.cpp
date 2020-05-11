@@ -582,7 +582,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                         } else if (i == 0) {
                             QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
                                                      Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
-                                                     Q_ARG(Pos, startPos), Q_ARG(bool, true));
+                                                     Q_ARG(Pos, startPos), Q_ARG(bool, false));
                         } else {
                             QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
                                                       Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
