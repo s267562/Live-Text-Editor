@@ -645,7 +645,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	disconnect(textEdit, &QTextEdit::cursorPositionChanged,
 			   this, &Editor::onCursorPositionChanged);
 
-    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+    /*std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
     if (controller->getCrdt()->copy || count > 0) {
         if (count > 0) {
             count--;
@@ -653,6 +653,12 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
         std::cout << "Editor" << c.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
         pos = controller->getCrdt()->findPosition(c);
         std::cout << "Editor" << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+    }*/
+    if (count > 0) {
+        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+        std::cout << "Editor " << c.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+        pos = controller->getCrdt()->findPosition(c);
+        std::cout << "Editor " << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
     }
     controller->editor->pendingChar.pop_front();
 

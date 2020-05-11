@@ -521,7 +521,7 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
     if (ultimo && copy && numJobs == 0) {
         for (auto c: queueInsertMessage) {
             pos = handleRemoteInsert(c);
-            editor->pendingChar.push_back(c);
+            //editor->pendingChar.push_back(c);
             std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
             /*QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
                                       Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
