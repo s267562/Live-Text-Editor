@@ -1393,4 +1393,5 @@ Thread::~Thread() {
     for (auto soc: pendingSocket) {
         soc.second->deleteLater();
     }
+    delete saveTimer;
 }
