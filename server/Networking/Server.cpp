@@ -525,7 +525,7 @@ bool Server::readEditAccount(QTcpSocket *soc) {
                     if (fileList[i].split("%_##$$$##_%")[0] != usernames[soc->socketDescriptor()])
                         continue;
                     QString newFilename = newUsername + "%_##$$$##_%" + filename;
-					QString &oldFilename = fileList[i].split(".json")[0];
+					QString oldFilename = fileList[i].split(".json")[0];
 					changeNamethread(oldFilename, newFilename);
                     qDebug() << "Found file: " << fileList[i];
                     QFile renamefile(fileList[i]);
