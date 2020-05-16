@@ -979,7 +979,7 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 	if (db.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
 		if (newUsernameSize != 0) {
 			if (db.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
-				QDir dir;
+				QDir dir("saveData");
 				dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
 				dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 				std::map<qintptr, QTcpSocket *> serverSockets = this->server->getSockets();
@@ -1233,11 +1233,10 @@ bool Thread::readFileInformationChanges(QTcpSocket *soc) {
 	std::map<qintptr, QString> serverAllUsernames = this->server->getAllUsernames();
 
 	if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
-		QFile saveFile(oldJsonFileName + ".json");
-		db.changeFileName(oldJsonFileName, newJsonFileName);
-		saveFile.rename(newJsonFileName + ".json");
-		saveFile.close();
-		server->changeNamethread(oldJsonFileName, newJsonFileName);
+        if (db.changeFileName(oldJsonFileName, newJsonFileName)) {
+            renameFileSave(oldJsonFileName, newJsonFileName);
+            server->changeNamethread(oldJsonFileName, newJsonFileName);
+        } else return false;
 
 		/* server*/
 		for (std::pair<qintptr, QString> username : serverAllUsernames) {

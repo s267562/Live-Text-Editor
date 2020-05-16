@@ -515,7 +515,7 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 	if (DB.authenticateUser(usernames[soc->socketDescriptor()], oldPassword)) {
 		if (newUsernameSize != 0) {
 			if (DB.changeUsername(usernames[soc->socketDescriptor()], newUsername)) {
-				QDir dir;
+				QDir dir("saveData");
 				dir.setNameFilters(QStringList(usernames[soc->socketDescriptor()] + "*"));
 				dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 
