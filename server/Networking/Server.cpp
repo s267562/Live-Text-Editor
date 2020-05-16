@@ -531,9 +531,11 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 					QString oldFilename = fileList[i].split(".json")[0];
 					changeNamethread(oldFilename, newFilename);
 					qDebug() << "Found file: " << fileList[i];
-					QFile renamefile(fileList[i]);
+
+                    renameFileSave(oldFilename, newFilename);
+                    /*QFile renamefile(fileList[i]);
 					renamefile.rename(newFilename + ".json");
-					renamefile.close();
+					renamefile.close();*/
 
 					if (DB.changeFileName(oldFilename, newFilename)) {
 						renamed.append(std::pair(newFilename, oldFilename));
@@ -542,10 +544,11 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 						qDebug("Err renaming file. Doing Rollback");
 
 						for (std::pair f : renamed) {
-							QFile reRenameFile(f.first + ".json");
+							/*QFile reRenameFile(f.first + ".json");
 							renamefile.rename(f.second + ".json");
-							renamefile.close();
-						}
+							renamefile.close();*/
+                            renameFileSave(f.first, f.second);
+                        }
 						return false;
 					}
 
@@ -859,30 +862,26 @@ bool Server::readFileInformationChanges(QTcpSocket *soc) {
 
 	qDebug() << oldJsonFileName << newJsonFileName;
 
-	if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
-		QFile saveFile(oldJsonFileName + ".json");
-		if (!DB.changeFileName(oldJsonFileName, newJsonFileName)) {
-			saveFile.close();
-			return false;
-		}
-		saveFile.rename(newJsonFileName + ".json");
-		saveFile.close();
-		changeNamethread(oldJsonFileName, newJsonFileName);
+    if (newFileNameSize != 0 && newJsonFileName != oldJsonFileName) {
+        if (DB.changeFileName(oldJsonFileName, newJsonFileName)) {
+            renameFileSave(oldJsonFileName, newJsonFileName);
+            changeNamethread(oldJsonFileName, newJsonFileName);
+        } else return false;
 
-		for (std::pair<qintptr, QString> username : allUsernames) {
-			if (username.first != soc->socketDescriptor()) {
-				std::map<QString, bool> listOfFile = DB.getFiles(username.second);
+        for (std::pair<qintptr, QString> username : allUsernames) {
+            if (username.first != soc->socketDescriptor()) {
+                std::map<QString, bool> listOfFile = DB.getFiles(username.second);
 
-				auto result = listOfFile.find(newJsonFileName);
-				if (result != listOfFile.end()) {
-					if (!sendFileNames(sockets[username.first])) {
-						return false;
-					}
-				}
-			}
-		}
+                auto result = listOfFile.find(newJsonFileName);
+                if (result != listOfFile.end()) {
+                    if (!sendFileNames(sockets[username.first])) {
+                        return false;
+                    }
+                }
+            }
+        }
 
-	}
+    }
 
 	for (const QString &removedUsername : removedUsers) {
 		for (std::pair<qintptr, QString> username : allUsernames) {
@@ -960,9 +959,7 @@ bool Server::readDeleteFile(QTcpSocket *soc) {
 		return false;
 	}
 
-	QFile deleteFile(jsonFileName + ".json");
-	deleteFile.remove();
-	deleteFile.close();
+    deleteFileSave(jsonFileName);
 
 	sendFileNames(soc);
 

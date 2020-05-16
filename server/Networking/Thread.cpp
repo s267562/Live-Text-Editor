@@ -996,11 +996,13 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 					server->changeNamethread(fileList[i].split(".json")[0], newFilename);
 
 					qDebug() << "Found file: " << fileList[i];
-					QFile renamefile(fileList[i]);
-
+					/*QFile renamefile(fileList[i]);
 					renamefile.rename(newFilename + ".json");
-					db.changeFileName(fileList[i].split(".json")[0], newFilename);
-					renamefile.close();
+                    renamefile.close();*/
+                    QString oldFilename = fileList[i].split(".json")[0];
+                    renameFileSave(oldFilename, newFilename);
+
+                    db.changeFileName(fileList[i].split(".json")[0], newFilename);
 
 
 					/* trovare tutti gli utenti che hanno in comune i file dell'utente */
@@ -1324,9 +1326,7 @@ bool Thread::readDeleteFile(QTcpSocket *soc) {
 	}
 
 	needToSaveFile = false;
-	QFile deletefile(jsonFileName + ".json");
-	deletefile.remove();
-	deletefile.close();
+    deleteFileSave(jsonFileName);
 
     server->sendFileNames(soc);
 
