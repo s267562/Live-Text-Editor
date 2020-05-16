@@ -344,10 +344,11 @@ void CRDT::read(const QJsonObject &json) {
  * @return
  */
 bool CRDT::saveCRDT(QString filename) {
+	filename = "saveData/" + filename;
 #if binarySave
-		QFile saveFile(filename + ".dat");
+	QFile saveFile(filename + ".dat");
 #else
-		QFile saveFile(filename + ".json");
+	QFile saveFile(filename + ".json");
 #endif
 
 	if (!saveFile.open(QIODevice::WriteOnly)) {
@@ -372,11 +373,26 @@ bool CRDT::saveCRDT(QString filename) {
  */
 bool CRDT::loadCRDT(QString filename) {
 #if binarySave
-	QFile loadFile(filename + ".dat");
+	filename = filename + ".dat";
 #else
-	QFile loadFile(filename + ".json");
+	filename = filename + ".json";
 #endif
 
+	// Check file is not corrupted
+	QString filePath = "saveData/" + filename;
+	QFileInfo fileInfo(filePath);
+	if (fileInfo.size() == 0) {
+		filePath = "backup1/" + filename;
+		fileInfo = QFileInfo(filePath);
+		if (fileInfo.size() == 0) {
+			filePath = "backup2/" + filename;
+			fileInfo = QFileInfo(filePath);
+			if (fileInfo.size() == 0)
+				return false;
+		}
+	}
+
+	QFile loadFile(filePath);
 	if (!loadFile.open(QIODevice::ReadOnly)) {
 		qWarning("Couldn't open save file. [READ]");
 		return false;

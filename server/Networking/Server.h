@@ -41,6 +41,7 @@ private:
     bool readFileInformationChanges(QTcpSocket *soc);                   // sync ok
     bool readDeleteFile(QTcpSocket *soc);                               // sync ok
 
+
     void connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 public:

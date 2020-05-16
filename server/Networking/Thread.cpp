@@ -1,4 +1,5 @@
 #include "Thread.h"
+#include "../Utils/Utilities.h"
 #include <QDataStream>
 #include <utility>
 
@@ -230,22 +231,45 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
  * Save CRDT to a file
  */
 void Thread::saveCRDTToFile() {
-    if (crdt == nullptr)
-        return;
+	if (crdt == nullptr)
+		return;
 	std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
 	std::unique_lock<std::shared_mutex> needToSaveLock(mutexNeedToSave);
 
-	try{
-        QString jsonFileName = filename;
-        if (needToSaveFile) {
-            qDebug() << "Saving CRDT for file: " + jsonFileName;
-            crdt->saveCRDT(jsonFileName);
-            needToSaveFile = false;
-        }
-	}catch (...){
-	    // accungere qualche meccanismo
-	    qDebug() << "Impossibile salvare la struttura!";
+	try {
+		QString jsonFileName = filename;
+		if (needToSaveFile) {
+			qDebug() << "Saving CRDT for file: " + jsonFileName;
+			crdt->saveCRDT(jsonFileName);
+			counterBackupSave++;
+		}
+	} catch (...) {
+		// accungere qualche meccanismo
+		qDebug() << "Impossibile salvare la struttura!";
+		needToSaveFile = false; // Ritenteremo la scrittura al prossimo giro.
 	}
+
+	// Backup PRIMARIO ogni 2 salvataggi TODO correggere se necessario
+	if (counterBackupSave % 2 == 0 && needToSaveFile) {
+		try {
+			backupFile(filename, true);
+		} catch (...) {
+			qDebug() << "Impossibile fare il backup primario!";
+			needToSaveFile = false;
+		}
+	}
+
+	// Backup SECONDARIO ogni 2 salvataggi TODO correggere se necessario
+	if (counterBackupSave % 10 == 0 && needToSaveFile) {
+		try {
+			backupFile(filename, false);
+		} catch (...) {
+			qDebug() << "Impossibile fare il backup secondario!";
+			needToSaveFile = false;
+		}
+		counterBackupSave = 0;
+	}
+	needToSaveFile = false;
 
 }
 

@@ -120,7 +120,7 @@ add_executable(server
         common/Constants.h
         common/commonFunctions.h
         common/commonFunctions.cpp
-        common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h)
+        common/Message.h server/SimpleCrypt/SimpleCrypt.cpp server/SimpleCrypt/SimpleCrypt.h server/Utils/Utilities.cpp server/Utils/Utilities.h)
 
 # Disable qDebug output
 #target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
