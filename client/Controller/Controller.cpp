@@ -46,6 +46,7 @@ Controller::Controller(CRDT *crdt, Editor *editor, Messanger *messanger) : crdt(
  */
 void Controller::networkingConnection() {
     connect(this->messanger, &Messanger::errorConnection, this, &Controller::errorConnection);
+    connect(this->messanger, &Messanger::error, this, &Controller::reciveExternalErrorOrException);
     connect(this->messanger, SIGNAL(fileRecive(std::vector<std::vector<Character>>, std::vector<std::pair<Character,int>>, QString)),
             this, SLOT(openFile(std::vector<std::vector<Character>>,std::vector<std::pair<Character,int>>, QString)));
     connect(this->messanger, SIGNAL(reciveUser(User*)), this, SLOT(reciveUser(User*)));
@@ -109,18 +110,18 @@ void Controller::registrationDisconnection() {
  *  Handle the connection between signal and slot for the showFiles object
  */
 void Controller::finderConnection() {
-    connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
-    connect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
-    connect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
+    connect(this->showFiles, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+    connect(this->messanger, &Messanger::requestForFileFailed, this->showFiles, &ShowFiles::showError);
+    connect(this->showFiles, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 }
 
 /**
  *  Handle the disconnection between signal and slot for the showFiles object
  */
 void Controller::finderDisconnection() {
-    disconnect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
-    disconnect(this->messanger, &Messanger::requestForFileFailed, this->finder, &ShowFiles::showError);
-    disconnect(this->finder, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
+    disconnect(this->showFiles, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+    disconnect(this->messanger, &Messanger::requestForFileFailed, this->showFiles, &ShowFiles::showError);
+    disconnect(this->showFiles, SIGNAL(newFile(QString)), this, SLOT(requestForFile(QString)));
 }
 
 /**
@@ -128,24 +129,29 @@ void Controller::finderDisconnection() {
  */
 void Controller::editorConnection() {
     /* connecting */
-    connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
     connect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
     connect(messanger, &Messanger::insertFailed, editor, &Editor::showError);
     connect(messanger, &Messanger::deleteFailed, editor, &Editor::showError);
     connect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
     connect(editor, &Editor::logout, messanger, &Messanger::logOut);
-    if (finder == now) {
-        connect(this->finder, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+    if (showFiles == now) {
+        connect(this->showFiles, &ShowFiles::logout, this->messanger, &Messanger::logOut);
         connect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
     }
     /* MULTI THREAD */
     crdt->setEditor(editor);
-    //connect(crdt, SIGNAL(insertChar(char, QTextCharFormat, Pos, QString)), editor, SLOT(insertChar(char, QTextCharFormat, Pos, QString)));
-    connect(crdt, SIGNAL(changeStyle(Pos, const QTextCharFormat&, QString)), editor, SLOT(changeStyle(Pos , const QTextCharFormat&, QString)));
-    connect(crdt, SIGNAL(deleteChar(Pos, QString)), editor, SLOT(deleteChar(Pos, QString)));
-    connect(editor, SIGNAL(localDelete(Pos , Pos )), crdt, SLOT(localDelete(Pos , Pos )));
-    connect(editor, SIGNAL(totalLocalInsert(int , QTextCursor* , QString, int )), crdt, SLOT(totalLocalInsert(int , QTextCursor* , QString, int )), Qt::QueuedConnection);
-    //connect(editor, SIGNAL(totalLocalStyleChange(int , QTextCursor*, int, int, int)), crdt, SLOT(totalLocalStyleChange(int, QTextCursor, int, int, int)), Qt::QueuedConnection);
+}
+
+void Controller::editorDisconnection() {
+    disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+    disconnect(messanger, &Messanger::insertFailed, editor, &Editor::showError);
+    disconnect(messanger, &Messanger::deleteFailed, editor, &Editor::showError);
+    disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
+    disconnect(editor, &Editor::logout, messanger, &Messanger::logOut);
+    disconnect(this->showFiles, &ShowFiles::logout, this->messanger, &Messanger::logOut);
+    disconnect(this->editor, &Editor::showFinder, this, &Controller::showFileFinderOtherView);
+    disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
+    disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
 }
 
 /*  ------------------------------------------------------------- USER */
@@ -164,8 +170,8 @@ void Controller::reciveUser(User *user){
         this->user->setAvatar(user->getAvatar());
         this->crdt->setSiteId(user->getUsername());
         stopLoadingPopup();
-        if (now == finder)
-            this->finder->closeEditAccount();
+        if (now == showFiles)
+            this->showFiles->closeEditAccount();
         //if (this->editor != nullptr && now == editor)
             //this->editor->closeEditAccount();
     }
@@ -229,10 +235,10 @@ void Controller::showLogin(){
     registrationConnection();
 
     /* creation showfiles object */
-    if (finder != nullptr) {
+    if (showFiles != nullptr) {
         finderDisconnection();
     }
-    finder = new ShowFiles(this, this);
+    showFiles = new ShowFiles(this, this);
     finderConnection();
     handleGUI(login);
 }
@@ -258,9 +264,9 @@ void Controller::showFileFinder(const std::map<QString, bool>& fileList){
     stopLoadingPopup();
 
     if (now != editor){
-        now = finder;
-        this->finder->addFiles(fileList);
-        handleGUI(finder);
+        now = showFiles;
+        this->showFiles->addFiles(fileList);
+        handleGUI(showFiles);
     }
 
     if (user != nullptr){
@@ -275,18 +281,16 @@ void Controller::showFileFinderOtherView(){
     bool result = this->messanger->requestForFile("**FILE_FITTIZIO**");
 
     if (editor != nullptr) {
-        disconnect(messanger, SIGNAL(setUsers(QStringList)), editor, SLOT(setUsers(QStringList)));
-        disconnect(messanger, SIGNAL(removeUser(QString)), editor, SLOT(removeUser(QString)));
-        disconnect(this, SIGNAL(userRecived()), this->editor, SLOT(changeUser()));
+        editorDisconnection();
     }
-    now = finder;
-    if (finder != nullptr)
+    now = showFiles;
+    if (showFiles != nullptr)
         finderDisconnection();
-    finder = new ShowFiles(this, this);
+    showFiles = new ShowFiles(this, this);
     finderConnection();
 
-    this->finder->addFiles(user->getFileList());
-    handleGUI(finder);
+    this->showFiles->addFiles(user->getFileList());
+    handleGUI(showFiles);
 }
 
 /* ------------------------------------------------------------- EDITOR */
@@ -307,7 +311,7 @@ void Controller::requestForFile(const QString& filename){
         editor->setFilename(filename);
         editorConnection();
 
-        disconnect(this, SIGNAL(userRecived()), this->finder, SLOT(changeImage())); // da vedere
+        disconnect(this, SIGNAL(userRecived()), this->showFiles, SLOT(changeImage()));
         now = editor;
         handleGUI(editor);
         startLoadingPopup();
@@ -345,10 +349,10 @@ void Controller::openFile(const std::vector<std::vector<Character>>& initialStru
 
     if (result != this->user->getFileList().end()){
         this->user->addFile(filename);
-        this->finder->addFiles(this->user->getFileList());
+        this->showFiles->addFiles(this->user->getFileList());
     }
 
-    finder->closeCreateFile();
+    showFiles->closeCreateFile();
 }
 
 /**
@@ -420,8 +424,8 @@ void Controller::shareCodeFailed(){
  * @param filenames
  */
 void Controller::addFileNames(std::map<QString, bool> filenames){
-    finder->addFile(std::move(filenames));
-    finder->closeAddFile();
+    showFiles->addFile(std::move(filenames));
+    showFiles->closeAddFile();
     stopLoadingPopup();
 }
 
@@ -510,8 +514,26 @@ Messanger *Controller::getMessanger() const {
     return messanger;
 }
 
-void Controller::reciveExternalException(){
-    throw "Exception";
+void Controller::reciveExternalErrorOrException(){
+    //throw "Exception";
+    QMessageBox::warning(GUI, "Error", "There was an error, try again!");
+    handleError();
+}
+
+void Controller::handleError() {
+    crdtThread->quit();
+    crdtThread->wait();
+    crdtThread->deleteLater();
+    /* restart crdt */
+    crdt = new CRDT(nullptr, messanger, this);
+    crdtThread = new CDRTThread(this, crdt);
+    crdt->moveToThread(crdtThread);
+    crdtThread->start();
+
+    if (editor != nullptr) {
+        editorDisconnection();
+    }
+    handleGUI(showFiles);
 }
 
 void Controller::inviledateTextEditor() {

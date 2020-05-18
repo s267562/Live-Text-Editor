@@ -5,28 +5,21 @@
 #include "editor.h"
 #include "ui_editor.h"
 #include "../../server/SimpleCrypt/SimpleCrypt.h"
-#include <QMenuBar>
 #include <QMenu>
-#include <QSlider>
-#include "../utils/Pos.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
 #include <QtWidgets/QFileDialog>
-#include <QtPrintSupport/qtprintsupportglobal.h>
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QColorDialog>
 #include <../ui/ShareFile/sharefile.h>
-//#include <QtCharts>
-#include <ShareFile/sharefile.h>
 #include <QMetaObject>
 #include <QMetaType>
 
 Q_DECLARE_METATYPE(QTextCursor*);
 
 Q_DECLARE_METATYPE(QTextCursor);
-//Q_DECLARE_METATYPE(Pos);
 
 
 Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEdit(new TextEdit(this, controller)),
@@ -38,38 +31,23 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 																				  "#9932cc", "#ff1493", "#ffd700",
 																				  "#a52a2a", "#1e90ff", "#9370db",
 																				  "#006400", "#ff0000", "#008080"}) {
+    qRegisterMetaType<QTextCursor *>("QTextCursor*");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
+    qRegisterMetaType<Pos>("Pos");
 
-	ui->setupUi(this);
+    /* Setup UI */
+    ui->setupUi(this);
 	setWindowTitle(QCoreApplication::applicationName());
 	setCentralWidget(textEdit);
-
-	qRegisterMetaType<QTextCursor *>("QTextCursor*");
-	qRegisterMetaType<QTextCursor>("QTextCursor");
-	qRegisterMetaType<Pos>("Pos");
-
 	ui->dockWidget->setTitleBarWidget(new QLabel("Online users"));
-
 	ui->userListWidget->resize(this->geometry().width(), this->geometry().height());
 
 	colorIndex = 0;
 
-	// TODO: from QByteArray to QPixMap
-
-#if UI
-	QPixmap pix = controller->getUser()->getAvatar();
-	int w = ui->avatar->width();
-	int h = ui->avatar->height();
-	ui->avatar->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
-	ui->username->setText(controller->getUser()->getUsername());
-	//loadingMovie = new QMovie(":/rec/img/loading.gif");
-	//ui->loading->setMovie(loadingMovie);
-	//loadingMovie->start();
-	//ui->editAccount->close();
+	/* Handle user in the editor part */
+	changeUser();
 	ui->loading->show();
-	//connect(ui->editAccount, SIGNAL(clicked()), this, SLOT(editAccountClicked()));
 	connect(this->controller, SIGNAL(userRecived()), this, SLOT(changeUser()));
-#endif
-
 
 	this->textCursor = textEdit->textCursor();
 
@@ -86,6 +64,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 			this, &Editor::onCursorPositionChanged);
 
 
+	/* adding shadow effect */
 	m_shadowEffect1 = new QGraphicsDropShadowEffect(this);
 	m_shadowEffect1->setColor(QColor(0, 0, 0, 255 * 0.1));
 	m_shadowEffect1->setXOffset(0);
@@ -409,204 +388,209 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 			 << " chars removed: " << charsRemoved;
 
 	saveCursor();
-	if (validSignal(position, charsAdded, charsRemoved)) {
-		//qDebug() << "VALID SIGNAL";
-		//std::cout << "VALID SIGNAL" << std::endl;
+    try {
+        if (validSignal(position, charsAdded, charsRemoved)) {
+            //qDebug() << "VALID SIGNAL";
+            //std::cout << "VALID SIGNAL" << std::endl;
 
-		// it is possible that user change only the style or the user re-paste the same letters... check it
-		QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
-		undo();
-		QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
-		redo();
-		if (charsAdded == charsRemoved && textAdded == textRemoved) {
-			// qDebug() << "text doesn't change (maybe style changed)";
-			if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
-				// correction when paste something in first position.
-				charsAdded--;
-			}
-            QTextCursor cursor= textEdit->textCursor();
-
-			std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-            controller->getCrdt()->setIsWorking(true);
-            controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
-            isWorkingLock.unlock();
-
-            if(cursorPos != startSelection){ // Selection forward
-
-                for(int i=0; i<charsAdded; i++) {
-                    // for each char added
-                    cursor.setPosition(position + i);
-                    int line = cursor.blockNumber();
-                    int ch = cursor.positionInBlock();
-                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-                    // select char
-                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                    QTextCharFormat textCharFormat = cursor.charFormat();
-
-                    QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
+            // it is possible that user change only the style or the user re-paste the same letters... check it
+            QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+            undo();
+            QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
+            redo();
+            if (charsAdded == charsRemoved && textAdded == textRemoved) {
+                // qDebug() << "text doesn't change (maybe style changed)";
+                if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
+                    // correction when paste something in first position.
+                    charsAdded--;
                 }
-            }
+                QTextCursor cursor= textEdit->textCursor();
 
-            else{ // Selection backward
-                for(int i=charsAdded-1; i>=0; i--) {
-                    // for each char added
+                std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                controller->getCrdt()->setIsWorking(true);
+                controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
+                isWorkingLock.unlock();
 
-                    cursor.setPosition(position + i);
-                    int line = cursor.blockNumber();
-                    int ch = cursor.positionInBlock();
-                    Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
-                    // select char
-                    cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-
-                    QTextCharFormat textCharFormat = cursor.charFormat();
-
-                    QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
-                }
-            }
-
-
-
-		} else {
-			if (position == 0 && charsAdded > 0 && charsRemoved > 0) {
-				// correction when paste something in first position.
-				charsAdded--;
-				charsRemoved--;
-			}
-
-			if (charsRemoved) {
-				if (isRedoAvailable) {
-					// chars removed due to undo operation.
-
-					// get endPos
-					textCursor.setPosition(position);
-					int line = textCursor.blockNumber();
-					int ch = textCursor.positionInBlock();
-					Pos startPos{ch, line}; // Pos(int ch, int line);
-
-					// get startPos
-					redo();
-					textCursor.setPosition(position + charsRemoved);
-					line = textCursor.blockNumber();
-					ch = textCursor.positionInBlock();
-					Pos endPos{ch, line}; // Pos(int ch, int line);
-					undo();
-
-					//qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-					//emit localDelete(startPos, endPos);
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
-					QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection,
-											  Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
-				} else {
-					// get startPos
-					int line, ch;
-					textCursor.setPosition(position);
-					line = textCursor.blockNumber();
-					ch = textCursor.positionInBlock();
-					Pos startPos{ch, line}; // Pos(int ch, int line);
-
-					// get endPos
-					undo();
-					textCursor.setPosition(position + charsRemoved);
-					line = textCursor.blockNumber();
-					ch = textCursor.positionInBlock();
-					Pos endPos{ch, line}; // Pos(int ch, int line);
-					redo();
-
-					//qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
-					QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection,
-											  Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
-				}
-			}
-
-			if (charsAdded) {
-				QTextCursor cursor = textEdit->textCursor();
-				QString chars = textEdit->toPlainText().mid(position, charsAdded);
-				qDebug() << "Editor: " << QThread::currentThreadId();
-
-				if (charsAdded == 1) {
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
-                    if (count != pendingChar.size()) {
-                        count = pendingChar.size();
-                    }
-
-					cursor.setPosition(position);
-					int line = cursor.blockNumber();
-					int ch = cursor.positionInBlock();
-					Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-					// select char
-					cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
-					QTextCharFormat charFormat = cursor.charFormat();
-					//emit localInsert(chars.at(i), charFormat, startPos);
-                    controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
-                    /*QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
-											  Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
-											  Q_ARG(Pos, startPos), Q_ARG(bool, conflict));*/
-				} else {
-                    /*QTextCursor *cursor1 = new QTextCursor{cursor};
-                    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
-					QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection,
-											  Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1),
-											  Q_ARG(QString, chars), Q_ARG(int, position));*/
-                    //std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                    controller->getCrdt()->setIsWorking(true);
-                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
-                    //controller->getCrdt()->copy = true;
-                    std::cout << "Position Cursor: " << textEdit->position << " " << position;
+                if(cursorPos != startSelection){ // Selection forward
 
                     for(int i=0; i<charsAdded; i++) {
                         // for each char added
-                        qDebug()<< cursor.position();
                         cursor.setPosition(position + i);
+                        int line = cursor.blockNumber();
+                        int ch = cursor.positionInBlock();
+                        Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                        // select char
+                        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                        QTextCharFormat textCharFormat = cursor.charFormat();
+
+                        QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
+                    }
+                }
+
+                else{ // Selection backward
+                    for(int i=charsAdded-1; i>=0; i--) {
+                        // for each char added
+
+                        cursor.setPosition(position + i);
+                        int line = cursor.blockNumber();
+                        int ch = cursor.positionInBlock();
+                        Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
+                        // select char
+                        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+
+                        QTextCharFormat textCharFormat = cursor.charFormat();
+
+                        QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection, Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
+                    }
+                }
+
+
+
+            } else {
+                if (position == 0 && charsAdded > 0 && charsRemoved > 0) {
+                    // correction when paste something in first position.
+                    charsAdded--;
+                    charsRemoved--;
+                }
+
+                if (charsRemoved) {
+                    if (isRedoAvailable) {
+                        // chars removed due to undo operation.
+
+                        // get endPos
+                        textCursor.setPosition(position);
+                        int line = textCursor.blockNumber();
+                        int ch = textCursor.positionInBlock();
+                        Pos startPos{ch, line}; // Pos(int ch, int line);
+
+                        // get startPos
+                        redo();
+                        textCursor.setPosition(position + charsRemoved);
+                        line = textCursor.blockNumber();
+                        ch = textCursor.positionInBlock();
+                        Pos endPos{ch, line}; // Pos(int ch, int line);
+                        undo();
+
+                        //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+                        //emit localDelete(startPos, endPos);
+                        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                        QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection,
+                                                  Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
+                    } else {
+                        // get startPos
+                        int line, ch;
+                        textCursor.setPosition(position);
+                        line = textCursor.blockNumber();
+                        ch = textCursor.positionInBlock();
+                        Pos startPos{ch, line}; // Pos(int ch, int line);
+
+                        // get endPos
+                        undo();
+                        textCursor.setPosition(position + charsRemoved);
+                        line = textCursor.blockNumber();
+                        ch = textCursor.positionInBlock();
+                        Pos endPos{ch, line}; // Pos(int ch, int line);
+                        redo();
+
+                        //qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+                        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                        QMetaObject::invokeMethod(controller->getCrdt(), "localDelete", Qt::QueuedConnection,
+                                                  Q_ARG(Pos, startPos), Q_ARG(Pos, endPos));
+                    }
+                }
+
+                if (charsAdded) {
+                    QTextCursor cursor = textEdit->textCursor();
+                    QString chars = textEdit->toPlainText().mid(position, charsAdded);
+                    qDebug() << "Editor: " << QThread::currentThreadId();
+
+                    if (charsAdded == 1) {
+                        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                        if (count != pendingChar.size()) {
+                            count = pendingChar.size();
+                        }
+
+                        cursor.setPosition(position);
                         int line = cursor.blockNumber();
                         int ch = cursor.positionInBlock();
                         Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
                         // select char
-                        cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                        cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
                         QTextCharFormat charFormat = cursor.charFormat();
+                        //emit localInsert(chars.at(i), charFormat, startPos);
+                        controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
+                        /*QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                  Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
+                                                  Q_ARG(Pos, startPos), Q_ARG(bool, conflict));*/
+                    } else {
+                        /*QTextCursor *cursor1 = new QTextCursor{cursor};
+                        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                        QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection,
+                                                  Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1),
+                                                  Q_ARG(QString, chars), Q_ARG(int, position));*/
+                        //std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
+                        //controller->getCrdt()->copy = true;
+                        std::cout << "Position Cursor: " << textEdit->position << " " << position;
 
-                        if (i == charsAdded - 1) {
-                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
-                                                      Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
-                                                      Q_ARG(Pos, startPos), Q_ARG(bool, true));
+                        for(int i=0; i<charsAdded; i++) {
+                            // for each char added
+                            qDebug()<< cursor.position();
+                            cursor.setPosition(position + i);
+                            int line = cursor.blockNumber();
+                            int ch = cursor.positionInBlock();
+                            Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                            // select char
+                            cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                            QTextCharFormat charFormat = cursor.charFormat();
 
-                        } else if (i == 0) {
-                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
-                                                     Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
-                                                     Q_ARG(Pos, startPos), Q_ARG(bool, false));
-                        } else {
-                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
-                                                      Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
-                                                      Q_ARG(Pos, startPos), Q_ARG(bool, false));
+                            if (i == charsAdded - 1) {
+                                QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                          Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                          Q_ARG(Pos, startPos), Q_ARG(bool, true));
+
+                            } else if (i == 0) {
+                                QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                          Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                          Q_ARG(Pos, startPos), Q_ARG(bool, false));
+                            } else {
+                                QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                          Q_ARG(QString, chars.at(i)), Q_ARG(QTextCharFormat, charFormat),
+                                                          Q_ARG(Pos, startPos), Q_ARG(bool, false));
+                            }
                         }
+                        //isInvalid = true;
                     }
-                    //isInvalid = true;
-				}
-			}
-		}
+                }
+            }
 
-		restoreCursor();
-		// onCursorPositionChanged();
-	} else {
-		qDebug() << " "; // new Line
-		//qDebug() << "INVALID SIGNAL";
-		//std::cout << "INVALID SIGNAL" << std::endl;
-		if (this->startSelection != this->endSelection) {
-			// text was selected... restore the selction
-			restoreCursorSelection();
-		} else {
-			restoreCursor();
-		}
-	}
+            restoreCursor();
+            // onCursorPositionChanged();
+        } else {
+            qDebug() << " "; // new Line
+            //qDebug() << "INVALID SIGNAL";
+            //std::cout << "INVALID SIGNAL" << std::endl;
+            if (this->startSelection != this->endSelection) {
+                // text was selected... restore the selction
+                restoreCursorSelection();
+            } else {
+                restoreCursor();
+            }
+        }
+    }catch (...) {
+        controller->reciveExternalErrorOrException();
+        return;
+    }
 
 	this->updateOtherCursorPosition();
 
@@ -824,6 +808,9 @@ void Editor::onCursorPositionChanged() {
 	this->updateAlignmentPushButton();
 }
 
+/**
+ * This method allows to open a new file.
+ */
 void Editor::on_actionNew_File_triggered() {
     std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
     if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() && controller->getCrdt()->getNumJobs() == 0) {
@@ -831,7 +818,7 @@ void Editor::on_actionNew_File_triggered() {
         connect(createFile, SIGNAL(createFile(QString)), this->controller, SLOT(requestForFile(QString)));
         createFile->show();
     }else
-        QMessageBox::information(this, "Attendi", "Il programma sta finendo di prcessare i dati!");
+        QMessageBox::information(controller->GUI, "Wait!", "The program is finishing processing the data!");
 }
 
 void Editor::on_actionShare_file_triggered() {
@@ -863,12 +850,15 @@ void Editor::on_actionShare_file_triggered() {
 	shareFile->show();
 }
 
+/**
+ * This method permittes to open the showFile view.
+ */
 void Editor::on_actionOpen_triggered() {
     std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
     if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() && controller->getCrdt()->getNumJobs() == 0)
 	    emit showFinder();
     else
-        QMessageBox::information(this, "Attendi", "Il programma sta finendo di prcessare i dati!");
+        QMessageBox::information(controller->GUI, "Wait!", "The program is finishing processing the data!");
 }
 
 void Editor::on_actionSave_as_PDF_triggered() {
@@ -887,18 +877,21 @@ void Editor::on_actionSave_as_PDF_triggered() {
         textEdit->document()->print(&printer);
 //	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 
-        QMessageBox::information(this, "PDF", "File Esportato");
+        QMessageBox::information(controller->GUI, "PDF", "File Esportato");
     }else
-        QMessageBox::information(this, "Attendi", "Il programma sta finendo di prcessare i dati!");
+        QMessageBox::information(controller->GUI, "Wait!", "The program is finishing processing the data!");
 }
 
+/**
+ * This method allows to log out from application.
+ */
 void Editor::on_actionLogout_triggered() {
     std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
     qDebug() << controller->getCrdt()->getNumJobs();
     if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() && controller->getCrdt()->getNumJobs() == 0) {
         emit logout();
     }else
-        QMessageBox::information(this, "Attendi", "Il programma sta finendo di prcessare i dati!");
+        QMessageBox::information(controller->GUI, "Wait!", "The program is finishing processing the data!");
 }
 
 Editor::~Editor() {
@@ -979,15 +972,22 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	return validSignal;
 }
 
+/**
+ * Handle the size of window programmaticaly mode.
+ * @param event
+ */
 void Editor::resizeEvent(QResizeEvent *event) {
 	ui->userListWidget->resize(149, textEdit->geometry().height() - 18 - 61);
 
 	ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 - 61, ui->userWidget->width(),
 								ui->userWidget->height());
-
 	this->updateOtherCursorPosition();
 }
 
+/**
+ * This method allows to remove a specific user in the editor.
+ * @param user
+ */
 void Editor::removeUser(QString user) {
 	if (user == this->controller->getUser()->getUsername()) {
 		showFinder();
@@ -996,69 +996,67 @@ void Editor::removeUser(QString user) {
 	qDebug() << "\nEditor.cpp - removeUsers():\n";
 	qDebug() << "\t\tUSER REMOVED:\t" << user;
 
-	users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
-		return s == user;
-	}));
-	qDebug() << user;
+	try {
+        users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
+            return s == user;
+        }));
 
-	// qDebug() << "Before: " << this->otherCursors.size();
-	// qDebug() << this->otherCursors[user]->text();
-
-	ui->userListWidget->clear();
-	ui->userListWidget->addItems(users);
-	this->otherCursors[user]->hide();
-	this->otherCursors.remove(user);
+        ui->userListWidget->clear();
+        ui->userListWidget->addItems(users);
+        this->otherCursors[user]->hide();
+        this->otherCursors.remove(user);
+    }catch (...) {
+        controller->reciveExternalErrorOrException();
+	}
 }
 
+/**
+ * This method sets the user list in the editor.
+ * @param users
+ */
 void Editor::setUsers(QStringList users) {
 	qDebug() << "\nEditor.cpp - setUsers(): ";
-
-#if UI
-	if (loadingFlag) {
-		//loadingMovie->stop();
-		ui->loading->close();
-		loadingFlag = false;
-		//ui->editAccount->show();
-	}
-#else
-	QPixmap pix;
-	pix.load(":/icons/user_icon.jpg");
-	int w=ui->avatar->width();
-	int h=ui->avatar->height();
-	ui->avatar->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
-	ui->username->setText("Debug");
-#endif
-	bool isInsert = false;
-	if (users.size() > 1) {
-        ui->userListWidget->clear();
-    } else{
-        if (users.size() != 0)
-            for (QString ur : this->users) {
-               if (ur == users[0]) {
-                   isInsert = true;
-               }
-            }
-	}
-    if (users.size() != 0) {
-        if (!isInsert) {
-            this->users.append(users);
-            ui->userListWidget->addItems(users);
-            std::for_each(users.begin(), users.end(), [this](QString user) {
-                QColor color(colors[colorIndex]);
-                color.setAlpha(128); // opacity
-                otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
-                colorIndex++;
-                if (colorIndex == 14) {
-                    colorIndex = 0;
-                }
-
-            });
+    try {
+        if (loadingFlag) {
+            ui->loading->close();
+            loadingFlag = false;
         }
-    }else{
-        ui->userListWidget->clear();
-    }
-    controller->stopLoadingPopup();
 
+        bool isInsert = false;
+        if (users.size() > 1) {
+            ui->userListWidget->clear();
+        } else{
+            if (users.size() != 0)
+                for (QString ur : this->users) {
+                   if (ur == users[0]) {
+                       isInsert = true;
+                   }
+                }
+        }
+        if (users.size() != 0) {
+            if (!isInsert) {
+                this->users.append(users);
+                ui->userListWidget->addItems(users);
+                std::for_each(users.begin(), users.end(), [this](QString user) {
+                    QColor color(colors[colorIndex]);
+                    color.setAlpha(128); // opacity
+                    otherCursors.insert(user, new OtherCursor(user, this->textDocument, color, this->textEdit->viewport()));
+                    colorIndex++;
+                    if (colorIndex == 14) {
+                        colorIndex = 0;
+                    }
+
+                });
+            }
+        }else{
+            ui->userListWidget->clear();
+        }
+        controller->stopLoadingPopup();
+    }catch(...){
+        // resest the status of application
+        controller->reciveExternalErrorOrException();
+        return;
+    }
 }
 
 void Editor::saveCursor() {
@@ -1107,18 +1105,18 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 
 void Editor::reset() {
 	ui->userListWidget->clear();
-	QPixmap pix = controller->getUser()->getAvatar();
-	int w = ui->avatar->width();
-	int h = ui->avatar->height();
-	ui->avatar->setPixmap(pix.scaled(w, h, Qt::KeepAspectRatio));
-	ui->username->setText(controller->getUser()->getUsername());
+    changeUser();
 	ui->loading->show();
 }
 
 void Editor::showError() {
-	QMessageBox::information(this, "Error", "Error!");
+	QMessageBox::information(controller->getGui(), "Error", "Error!");
+	controller->handleError();
 }
-
+/**
+ * This method sets a filename in the editor and permittes to handle the share botton.
+ * @param filename
+ */
 void Editor::setFilename(QString filename) {
 	this->filename = filename;
     qDebug() << filename << controller->getUser()->getFileList()[filename];
@@ -1127,19 +1125,9 @@ void Editor::setFilename(QString filename) {
     }
 }
 
-/*void Editor::editAccountClicked() {
-	editA = new EditAccount(this, controller->getUser());
-	connect(editA, SIGNAL(edit(QString, QString, QString, QByteArray)), controller,
-			SLOT(sendEditAccount(QString, QString, QString, QByteArray)));
-	editA->show();
-}
-
-void Editor::closeEditAccount() {
-	if (this->editA != nullptr) {
-		editA->close();
-	}
-}*/
-
+/**
+ * This method changes the user avatar and username in the regarding user section.
+ */
 void Editor::changeUser() {
 	QPixmap pix = controller->getUser()->getAvatar();
 	int w = ui->avatar->width();
@@ -1165,7 +1153,6 @@ void Editor::updateAlignmentPushButton() {
 			this->actionAlignLeft->setChecked(true);
 			break;
 	}
-
 }
 
 

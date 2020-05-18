@@ -48,7 +48,7 @@ public:
     Login *login = nullptr;
     Connection *connection = nullptr;
     Registration *registration = nullptr;
-    ShowFiles *finder = nullptr;
+    ShowFiles *showFiles = nullptr;
     QWidget *now;
     QMainWindow *GUI = new QMainWindow(this);
 
@@ -69,6 +69,7 @@ public:
     void finderConnection();
     void finderDisconnection();
     void editorConnection();
+    void editorDisconnection();
 
     void handleGUI(QMainWindow *window);
 
@@ -87,6 +88,7 @@ public:
     void setRequestFFile(bool requestFFile);
     QMainWindow *getGui() const;
     Messanger *getMessanger() const;
+    void handleError();
     ~Controller();
 
 public slots:
@@ -119,12 +121,14 @@ public slots:
     void okEditAccount();
     void sendShareCode(const QString& sharecode);
     void shareCodeFailed();
-    static void reciveExternalException();
+    void reciveExternalErrorOrException();
     void inviledateTextEditor();
 
 signals:
     void userRecived();
     void reset();
+
+    void resetCrdt();
 };
 
 

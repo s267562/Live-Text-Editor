@@ -66,6 +66,7 @@ public:
     void setCrdt(CRDT *crdt);
     bool readAlignmentChanged();
     bool messagesIsEmpty();
+    bool write(QByteArray message);
 
 public slots:
     void onReadyRead();
@@ -78,6 +79,7 @@ public slots:
 
 signals:
     void errorConnection();
+    void error();
     void loginFailed();
     void registrationFailed();
     void newMessage(Message message);

@@ -611,50 +611,52 @@ void CRDT::newMessage(Message message) {
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
     if (controller->isRequestFFile())
         return;
+    try {
+        if(message.getType() == INSERT) {
+            std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+            Character character = message.getCharacter();
 
-    if(message.getType() == INSERT) {
-        std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-        Character character = message.getCharacter();
-
-
-        if(character.getSiteId() == getSiteId()) {
-            // local insert - only in the model; the char is already in the view.
-        } else {
-            if (copy) {
-                //std::cout << character.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
-                queueInsertMessage.push_back(character);
-            }else {
-                Pos pos = handleRemoteInsert(character);
-                if (!waitForInvalidate) {
-                    editor->pendingChar.push_back(character);
-                    // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-                    QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
-                                              Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
-                                              Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+            if(character.getSiteId() == getSiteId()) {
+                // local insert - only in the model; the char is already in the view.
+            } else {
+                if (copy) {
+                    //std::cout << character.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
+                    queueInsertMessage.push_back(character);
+                }else {
+                    Pos pos = handleRemoteInsert(character);
+                    if (!waitForInvalidate) {
+                        editor->pendingChar.push_back(character);
+                        // remote insert - the char is to insert in the model and in the view. Insert into the editor.
+                        QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
+                                                  Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
+                                                  Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+                    }
                 }
             }
-        }
-    } else if(message.getType() == STYLE_CHANGED) {
-        Pos pos = handleRemoteStyleChanged(message.getCharacter());
+        } else if(message.getType() == STYLE_CHANGED) {
+            Pos pos = handleRemoteStyleChanged(message.getCharacter());
 
-        if(pos) {
-            // delete from the editor.
-            QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()), Q_ARG(QString, message.getSender()));
-        }
-    } else if(message.getType() == DELETE) {
-        QString sender = message.getSender();
-        Pos pos = handleRemoteDelete(message.getCharacter());
+            if(pos) {
+                // delete from the editor.
+                QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()), Q_ARG(QString, message.getSender()));
+            }
+        } else if(message.getType() == DELETE) {
+            QString sender = message.getSender();
+            Pos pos = handleRemoteDelete(message.getCharacter());
 
-        if(pos) {
-            // delete from the editor.
-            QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos),  Q_ARG(QString, message.getSender()));
-        }
-    } else if(message.getType() == ALIGNMENT_CHANGED) {
-        int row = getRow(message.getCharacter());
-        if(row>=0){
-            QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
-        }
+            if(pos) {
+                // delete from the editor.
+                QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos),  Q_ARG(QString, message.getSender()));
+            }
+        } else if(message.getType() == ALIGNMENT_CHANGED) {
+            int row = getRow(message.getCharacter());
+            if(row>=0){
+                QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
+            }
 
+        }
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
     }
 }
 

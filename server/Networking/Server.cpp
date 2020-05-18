@@ -125,8 +125,8 @@ void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::C
 			qDebug() << ""; // newLine
 		} else {
 			/* connect from main thread */
-			connectionSlot(soc, connectReadyRead, connectDisconnected);
-			writeErrMessage(soc, REQUEST_FILE_MESSAGE);
+			if (writeErrMessage(soc, REQUEST_FILE_MESSAGE))
+                connectionSlot(soc, connectReadyRead, connectDisconnected);
 		}
 	} else if (data.toStdString() == EDIT_ACCOUNT && socketsState[socketDescriptor] == LOGGED) {
 		std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);

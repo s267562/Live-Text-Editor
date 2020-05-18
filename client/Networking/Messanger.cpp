@@ -93,9 +93,6 @@ void Messanger::onReadyRead() {
             }
             clientIsLogged = true;
             state = LIST_OF_FILE_RECIVED;
-#if !UI
-            requestForFile("prova");         /* TEST: TEXT EDITOR */
-#endif
         } else if (datas.toStdString() == ERR_MESSAGE) {
             if (!readError()) {
                 return;
@@ -197,22 +194,29 @@ bool Messanger::readError() {
         emit editAccountFailed();
     } else if (type.toStdString() == SHARE_CODE) {
         emit shareCodeFailed();
+    }else{
+        emit error();
     }
 
     return true;
 }
 
 bool Messanger::despatchMessage() {
-    if (!messages.empty()) {
-        QByteArray message = messages.front();
-        messages.pop();
-        if (!writeMessage(socket, message)) {
-            messages.push(message);
-            return false;
+    try {
+        if (!messages.empty()) {
+            QByteArray message = messages.front();
+            messages.pop();
+            if (!writeMessage(socket, message)) {
+                messages.push(message);
+                return false;
+            }
+            reciveOkMessage = false;
+        } else {
+            reciveOkMessage = true;
         }
-        reciveOkMessage = false;
-    } else {
-        reciveOkMessage = true;
+    }catch(...){
+        emit errorConnection();
+        return false;
     }
     return true;
 }
@@ -509,6 +513,7 @@ bool Messanger::readRemoveUser() {
 bool Messanger::readFile() {
     qDebug() << "Messanger.cpp - readFile()     ---------- READ FILE ----------";
     std::vector<std::vector<Character>> file;
+    std::vector<std::pair<Character, int>> styleBlocks;
     if (!readSpace(socket))
         return false;
     int filenameSize = readNumberFromSocket(socket);
@@ -522,20 +527,48 @@ bool Messanger::readFile() {
         return false;
     int numLines = readNumberFromSocket(socket);
 
-    for (int i = 0; i < numLines; i++) {
-        std::vector<Character> line;
+    try {
+        for (int i = 0; i < numLines; i++) {
+            std::vector<Character> line;
+            if (!readSpace(socket))
+                return false;
+            int numCharacters = readNumberFromSocket(socket);
+
+            for (int j = 0; j < numCharacters; j++) {
+                if (!readSpace(socket))
+                    return false;
+                int messageSize = readNumberFromSocket(socket);
+                if (!readSpace(socket))
+                    return false;
+
+                QByteArray characterByteFormat;
+                if (!readChunck(socket, characterByteFormat, messageSize)) {
+                    return false;
+                }
+
+                QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
+                Character character = Character::toCharacter(jsonDocument);
+
+                line.push_back(character);
+            }
+            file.push_back(line);
+            writeOkMessage(socket);
+        }
+
+
         if (!readSpace(socket))
             return false;
-        int numCharacters = readNumberFromSocket(socket);
+        int numBlocks = readNumberFromSocket(socket);
 
-        for (int j = 0; j < numCharacters; j++) {
+        QByteArray characterByteFormat;
+
+        for (int j = 0; j < numBlocks; j++) {
             if (!readSpace(socket))
                 return false;
             int messageSize = readNumberFromSocket(socket);
             if (!readSpace(socket))
                 return false;
 
-            QByteArray characterByteFormat;
             if (!readChunck(socket, characterByteFormat, messageSize)) {
                 return false;
             }
@@ -543,39 +576,15 @@ bool Messanger::readFile() {
             QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
             Character character = Character::toCharacter(jsonDocument);
 
-            line.push_back(character);
+            if (!readSpace(socket))
+                return false;
+            int alignment = readNumberFromSocket(socket);
+            styleBlocks.emplace_back(character, alignment);
+            writeOkMessage(socket);
         }
-        file.push_back(line);
-        writeOkMessage(socket);
-    }
-
-    std::vector<std::pair<Character, int>> styleBlocks;
-
-    if (!readSpace(socket))
+    } catch (...){
+        emit errorConnection();
         return false;
-    int numBlocks = readNumberFromSocket(socket);
-
-    QByteArray characterByteFormat;
-
-    for (int j = 0; j < numBlocks; j++) {
-        if (!readSpace(socket))
-            return false;
-        int messageSize = readNumberFromSocket(socket);
-        if (!readSpace(socket))
-            return false;
-
-        if (!readChunck(socket, characterByteFormat, messageSize)) {
-            return false;
-        }
-
-        QJsonDocument jsonDocument = QJsonDocument::fromBinaryData(characterByteFormat);
-        Character character = Character::toCharacter(jsonDocument);
-
-        if (!readSpace(socket))
-            return false;
-        int alignment = readNumberFromSocket(socket);
-        styleBlocks.emplace_back(character, alignment);
-        writeOkMessage(socket);
     }
 
     emit fileRecive(file, styleBlocks, filename);
@@ -591,17 +600,25 @@ bool Messanger::writeInsert(Character &character) {
     qDebug() << "Messanger.cpp - writeInsert()     ---------- WRITE INSERT ----------";
     qDebug() << "Messanger: " << QThread::currentThreadId();
 
-    if (this->socket->state() == QTcpSocket::ConnectedState) {
-        QByteArray message(INSERT_MESSAGE);
-        QByteArray characterByteFormat = character.toQByteArray();
-        QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
-        message.append(" " + sizeOfMessage + " " + characterByteFormat);
+        if (this->socket->state() == QTcpSocket::ConnectedState) {
+            QByteArray message(INSERT_MESSAGE);
+            QByteArray characterByteFormat = character.toQByteArray();
+            QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
+
+            message.append(" " + sizeOfMessage + " " + characterByteFormat);
+
+
+            qDebug() << "                         " << message;
+            qDebug() << ""; // newLine
+            write(message);
+        }
+    return true;
+}
+
+bool Messanger::write(QByteArray message) {
+    try {
         messages.push(message);
-
-        qDebug() << "                         " << message;
-        qDebug() << ""; // newLine
-
         if (reciveOkMessage) {
             reciveOkMessage = false;
             if (!writeMessage(socket, message)) {
@@ -609,6 +626,8 @@ bool Messanger::writeInsert(Character &character) {
             }
             messages.pop();
         }
+    } catch (...) {
+        emit errorConnection();
     }
     return true;
 }
@@ -627,18 +646,11 @@ bool Messanger::writeStyleChanged(Character &character) {
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        messages.push(message);
 
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (reciveOkMessage) {
-            reciveOkMessage = false;
-            if (!writeMessage(socket, message)) {
-                return false;
-            }
-            messages.pop();
-        }
+        write(message);
     }
     return true;
 }
@@ -663,18 +675,11 @@ bool Messanger::writeAlignmentChanged(int alignment_type, Character &blockId) {
         message.append(" " + alignmentByteFormat);
         message.append(" " + sizeBlockId);
         message.append(" " + blockIdByteFormat);
-        messages.push(message);
 
         qDebug() << "                         " << message;
         qDebug() << ""; // newLine
 
-        if (reciveOkMessage) {
-            reciveOkMessage = false;
-            if (!writeMessage(socket, message)) {
-                return false;
-            }
-            messages.pop();
-        }
+        write(message);
     }
     return true;
 }
@@ -693,16 +698,7 @@ bool Messanger::writeDelete(Character &character) {
         QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
         message.append(" " + sizeOfMessage + " " + characterByteFormat);
-        messages.push(message);
-        if (reciveOkMessage) {
-            reciveOkMessage = false;
-
-            if (!writeMessage(socket, message)) {
-                return false;
-            }
-            messages.pop();
-
-        }
+        write(message);
     }
     return true;
 }

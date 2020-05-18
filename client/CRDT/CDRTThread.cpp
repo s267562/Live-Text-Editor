@@ -11,6 +11,6 @@ void CDRTThread::run(){
         exec();
     }catch (...) {
         std::cout << "something went wrong";
-        QMetaObject::invokeMethod(parent(), "reciveExternalException", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::QueuedConnection);
     }
 }
