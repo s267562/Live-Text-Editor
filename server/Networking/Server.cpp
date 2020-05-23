@@ -551,11 +551,11 @@ bool Server::readEditAccount(QTcpSocket *soc) {
 						// Rollback on all already renamed files!!!!
 						qDebug("Err renaming file. Doing Rollback");
 
-						for (std::pair f : renamed) {
+						for (std::pair file : renamed) {
 							/*QFile reRenameFile(f.first + ".json");
 							renamefile.rename(f.second + ".json");
 							renamefile.close();*/
-                            renameFileSave(f.first, f.second);
+                            renameFileSave(file.first, file.second);
                         }
 						return false;
 					}
