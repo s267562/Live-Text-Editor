@@ -300,7 +300,7 @@ void Editor::textAlign(QAction *a) {
 
 	this->textCursor.setPosition(end);
 	int endBlock = this->textCursor.blockNumber();
-
+    std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
 	for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
         QMetaObject::invokeMethod(controller->getCrdt(), "alignChange", Qt::QueuedConnection, Q_ARG(int, alCode), Q_ARG(int, blockNum));
 		qDebug() << alCode << blockNum;

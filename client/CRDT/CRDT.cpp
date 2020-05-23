@@ -597,13 +597,23 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
-
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     // send insert at the server.
     //TODO Check this
     Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
-
+    handleAlignmentChanged(alignment_type, blockNumber);
     //this->messanger->writeAlignmentChanged(alignment_type, blockId);
     QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
+}
+
+void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
+    Qt::Alignment a(alignment);
+
+    qDebug() << a;
+
+    if(blockNumber < this->style.size()) {
+        this->style[blockNumber].second=alignment;
+    }
 }
 
 void CRDT::newMessage(Message message) {
@@ -650,6 +660,7 @@ void CRDT::newMessage(Message message) {
             }
         } else if(message.getType() == ALIGNMENT_CHANGED) {
             int row = getRow(message.getCharacter());
+            handleAlignmentChanged(message.getAlignmentType(), row);
             if(row>=0){
                 QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
             }

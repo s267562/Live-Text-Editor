@@ -110,6 +110,7 @@ public:
 
     void removeStyleLine(int i);
     void localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos);
+    void handleAlignmentChanged(int alignment, int blockNumber);
 
 public slots:
     void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool invalid);

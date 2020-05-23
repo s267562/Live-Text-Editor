@@ -124,8 +124,8 @@ add_executable(server
 
 # Disable qDebug output
 #target_compile_definitions(server PUBLIC QT_NO_DEBUG_OUTPUT)
-target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
-target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
+#target_compile_definitions(client PUBLIC QT_NO_DEBUG_OUTPUT)
+#target_compile_definitions(client2 PUBLIC QT_NO_DEBUG_OUTPUT)
 
 #[[add_executable(TestGui Tests/TestGui.cpp
         client/textEditor.qrc
