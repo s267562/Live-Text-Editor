@@ -105,125 +105,130 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 
 	qDebug() << "Thread.cpp - readyRead()     msg received: " << data;
 	qDebug() << ""; // newLine
-	std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
-	if (data.toStdString() == INSERT_MESSAGE && !fileDeleted) {
-        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
-        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-		std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-		if (!readInsert(soc)) {
-			writeErrMessage(soc, INSERT_MESSAGE);
-            return;
-		}
-		writeOkMessage(soc);
-        needToSaveMutex.unlock();
-        //readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == STYLE_CAHNGED_MESSAGE && !fileDeleted) {
-        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
-        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-		if (!readStyleChanged(soc)) {
-			writeErrMessage(soc);
-            return;
-		}
-		writeOkMessage(soc);
-        needToSaveMutex.unlock();
-        //readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == DELETE_MESSAGE && !fileDeleted) {
-        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
-        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-		if (!readDelete(soc)) {
-			writeErrMessage(soc, DELETE_MESSAGE);
-            return;
-		}
-        writeOkMessage(soc);
-        needToSaveMutex.unlock();
-		//readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
-        std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-        std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
-        std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-        std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
-        if (!readAlignmentChanged(soc)) {
-            writeErrMessage(soc);
-            return;
+	try {
+        std::shared_lock<std::shared_mutex> fileDeletedMutex(mutexFileDeleted);
+        if (data.toStdString() == INSERT_MESSAGE && !fileDeleted) {
+            std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+            std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+            std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+            if (!readInsert(soc)) {
+                writeErrMessage(soc, INSERT_MESSAGE);
+                return;
+            }
+            writeOkMessage(soc);
+            needToSaveMutex.unlock();
+            //readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == STYLE_CAHNGED_MESSAGE && !fileDeleted) {
+            std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+            std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+            std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+            if (!readStyleChanged(soc)) {
+                writeErrMessage(soc);
+                return;
+            }
+            writeOkMessage(soc);
+            needToSaveMutex.unlock();
+            //readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == DELETE_MESSAGE && !fileDeleted) {
+            std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+            std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+            std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+            if (!readDelete(soc)) {
+                writeErrMessage(soc, DELETE_MESSAGE);
+                return;
+            }
+            writeOkMessage(soc);
+            needToSaveMutex.unlock();
+            //readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
+            std::shared_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+            std::shared_lock<std::shared_mutex> socketsLock(mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+            std::unique_lock<std::shared_mutex> needToSaveMutex(mutexNeedToSave);
+            if (!readAlignmentChanged(soc)) {
+                writeErrMessage(soc);
+                return;
+            }
+            writeOkMessage(soc);
+            needToSaveMutex.unlock();
+            //readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
+            std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
+            std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
+            std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
+            std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
+
+            std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+            if (!readFileName(soc, connectReadyRead, connectDisconnected)){
+                writeErrMessage(soc, REQUEST_FILE_MESSAGE);
+                return;
+            }
+            socketsLock.unlock();
+            pendingSocketsLock.unlock();
+            usernamesLock.unlock();
+            filenameLock.unlock();
+            threadsMutex.unlock();
+            readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == SHARE_CODE) {
+            std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            if (!readShareCode(soc)) {
+                writeErrMessage(soc, DELETE_MESSAGE);
+                return;
+            }
+            readyRead(soc, connectReadyRead, connectDisconnected);
+        } else if (data.toStdString() == EDIT_ACCOUNT) {
+            QString oldUsername = usernames[soc->socketDescriptor()];
+            std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+            std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+
+            if (readEditAccount(soc)) {
+                sendUser(soc);
+                server->sendFileNames(soc);
+                if (oldUsername != usernames[soc->socketDescriptor()]) {
+                    sendRemoveUser(oldUsername);
+                    sendNewUser(soc);
+                }
+            } else {
+                writeErrMessage(soc, EDIT_ACCOUNT);
+            }
+        } else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE) {
+            if (!readRequestUsernameList(soc)) {
+                writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
+            }
+        } else if (data.toStdString() == FILE_INFORMATION_CHANGES) {
+            std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+            std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+
+            if (!readFileInformationChanges(soc)) {
+                writeErrMessage(soc, FILE_INFORMATION_CHANGES);
+            }
+        } else if (data.toStdString() == DELETE_FILE) {
+            std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
+            std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
+
+            std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
+            std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
+
+            if (!readDeleteFile(soc)) {
+                writeErrMessage(soc, DELETE_FILE);
+            }
+        } else {
+            if (!fileDeleted)
+                writeErrMessage(soc);
         }
-        writeOkMessage(soc);
-        needToSaveMutex.unlock();
-        //readyRead(soc, connectReadyRead, connectDisconnected);
-    } else if (data.toStdString() == REQUEST_FILE_MESSAGE) {
-		std::unique_lock<std::shared_mutex> socketsLock(mutexSockets);
-		std::unique_lock<std::shared_mutex> pendingSocketsLock(mutexPendingSockets);
-		std::unique_lock<std::shared_mutex> usernamesLock(mutexUsernames);
-		std::shared_lock<std::shared_mutex> filenameLock(mutexFilename);
-
-		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
-		if (!readFileName(soc, connectReadyRead, connectDisconnected)){
-            writeErrMessage(soc, REQUEST_FILE_MESSAGE);
-            return;
-        }
-		socketsLock.unlock();
-		pendingSocketsLock.unlock();
-        usernamesLock.unlock();
-        filenameLock.unlock();
-        threadsMutex.unlock();
-        readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == SHARE_CODE) {
-		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		if (!readShareCode(soc)) {
-			writeErrMessage(soc, DELETE_MESSAGE);
-            return;
-		}
-		readyRead(soc, connectReadyRead, connectDisconnected);
-	} else if (data.toStdString() == EDIT_ACCOUNT) {
-		QString oldUsername = usernames[soc->socketDescriptor()];
-		std::unique_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
-		std::unique_lock<std::shared_mutex> socketsMutex(server->mutexSockets);
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-
-		if (readEditAccount(soc)) {
-			sendUser(soc);
-			server->sendFileNames(soc);
-			if (oldUsername != usernames[soc->socketDescriptor()]) {
-				sendRemoveUser(oldUsername);
-				sendNewUser(soc);
-			}
-		} else {
-			writeErrMessage(soc, EDIT_ACCOUNT);
-		}
-	} else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE) {
-		if (!readRequestUsernameList(soc)) {
-			writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
-		}
-	} else if (data.toStdString() == FILE_INFORMATION_CHANGES) {
-		std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
-		std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
-
-		if (!readFileInformationChanges(soc)) {
-			writeErrMessage(soc, FILE_INFORMATION_CHANGES);
-		}
-	} else if (data.toStdString() == DELETE_FILE) {
-		std::shared_lock<std::shared_mutex> allUsernamesMutex(server->mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(server->mutexThread);
-		std::unique_lock<std::shared_mutex> serverSocketsMutex(server->mutexSockets);
-
-		std::unique_lock<std::shared_mutex> threadSocketsMutex(mutexSockets);
-		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> pendingSocketsMutex(mutexPendingSockets);
-
-		if (!readDeleteFile(soc)) {
-			writeErrMessage(soc, DELETE_FILE);
-		}
-	} else {
-	    if (!fileDeleted)
-		    writeErrMessage(soc);
+	}catch(...){
+        writeErrMessage(soc);
+        disconnected( soc, soc->socketDescriptor(), connectReadyRead, connectDisconnected);
 	}
 }
 
@@ -731,8 +736,6 @@ bool Thread::sendNewUser(QTcpSocket *soc) {
  * @param username
  */
 bool Thread::sendRemoveUser(const QString& username) {
-    /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
-        return true;*/
     qDebug() << "sendRemoveUser";
 	QByteArray message(REMOVE_USER);
 	QByteArray usernameByteArray = convertionQString(username);
@@ -740,12 +743,10 @@ bool Thread::sendRemoveUser(const QString& username) {
 	message.append(" " + usernameSize + " " + usernameByteArray);
 
 	for (auto s : sockets) {
-	    //if (s.first != socketDescriptor) {
-            qDebug() << usernames[s.first];
-            if (!writeMessage(s.second, message)) {
-                return false;
-            }
-        //}
+        qDebug() << usernames[s.first];
+        if (!writeMessage(s.second, message)) {
+            return false;
+        }
 	}
     return true;
 }
@@ -756,8 +757,6 @@ bool Thread::sendRemoveUser(const QString& username) {
  * @param username
  */
 bool Thread::sendRemoveUser(qintptr socketDescriptor, const QString& username) {
-    /*if (sockets.size() == 1  && sockets.find(socketDescriptor) != sockets.end())
-        return true;*/
     qDebug() << "sendRemoveUser";
     QByteArray message(REMOVE_USER);
     QByteArray usernameByteArray = convertionQString(username);
@@ -838,10 +837,6 @@ bool Thread::sendFile(QTcpSocket *soc) {
     }
 	qDebug() << "                         " << message;
 	qDebug() << "File inviato!"; // newLine
-
-	/*if (!writeMessage(soc, message)) {
-		return false;
-	}*/
 	return true;
 }
 
@@ -996,9 +991,6 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 					server->changeNamethread(fileList[i].split(".json")[0], newFilename);
 
 					qDebug() << "Found file: " << fileList[i];
-					/*QFile renamefile(fileList[i]);
-					renamefile.rename(newFilename + ".json");
-                    renamefile.close();*/
                     QString oldFilename = fileList[i].split(".json")[0];
                     renameFileSave(oldFilename, newFilename);
 
@@ -1027,14 +1019,14 @@ bool Thread::readEditAccount(QTcpSocket *soc) {
 		}
 
 		if (newPasswordSize != 0) {
-			if (db.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
+			if (!db.changePassword(usernames[soc->socketDescriptor()], newPassword)) {
 				qDebug() << "Err2";
 				return false;
 			}
 		}
 
 		if (sizeAvatar != 0) {
-			if (db.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
+			if (!db.changeAvatar(usernames[soc->socketDescriptor()], avatarDef)) {
 				qDebug() << "Err3";
 				return false;
 			}
@@ -1416,5 +1408,5 @@ Thread::~Thread() {
     for (auto soc: pendingSocket) {
         soc.second->deleteLater();
     }
-    delete saveTimer;
+    saveTimer->deleteLater();
 }

@@ -997,9 +997,10 @@ void Editor::removeUser(QString user) {
 	qDebug() << "\t\tUSER REMOVED:\t" << user;
 
 	try {
-        users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
-            return s == user;
-        }));
+	    if (!users.isEmpty())
+            users.erase(std::remove_if(users.begin(), users.end(), [user](const QString &s) {
+                return s == user;
+            }));
 
         ui->userListWidget->clear();
         ui->userListWidget->addItems(users);

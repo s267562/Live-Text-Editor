@@ -31,16 +31,20 @@ bool Server::startServer(quint16 port) {
  */
 void Server::connection() {
 	std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
-	QTcpSocket *soc = this->nextPendingConnection();
+    QTcpSocket *soc = this->nextPendingConnection();
 
-	qintptr socketDescriptor = soc->socketDescriptor();
-	socketsState[socketDescriptor] = UNLOGGED;
-	sockets[socketDescriptor] = soc;
-	auto *connectReadyRead = new QMetaObject::Connection();
-	auto *connectDisconnected = new QMetaObject::Connection();
-	soc->setParent(nullptr);
+    try {
+        qintptr socketDescriptor = soc->socketDescriptor();
+        socketsState[socketDescriptor] = UNLOGGED;
+        sockets[socketDescriptor] = soc;
+        auto *connectReadyRead = new QMetaObject::Connection();
+        auto *connectDisconnected = new QMetaObject::Connection();
+        soc->setParent(nullptr);
 
-	connectionSlot(soc, connectReadyRead, connectDisconnected);
+        connectionSlot(soc, connectReadyRead, connectDisconnected);
+	}catch(...){
+	    soc->deleteLater();
+	}
 }
 
 void Server::connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead,
@@ -71,104 +75,108 @@ void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::C
 	}
 
 	qDebug() << "Server.cpp - connection()     msg received:" << data;
-
-	if (data.toStdString() == LOGIN_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
-		std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		if (logIn(soc)) {
-			if (!sendUser(soc)) {
-				writeErrMessage(soc, LOGIN_MESSAGE);
-				return;
-			}
-			if (!sendFileNames(soc)) {
-				writeErrMessage(soc, LOGIN_MESSAGE);
-				return;
-			}
-			socketsState[socketDescriptor] = LOGGED;
-			qDebug() << "                              socketsSize: " << socketsState.size();
-			qDebug() << ""; // newLine
-		} else {
-			//error in login phase
-			qDebug() << "                              error login";
-			qDebug() << ""; // newLine
-			writeErrMessage(soc, LOGIN_MESSAGE);
-			return;
-		}
-	} else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
-		std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		if (registration(soc)) {
-			if (!sendUser(soc)) {
-				writeErrMessage(soc, LOGIN_MESSAGE);
-				return;
-			}
-			if (!sendFileNames(soc)) {
-				writeErrMessage(soc, LOGIN_MESSAGE);
-				return;
-			}
-			socketsState[socketDescriptor] = LOGGED;
-		} else {
-			writeErrMessage(soc, REGISTRATION_MESSAGE);
-			return;
-		}
-	} else if (data.toStdString() == REQUEST_FILE_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
-		/* disconnect from main thread */
-		disconnect(*connectReadyRead);
-		if (readFileName(socketDescriptor, soc)) {
-			disconnect(*connectDisconnected);
-			delete connectReadyRead;
-			delete connectDisconnected;
-			socketsState.erase(socketDescriptor);
-			qDebug() << "                              socketsSize: " << socketsState.size();
-			qDebug() << ""; // newLine
-		} else {
-			/* connect from main thread */
-			if (writeErrMessage(soc, REQUEST_FILE_MESSAGE))
-                connectionSlot(soc, connectReadyRead, connectDisconnected);
-		}
-	} else if (data.toStdString() == EDIT_ACCOUNT && socketsState[socketDescriptor] == LOGGED) {
-		std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
-		std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
-		std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
-		if (readEditAccount(soc)) {
-			sendUser(soc);
-			sendFileNames(soc);
-		} else {
-			writeErrMessage(soc, EDIT_ACCOUNT);
-		}
-	} else if (data.toStdString() == SHARE_CODE && socketsState[socketDescriptor] == LOGGED) {
-		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		if (!readShareCode(soc)) {
-			writeErrMessage(soc, SHARE_CODE);
-		}
-	} else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
-		if (!readRequestUsernameList(soc)) {
-			writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
-		}
-	} else if (data.toStdString() == FILE_INFORMATION_CHANGES && socketsState[socketDescriptor] == LOGGED) {
-		std::shared_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
-		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
-		std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
-		if (!readFileInformationChanges(soc)) {
-			writeErrMessage(soc, FILE_INFORMATION_CHANGES);
-		}
-	} else if (data.toStdString() == DELETE_FILE && socketsState[socketDescriptor] == LOGGED) {
-		std::shared_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
-		std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
-		std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
-		std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
-		if (!readDeleteFile(soc)) {
-			writeErrMessage(soc, DELETE_FILE);
-		}
-	} else {
-		qDebug() << "                              error message";
-		qDebug() << ""; // newLine
-		writeErrMessage(soc);
-	}
+    try {
+        if (data.toStdString() == LOGIN_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
+            std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            if (logIn(soc)) {
+                if (!sendUser(soc)) {
+                    writeErrMessage(soc, LOGIN_MESSAGE);
+                    return;
+                }
+                if (!sendFileNames(soc)) {
+                    writeErrMessage(soc, LOGIN_MESSAGE);
+                    return;
+                }
+                socketsState[socketDescriptor] = LOGGED;
+                qDebug() << "                              socketsSize: " << socketsState.size();
+                qDebug() << ""; // newLine
+            } else {
+                //error in login phase
+                qDebug() << "                              error login";
+                qDebug() << ""; // newLine
+                writeErrMessage(soc, LOGIN_MESSAGE);
+                return;
+            }
+        } else if (data.toStdString() == REGISTRATION_MESSAGE && socketsState[socketDescriptor] == UNLOGGED) {
+            std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            if (registration(soc)) {
+                if (!sendUser(soc)) {
+                    writeErrMessage(soc, LOGIN_MESSAGE);
+                    return;
+                }
+                if (!sendFileNames(soc)) {
+                    writeErrMessage(soc, LOGIN_MESSAGE);
+                    return;
+                }
+                socketsState[socketDescriptor] = LOGGED;
+            } else {
+                writeErrMessage(soc, REGISTRATION_MESSAGE);
+                return;
+            }
+        } else if (data.toStdString() == REQUEST_FILE_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
+            /* disconnect from main thread */
+            disconnect(*connectReadyRead);
+            if (readFileName(socketDescriptor, soc)) {
+                disconnect(*connectDisconnected);
+                delete connectReadyRead;
+                delete connectDisconnected;
+                socketsState.erase(socketDescriptor);
+                qDebug() << "                              socketsSize: " << socketsState.size();
+                qDebug() << ""; // newLine
+            } else {
+                /* connect from main thread */
+                if (writeErrMessage(soc, REQUEST_FILE_MESSAGE))
+                    connectionSlot(soc, connectReadyRead, connectDisconnected);
+            }
+        } else if (data.toStdString() == EDIT_ACCOUNT && socketsState[socketDescriptor] == LOGGED) {
+            std::unique_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
+            std::unique_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
+            std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
+            if (readEditAccount(soc)) {
+                sendUser(soc);
+                sendFileNames(soc);
+            } else {
+                writeErrMessage(soc, EDIT_ACCOUNT);
+            }
+        } else if (data.toStdString() == SHARE_CODE && socketsState[socketDescriptor] == LOGGED) {
+            std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            if (!readShareCode(soc)) {
+                writeErrMessage(soc, SHARE_CODE);
+            }
+        } else if (data.toStdString() == REQUEST_USERNAME_LIST_MESSAGE && socketsState[socketDescriptor] == LOGGED) {
+            if (!readRequestUsernameList(soc)) {
+                writeErrMessage(soc, REQUEST_USERNAME_LIST_MESSAGE);
+            }
+        } else if (data.toStdString() == FILE_INFORMATION_CHANGES && socketsState[socketDescriptor] == LOGGED) {
+            std::shared_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
+            std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
+            std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
+            if (!readFileInformationChanges(soc)) {
+                writeErrMessage(soc, FILE_INFORMATION_CHANGES);
+            }
+        } else if (data.toStdString() == DELETE_FILE && socketsState[socketDescriptor] == LOGGED) {
+            std::shared_lock<std::shared_mutex> allUsernamesMutex(mutexAllUsernames);
+            std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
+            std::unique_lock<std::shared_mutex> threadsMutex(mutexThread);
+            std::unique_lock<std::shared_mutex> socketsMutex(mutexSockets);
+            if (!readDeleteFile(soc)) {
+                writeErrMessage(soc, DELETE_FILE);
+            }
+        } else {
+            qDebug() << "                              error message";
+            qDebug() << ""; // newLine
+            writeErrMessage(soc);
+        }
+    }catch (...) {
+        writeErrMessage(soc);
+        disconnected(connectReadyRead, connectDisconnected, soc, socketDescriptor);
+    }
 }
 
 /**
@@ -613,9 +621,13 @@ void Server::disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject
 	delete connectReadyRead;
 	delete connectDisconnected;
 	soc->deleteLater();
-	socketsState.erase(socketDescriptor);
-	usernames.erase(socketDescriptor);
-	removeUsername(socketDescriptor);
+	try {
+        socketsState.erase(socketDescriptor);
+        usernames.erase(socketDescriptor);
+        removeUsername(socketDescriptor);
+	}catch(std::exception e) {
+        qDebug() << e.what();
+	}
 }
 
 /**
@@ -623,13 +635,13 @@ void Server::disconnected(QMetaObject::Connection *connectReadyRead, QMetaObject
  * @return Thread with a specific ID
  */
 std::shared_ptr<Thread> Server::getThread(const QString &fileName) {
-	auto result = threads.find(fileName);
+    auto result = threads.find(fileName);
 
-	if (result != threads.end()) {
-		return result.operator->()->second;
-	} else {
-		return std::shared_ptr<Thread>();
-	}
+    if (result != threads.end()) {
+        return result.operator->()->second;
+    } else {
+        return std::shared_ptr<Thread>();
+    }
 }
 
 /**
@@ -1054,17 +1066,22 @@ void Server::removeDeleteFileThread(const QString &filename) {
 void Server::removeThread(const QString &filename) {
 	std::unique_lock<std::shared_mutex> threadLok(mutexThread);
 	std::unique_lock<std::shared_mutex> deletedThreadLock(mutexDeleteFileThread);
-	if (deleteFileThread.find(filename) != deleteFileThread.end()) {
-		deleteFileThread[filename]->quit();
-		deleteFileThread[filename]->requestInterruption();
-		deleteFileThread[filename]->wait();
-		deleteFileThread.erase(filename);
-	} else {
-		threads[filename]->quit();
-		threads[filename]->requestInterruption();
-		threads[filename]->wait();
-		threads.erase(filename);
-	}
+    qDebug() << "Thread deleted 1!";
+    try {
+        if (deleteFileThread.find(filename) != deleteFileThread.end()) {
+            deleteFileThread[filename]->quit();
+            deleteFileThread[filename]->requestInterruption();
+            deleteFileThread[filename]->wait();
+            deleteFileThread.erase(filename);
+        } else {
+            threads[filename]->quit();
+            threads[filename]->requestInterruption();
+            threads[filename]->wait();
+            threads.erase(filename);
+        }
+    }catch(...) {
+        qDebug() << "Problema nella distruzione del thread!";
+    }
 	qDebug() << "Thread deleted!";
 }
 

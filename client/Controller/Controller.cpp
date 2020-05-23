@@ -6,6 +6,10 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 #include <utility>
+#include <QString>
+#include <QtCharts>
+#include <QtGui>
+#include <QtSql>
 
 Controller::Controller(): messanger(new Messanger(this, this)), connection(new Connection(this)){
     user = nullptr;
@@ -56,6 +60,7 @@ void Controller::networkingConnection() {
     connect(this->messanger,SIGNAL(reciveUsernameList(QString, QStringList)), this, SLOT(reciveUsernameList(QString, QStringList)));
     connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
     connect(this->messanger, SIGNAL(addFileNames(std::map<QString, bool>)), this, SLOT(addFileNames(std::map<QString, bool>)));
+    connect(this->messanger, SIGNAL(timeout()), this, SLOT(timeout()));
 }
 
 /**
@@ -190,7 +195,7 @@ User* Controller::getUser(){
 void Controller::errorConnection(){
     QMessageBox::information(now, "Connection", "Try again, connection not established!");
     connection = new Connection(this);
-    connect(this->connection, SIGNAL(connectToAddress(QString, QString)),this, SLOT(connectClient(QString, QString)));
+    connect(connection, SIGNAL(connectToAddress(QString, QString)), this, SLOT(connectClient(QString, QString)));
     now = connection;
     handleGUI(connection);
     stopLoadingPopup();
@@ -474,6 +479,8 @@ void Controller::sendDeleteFile(QString filename){
 Controller::~Controller(){
     this->crdtThread->quit();
     this->crdtThread->wait();
+    this->crdtThread->deleteLater();
+    this->crdt->deleteLater();
 }
 
 CRDT *Controller::getCrdt() const {
@@ -551,4 +558,14 @@ void Controller::inviledateTextEditor() {
     }
     editor->formatText(alignment_block);
     crdt->waitForInvalidate = false;
+}
+
+void Controller::timeout() {
+    QMessageBox::information(now, "Connection", "Timeout!");
+    messanger->onDisconnect();
+    connection = new Connection(this);
+    connect(connection, SIGNAL(connectToAddress(QString, QString)), this, SLOT(connectClient(QString, QString)));
+    now = connection;
+    handleGUI(connection);
+    stopLoadingPopup();
 }

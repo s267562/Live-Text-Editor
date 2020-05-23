@@ -84,46 +84,55 @@ void Messanger::onReadyRead() {
     if (!clientIsLogged) {
         if (state == UNLOGGED && datas.toStdString() == AVATAR_MESSAGE) {
             if (!readUser()) {
+                emit timeout();
                 return;
             }
             state = WAITING_LIST_OF_FILE;
         } else if (state == WAITING_LIST_OF_FILE && datas.toStdString() == LIST_OF_FILE) {
             if (!readFileNames()) {
+                emit timeout();
                 return;
             }
             clientIsLogged = true;
             state = LIST_OF_FILE_RECIVED;
         } else if (datas.toStdString() == ERR_MESSAGE) {
             if (!readError()) {
+                emit timeout();
                 return;
             }
         }
     } else {
         if (state == LIST_OF_FILE_RECIVED && datas.toStdString() == AVATAR_MESSAGE) {
             if (!readUser()) {
+                emit timeout();
                 return;
             }
         } else if (datas.toStdString() == SENDING_FILE) {
             if (!readFile()) {
+                emit timeout();
                 return;
             }
             state = WAITING_LIST_OF_ONLINE_USERS;
         } else if (state == WAITING_LIST_OF_ONLINE_USERS && datas.toStdString() == LIST_OF_USERS) {
             if (!readUsernames()) {
+                emit timeout();
                 return;
             }
             state = EDIT_FILE_STATE;
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == INSERT_MESSAGE) {
             qDebug() << state << EDIT_FILE_STATE;
             if (!readInsert()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == DELETE_MESSAGE) {
             if (!readDelete()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == REMOVE_USER) {
             if (!readRemoveUser()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == OK_MESSAGE) {
@@ -131,34 +140,42 @@ void Messanger::onReadyRead() {
             despatchMessage();
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == LIST_OF_USERS) {
             if (!readUsernames()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == STYLE_CAHNGED_MESSAGE) {
             if (!readStyleChanged()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == AVATAR_MESSAGE) {
             if (!readUser()) {
+                emit timeout();
                 return;
             }
         } else if (datas.toStdString() == ADD_FILE) {
             if (!readAddFile()) {
+                emit timeout();
                 return;
             }
         } else if (state == EDIT_FILE_STATE && datas.toStdString() == ALIGNMENT_CHANGED_MESSAGE) {
             if (!readAlignmentChanged()) {
+                emit timeout();
                 return;
             }
         } else if (datas.toStdString() == ERR_MESSAGE) {
             if (!readError()) {
+                emit timeout();
                 return;
             }
         } else if (datas.toStdString() == USERNAME_LIST_FOR_FILE) {
             if (!readUsernameList()) {
+                emit timeout();
                 return;
             }
         } else if (datas.toStdString() == LIST_OF_FILE) {
             if (!readFileNames()) {
+                emit timeout();
                 return;
             }
         }

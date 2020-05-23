@@ -94,6 +94,7 @@ public:
 public slots:
     /* ------------------------------------------------------------- NETWORKING */
     void errorConnection();
+    void timeout();
 
     /* ------------------------------------------------------------- CONNECTION */
     void connectClient(QString address, QString port);

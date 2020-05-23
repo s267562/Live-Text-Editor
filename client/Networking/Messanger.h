@@ -97,6 +97,7 @@ signals:
     void shareCodeFailed();
     void addFileNames(std::map<QString, bool> fileList);
     void reciveUsernameList(QString filename, QStringList userlist);
+    void timeout();
 };
 
 #endif // MESSANGER_H
