@@ -39,12 +39,12 @@ void CRDT::setSiteId(const QString &siteId) {
 }
 
 const Character CRDT::getCharacter(Pos pos) {
-    
+
     int line=pos.getLine();
     int ch=pos.getCh();
-    
+
     if( line>=0 && line<this->structure.size() ){ // TODO: Extend this check to the server too
-        
+
         if( ch>=0 && ch<this->structure[line].size() ){
             return this->structure[line][ch];
         }
@@ -256,13 +256,17 @@ void CRDT::insertChar(Character character, Pos pos) {
             structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
             auto previousLine=this->style.begin() + pos.getLine();
             int alignment=previousLine->second; // Get only alignment
+            std::cerr<< "SIZESTYLE " << this->style.size()<<std::endl;
+            std::cerr<< "POSLINE " << pos.getLine()+1<<std::endl;
             this->style.insert(this->style.begin() + pos.getLine()+1, std::pair<Character,int>(character,alignment));
 
         } else {
             qDebug().noquote() << "There is nothing after the char \n inserted";
+			std::cerr<< "SIZESTYLE" << this->style.size();
+			std::cerr<< "POSLINE " << pos.getLine()+1<<std::endl;
             auto previousLine=this->style.begin() + pos.getLine();
             int alignment=previousLine->second; // Get only alignment
-            style.emplace_back(std::pair<Character,int>(character,alignment));
+            style.emplace_back(character,alignment);
         }
     }
 
@@ -284,7 +288,7 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         newlineRemoved = true;
         removedChars = this->deleteMultipleLines(startPos, endPos);
 
-        for( int i=startPos.getLine(); i<endPos.getLine(); i++ ){ // TODO: Check included or not
+        for( int i=endPos.getLine()-1; i>startPos.getLine(); i-- ){ // TODO: Check included or not
             this->removeStyleLine(i);
         }
         // single-line deletes
@@ -337,13 +341,28 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
     //qDebug() << "client/CRDT.cpp - deleteSingleLine()     structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size();
     if(structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
         // TODO lanciare un'eccezione per evitare crash?
-        qDebug() << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
+        std::cerr << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
         qDebug() << ""; // newLine
+//        throw "Errore";
     }
-    std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
-    this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
+    else {
+		std::vector<Character> chars{structure[startPos.getLine() ].begin() + startPos.getCh(),
+									 structure[startPos.getLine() ].begin() + startPos.getCh() + charNum};
+		std::cerr << "Structure size: " << structure.size() << std::endl;
+		std::cerr << "Structure startposgetline size: " << structure[startPos.getLine() ].size() << std::endl;
+		std::cerr << "startPos -> getLine: " << startPos.getLine() << std::endl;
+		std::cerr << "startPos -> getCh: " << startPos.getCh() << std::endl;
+		std::cerr << "charnum: " << charNum << std::endl;
+		std::cerr << "Primo char: " << structure[startPos.getLine()][0].getValue() << std::endl;
+		std::cerr << "Ultimo char: " << structure[startPos.getLine()][charNum - 1].getValue() << std::endl;
+		std::cerr << "stampafinale" << std::endl;
+		this->structure[startPos.getLine() ].erase(structure[startPos.getLine() ].begin() + startPos.getCh(),
+													  structure[startPos.getLine() ].begin() + startPos.getCh() +
+													  charNum);
 
-    return chars;
+		return chars;
+	}
+    return std::vector<Character>();
 }
 
 
@@ -438,7 +457,7 @@ void CRDT::removeEmptyLines() {
 }
 
 void CRDT::mergeLines(int line) {
-    
+
     if(structure.size() > line + 1 && !structure[line + 1].empty()) {
         structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
         structure.erase(structure.begin() + line + 1);
@@ -781,7 +800,8 @@ void CRDT::printStructures() {
 }
 
 void CRDT::removeStyleLine(int i) {
-    this->style.erase(this->style.begin()+1);
+
+    this->style.erase(this->style.begin()+i);
 }
 
 std::vector<std::vector<Character>> CRDT::getStructure() {
