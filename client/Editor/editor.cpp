@@ -1021,6 +1021,9 @@ void Editor::setUsers(QStringList users) {
         if (loadingFlag) {
             ui->loading->close();
             loadingFlag = false;
+            QColor color(colors[colorIndex]);
+            color.setAlpha(128); // opacity
+            otherCursors.insert(this->controller->getUser()->getUsername(), new OtherCursor(this->controller->getUser()->getUsername(), this->textDocument, color, this->textEdit->viewport()));
         }
 
         bool isInsert = false;
