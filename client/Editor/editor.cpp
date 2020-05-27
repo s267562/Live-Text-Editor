@@ -537,7 +537,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                         QMetaObject::invokeMethod(controller->getCrdt(), "totalLocalInsert", Qt::QueuedConnection,
                                                   Q_ARG(int, charsAdded), Q_ARG(QTextCursor*, cursor1),
                                                   Q_ARG(QString, chars), Q_ARG(int, position));*/
-                        //std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                        std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
                         controller->getCrdt()->setIsWorking(true);
                         controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+charsAdded);
                         //controller->getCrdt()->copy = true;

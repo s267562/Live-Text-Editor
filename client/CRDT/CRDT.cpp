@@ -619,11 +619,12 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 void CRDT::newMessage(Message message) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
     std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
+
     if (controller->isRequestFFile())
         return;
     try {
         if(message.getType() == INSERT) {
-            std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
             Character character = message.getCharacter();
 
             if(character.getSiteId() == getSiteId()) {
