@@ -539,9 +539,13 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
 void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos) {
     Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
     // send insert at the server.
-    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
-    isWorking = false;
-    numJobs--;
+    try {
+        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
+    }
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
@@ -574,26 +578,33 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
 void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     qDebug() << "CRDT: " << QThread::currentThreadId();
+    try {
+        if(styleChanged(textCharFormat, pos)) {
+            Character character = getCharacter(pos);
 
-    if(styleChanged(textCharFormat, pos)) {
-        Character character = getCharacter(pos);
-
-        // send insert at the server.
-        QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
+            // send insert at the server.
+            QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
+        }
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
     }
-    isWorking = false;
-    numJobs--;
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
+    try {
+        std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
 
-    for(Character c : removedChars) {
-        QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
+        for(Character c : removedChars) {
+            QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
+        }
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
     }
-    isWorking = false;
-    numJobs--;
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
