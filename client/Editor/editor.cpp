@@ -448,13 +448,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
 
             } else {
-                std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
-                if (position == 0 && charsAdded > 0 && charsRemoved > 0 && controller->getCrdt()->copy == true) {
+                if (position == 0 && charsAdded > 0 && charsRemoved > 0 && copyFlag == true) {
                     // correction when paste something in first position.
-                    charsAdded--;
-                    charsRemoved--;
+                    /*charsAdded--;
+                    charsRemoved--;*/
                 }
-                isWorkingLock.unlock();
+                if (copyFlag)
+                    copyFlag = false;
 
                 if (charsRemoved) {
                     if (isRedoAvailable) {

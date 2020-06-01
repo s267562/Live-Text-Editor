@@ -119,6 +119,7 @@ public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;
     std::list<Character> pendingChar;
     int count = 0;
+    bool copyFlag = false;
     
 private:
     std::vector<QString> colors;
