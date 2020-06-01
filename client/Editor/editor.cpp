@@ -453,6 +453,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     charsAdded--;
                     charsRemoved--;
                 }
+                std::cerr << "Cancellazione"<< std::endl;
 
                 if (charsRemoved) {
                     if (isRedoAvailable) {
@@ -505,6 +506,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                 }
 
                 if (charsAdded) {
+                    std::cerr << "Inserimento"<< std::endl;
                     QTextCursor cursor = textEdit->textCursor();
                     QString chars = textEdit->toPlainText().mid(position, charsAdded);
                     qDebug() << "Editor: " << QThread::currentThreadId();
@@ -525,10 +527,12 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                         cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
                         QTextCharFormat charFormat = cursor.charFormat();
                         //emit localInsert(chars.at(i), charFormat, startPos);
-                        controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
-                        /*QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                        if (charsRemoved == 0)
+                            controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
+                        else
+                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
                                                   Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
-                                                  Q_ARG(Pos, startPos), Q_ARG(bool, conflict));*/
+                                                  Q_ARG(Pos, startPos), Q_ARG(bool, false));
                     } else {
                         /*QTextCursor *cursor1 = new QTextCursor{cursor};
                         std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);

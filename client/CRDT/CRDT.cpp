@@ -288,7 +288,7 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         newlineRemoved = true;
         removedChars = this->deleteMultipleLines(startPos, endPos);
 
-        for( int i=endPos.getLine()-1; i>startPos.getLine(); i-- ){ // TODO: Check included or not
+        for( int i=endPos.getLine()-1; i>=startPos.getLine(); i--){ // TODO: Check included or not
             this->removeStyleLine(i);
         }
         // single-line deletes
@@ -316,48 +316,51 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
 std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
     std::vector<Character> chars = {};
 
-    if (!structure[endPos.getLine()].empty()) {
-        chars.insert(chars.end(), structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
-        structure[endPos.getLine()].erase(structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
-    }
+        if (!structure[endPos.getLine()].size() < endPos.getCh()) {
+            chars.insert(chars.end(), structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
+            structure[endPos.getLine()].erase(structure[endPos.getLine()].begin(), structure[endPos.getLine()].begin() + endPos.getCh());
+        }
 
-    for (int line = endPos.getLine() - 1; line > startPos.getLine(); line--) {
-        chars.insert(chars.end(), structure[line].begin(), structure[line].end());
-        structure.erase(structure.begin() + line );
-    }
+        for (int line = endPos.getLine() - 1; line > startPos.getLine(); line--) {
+            if (structure[line].size() != 0) {
+                chars.insert(chars.end(), structure[line].begin(), structure[line].end());
+                structure.erase(structure.begin() + line );
+            }
+        }
+        if (/*!structure[endPos.getLine()].empty() ||*/ !(structure[startPos.getLine()].size() < startPos.getCh())) {
+            chars.insert(chars.end(), structure[startPos.getLine()].begin() + startPos.getCh(),
+                         structure[startPos.getLine()].end());
+            structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(),
+                                                structure[startPos.getLine()].end());
+        }
 
-    chars.insert(chars.end(), structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
-    structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].end());
-
+    //}
     return chars;
 }
 
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
     // TODO check if correct
     int charNum = endPos.getCh() - startPos.getCh();
-    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     charNum: " << charNum;
-    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh(): " << startPos.getCh();
-    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh() + charNum: " << startPos.getCh() + charNum;
-    //qDebug() << "client/CRDT.cpp - deleteSingleLine()     structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size();
-    if(structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
+
+    if(structure[startPos.getLine()].size() == 0 || structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
         // TODO lanciare un'eccezione per evitare crash?
         std::cerr << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
         qDebug() << ""; // newLine
 //        throw "Errore";
     }
     else {
-		std::vector<Character> chars{structure[startPos.getLine() ].begin() + startPos.getCh(),
-									 structure[startPos.getLine() ].begin() + startPos.getCh() + charNum};
+		std::vector<Character> chars{structure[startPos.getLine()].begin() + startPos.getCh(),
+									 structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
 		std::cerr << "Structure size: " << structure.size() << std::endl;
-		std::cerr << "Structure startposgetline size: " << structure[startPos.getLine() ].size() << std::endl;
+		std::cerr << "Structure startposgetline size: " << structure[startPos.getLine()].size() << std::endl;
 		std::cerr << "startPos -> getLine: " << startPos.getLine() << std::endl;
 		std::cerr << "startPos -> getCh: " << startPos.getCh() << std::endl;
 		std::cerr << "charnum: " << charNum << std::endl;
 		std::cerr << "Primo char: " << structure[startPos.getLine()][0].getValue() << std::endl;
 		std::cerr << "Ultimo char: " << structure[startPos.getLine()][charNum - 1].getValue() << std::endl;
 		std::cerr << "stampafinale" << std::endl;
-		this->structure[startPos.getLine() ].erase(structure[startPos.getLine() ].begin() + startPos.getCh(),
-													  structure[startPos.getLine() ].begin() + startPos.getCh() +
+		this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(),
+													  structure[startPos.getLine()].begin() + startPos.getCh() +
 													  charNum);
 
 		return chars;
@@ -535,32 +538,40 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
 void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool ultimo) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    localInsert(val, textCharFormat, pos);
+    try {
+        localInsert(val, textCharFormat, pos);
 
-    if (ultimo && copy && numJobs == 0) {
-        for (auto c: queueInsertMessage) {
-            pos = handleRemoteInsert(c);
-            //editor->pendingChar.push_back(c);
-            std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
-            /*QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
-                                      Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
-                                      Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));*/
+        if (ultimo && copy && numJobs == 0) {
+            for (auto c: queueInsertMessage) {
+                pos = handleRemoteInsert(c);
+                //editor->pendingChar.push_back(c);
+                std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
+                /*QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
+                                          Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
+                                          Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));*/
+            }
+            queueInsertMessage.clear();
+            copy = false;
         }
-        queueInsertMessage.clear();
-        copy = false;
-    }
-    if (ultimo) {
-        waitForInvalidate = true;
-        QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
+        if (ultimo) {
+            waitForInvalidate = true;
+            QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
+        }
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
     }
 }
 
 void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos) {
-    Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
-    // send insert at the server.
-    QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
-    isWorking = false;
-    numJobs--;
+    try {
+        Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
+        // send insert at the server.
+        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
+    }
 }
 
 void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
@@ -591,38 +602,49 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
 }
 
 void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
-    qDebug() << "CRDT: " << QThread::currentThreadId();
-
-    if(styleChanged(textCharFormat, pos)) {
-        Character character = getCharacter(pos);
-
-        // send insert at the server.
-        QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
-    }
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    isWorking = false;
-    numJobs--;
+    qDebug() << "CRDT: " << QThread::currentThreadId();
+    try {
+        if(styleChanged(textCharFormat, pos)) {
+            Character character = getCharacter(pos);
+
+            // send insert at the server.
+            QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
+        }
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
+    }
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
-    std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
-
-    for(Character c : removedChars) {
-        QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
-    }
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    isWorking = false;
-    numJobs--;
+    try {
+        std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
+
+        for(Character c : removedChars) {
+            QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
+        }
+        isWorking = false;
+        numJobs--;
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
+    }
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
     std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    // send insert at the server.
-    //TODO Check this
-    Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
-    handleAlignmentChanged(alignment_type, blockNumber);
-    //this->messanger->writeAlignmentChanged(alignment_type, blockId);
-    QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
+    try {
+        // send insert at the server.
+        //TODO Check this
+        Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
+        handleAlignmentChanged(alignment_type, blockNumber);
+        //this->messanger->writeAlignmentChanged(alignment_type, blockId);
+        QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
+    }catch (...) {
+        QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
+    }
 }
 
 void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
