@@ -448,11 +448,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
 
             } else {
-                if (position == 0 && charsAdded > 0 && charsRemoved > 0) {
+                std::shared_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
+                if (position == 0 && charsAdded > 0 && charsRemoved > 0 && controller->getCrdt()->copy == true) {
                     // correction when paste something in first position.
                     charsAdded--;
                     charsRemoved--;
                 }
+                isWorkingLock.unlock();
 
                 if (charsRemoved) {
                     if (isRedoAvailable) {
@@ -512,7 +514,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                     if (charsAdded == 1) {
                         std::unique_lock<std::shared_mutex> isWorkingLock(controller->getCrdt()->mutexIsWorking);
                         controller->getCrdt()->setIsWorking(true);
-                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs()+1);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + 1);
                         if (count != pendingChar.size()) {
                             count = pendingChar.size();
                         }
@@ -525,7 +527,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
                         cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
                         QTextCharFormat charFormat = cursor.charFormat();
                         //emit localInsert(chars.at(i), charFormat, startPos);
-                        controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
+                        if (charsRemoved == 0) {
+                            controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
+                        }else {
+                            QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
+                                                      Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
+                                                      Q_ARG(Pos, startPos), Q_ARG(bool, false));
+                        }
                         /*QMetaObject::invokeMethod(controller->getCrdt(), "localInsert", Qt::QueuedConnection,
                                                   Q_ARG(QString, chars.at(0)), Q_ARG(QTextCharFormat, charFormat),
                                                   Q_ARG(Pos, startPos), Q_ARG(bool, conflict));*/

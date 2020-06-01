@@ -572,6 +572,7 @@ void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, 
 }
 
 void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     qDebug() << "CRDT: " << QThread::currentThreadId();
 
     if(styleChanged(textCharFormat, pos)) {
@@ -580,18 +581,17 @@ void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
         // send insert at the server.
         QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
     }
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     isWorking = false;
     numJobs--;
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
+    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
 
     for(Character c : removedChars) {
         QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
     }
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     isWorking = false;
     numJobs--;
 }
@@ -781,7 +781,7 @@ void CRDT::printStructures() {
 }
 
 void CRDT::removeStyleLine(int i) {
-    this->style.erase(this->style.begin()+1);
+    this->style.erase(this->style.begin() + i);
 }
 
 std::vector<std::vector<Character>> CRDT::getStructure() {
