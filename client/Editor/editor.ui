@@ -34,7 +34,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew_File"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave_as_PDF"/>
     <addaction name="actionShare_file"/>
@@ -100,7 +99,6 @@ background-color: rgb(247, 245, 249);
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNew_File"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave_as_PDF"/>
    <addaction name="actionShare_file"/>
@@ -227,18 +225,6 @@ border-radius: 10px;
     </widget>
    </widget>
   </widget>
-  <action name="actionNew_File">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>:/rec/img/new-file.png</normaloff>:/rec/img/new-file.png</iconset>
-   </property>
-   <property name="text">
-    <string>New File</string>
-   </property>
-  </action>
   <action name="actionOpen">
    <property name="checkable">
     <bool>false</bool>

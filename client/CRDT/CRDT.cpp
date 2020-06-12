@@ -285,7 +285,7 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
         removedChars = this->deleteMultipleLines(startPos, endPos);
 
         for( int i=endPos.getLine()-1; i>=startPos.getLine(); i--){ // TODO: Check included or not
-            this->removeStyleLine(i);
+            this->removeStyleLine(i+1);
         }
         // single-line deletes
     } else {

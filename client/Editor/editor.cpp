@@ -1133,7 +1133,7 @@ void Editor::setFilename(QString filename) {
 	this->filename = filename;
     qDebug() << filename << controller->getUser()->getFileList()[filename];
     if (filename.contains("%_##$$$##_%") && filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()){
-        ui->mainToolBar->actions().at(3)->setVisible(false);
+        ui->mainToolBar->actions().at(2)->setVisible(false);
     }
 }
 
