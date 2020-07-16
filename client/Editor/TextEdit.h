@@ -17,7 +17,9 @@ Q_OBJECT
 public:
     Controller *controller = nullptr;
     int position;
-    TextEdit(QWidget * parent, Controller *controller) : QTextEdit(parent), controller(controller) {}
+    TextEdit(QWidget * parent, Controller *controller) : QTextEdit(parent), controller(controller) {
+
+    }
     void insertFromMimeData(const QMimeData * source) override;
 };
 

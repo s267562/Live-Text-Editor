@@ -14,32 +14,32 @@ class OtherCursor : public QObject {
 Q_OBJECT
 
 private:
-    QTextCursor textCursor;
-    QColor color;
-    QLabel cursorLabel;
-    QLabel username;
+	QTextCursor textCursor;
+	QColor color;
+	QLabel cursorLabel;
+	QLabel username;
+	bool owner;
 
 public:
-    OtherCursor(QString name, QTextDocument *doc, QColor color, QWidget *parent=nullptr);
+	OtherCursor(QString name, QTextDocument *doc, QColor color, bool owner, QWidget *parent = nullptr);
 
 
-    void setOtherCursorPosition(int position);
+	void setOtherCursorPosition(int position);
 
-    void move(QRect coordinates, int width, int height);
+	void move(QRect coordinates, int width, int height);
 
 
-    const QTextCursor &getTextCursor() const;
+	const QTextCursor &getTextCursor() const;
 
-    const QColor &getColor() const;
+	const QColor &getColor() const;
 
-    const QLabel &getCursorLabel() const;
+	const QLabel &getCursorLabel() const;
 
-    const QLabel &getUsername() const;
+	const QLabel &getUsername() const;
 
-    void hide();
+	void hide();
 
 };
-
 
 
 #endif //TEXTEDITOR_OTHERCURSOR_H
