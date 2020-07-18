@@ -178,7 +178,7 @@ void Thread::readyRead(QTcpSocket *soc, QMetaObject::Connection *connectReadyRea
 		} else if (data.toStdString() == SHARE_CODE) {
 			std::shared_lock<std::shared_mutex> usernamesMutex(mutexUsernames);
 			if (!readShareCode(soc)) {
-				writeErrMessage(soc, DELETE_MESSAGE);
+				writeErrMessage(soc, SHARE_CODE);
 				return;
 			}
 			readyRead(soc, connectReadyRead, connectDisconnected);

@@ -40,6 +40,6 @@ void User::setAvatar(const QPixmap &avatar) {
     User::avatar = avatar;
 }
 
-void User::addFile(const QString& file) {
-    fileList[file] = true;
+void User::addFile(const QString& file, bool owner) {
+    fileList[file] = owner;
 }

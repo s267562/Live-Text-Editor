@@ -789,7 +789,7 @@ bool Database::removeUser(QString username) {
 
 	QSqlQuery removeUser(db);
 	removeUser.prepare("DELETE FROM users WHERE username = :hashedUsername");
-	removeUser.bindValue(":hashedUsername",hashedUsername);
+	removeUser.bindValue(":hashedUsername", hashedUsername);
 
 	if (!removeUser.exec()) {
 		qDebug() << "Error deleting user: " << username << "\n" << removeUser.lastError();
@@ -799,4 +799,34 @@ bool Database::removeUser(QString username) {
 
 	db.close();
 	return true;
+}
+
+/**
+ *
+ * @param filename  combinazione di filename e username
+ * @param username
+ * @return
+ */
+bool Database::filenameIsValid(QString filename, QString username) {
+	QString hashedUsername = hashUsername(std::move(username));
+
+	// DB opening
+	if (!db.open()) {
+		qDebug() << "Error opening DB";
+		return false;
+	}
+
+	// Check username is valid
+	QSqlQuery queryCheckFilename(db);
+	queryCheckFilename.prepare("SELECT fileID FROM files WHERE username=:username AND fileID=:filename");
+	queryCheckFilename.bindValue(":username", hashedUsername);
+	queryCheckFilename.bindValue(":filename", filename);
+
+	if (!queryCheckFilename.exec()) {
+		qDebug() << "Error getting filename from table:\n" << queryCheckFilename.lastError();
+		return false;
+	} else {
+		// Username is valid, register file id
+		return queryCheckFilename.first();
+	}
 }

@@ -368,7 +368,8 @@ void Controller::openFile(const std::vector<std::vector<Character>> &initialStru
 
 	/* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
 	//QMap<QString, bool> mappa{this->user->getFileList()};
-	auto res = this->user->getFileList().contains(user->getUsername() + "%_##$$$##_%" + filename);
+	auto res = this->user->getFileList().contains(filename);
+	qDebug() << "Openfile: " << filename;
 
 //    if (res != this->user->getFileList().end()){
 	if (!res) {
@@ -448,6 +449,7 @@ void Controller::shareCodeFailed() {
  * @param filenames
  */
 void Controller::addFileNames(QMap<QString, bool> filenames) {
+	user->addFile(filenames.firstKey(), false);
 	showFiles->addFile(std::move(filenames));
 	showFiles->closeAddFile();
 	stopLoadingPopup();

@@ -27,7 +27,7 @@ public:
     const QPixmap &getAvatar() const;
     void setAvatar(const QPixmap &avatar);
     QMap<QString, bool> getFileList() const;
-    void addFile(const QString& file);
+    void addFile(const QString& file,bool  owner= true);
 };
 
 

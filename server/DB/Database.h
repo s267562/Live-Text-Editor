@@ -72,6 +72,8 @@ public:
 	bool createThreadConnection(QString threadID);
 
 	bool testConnection();
+
+	bool filenameIsValid(QString filename,QString username);
 };
 
 
