@@ -58,8 +58,8 @@ void Controller::networkingConnection() {
     connect(this->messanger, SIGNAL(okEditAccount()), this, SLOT(okEditAccount()));
     connect(this->messanger, SIGNAL(shareCodeFailed()), this, SLOT(shareCodeFailed()));
     connect(this->messanger,SIGNAL(reciveUsernameList(QString, QStringList)), this, SLOT(reciveUsernameList(QString, QStringList)));
-    connect(this->messanger, SIGNAL(fileNames(std::map<QString, bool>)), this, SLOT(showFileFinder(std::map<QString, bool>)));
-    connect(this->messanger, SIGNAL(addFileNames(std::map<QString, bool>)), this, SLOT(addFileNames(std::map<QString, bool>)));
+    connect(this->messanger, SIGNAL(fileNames(QMap<QString, bool>)), this, SLOT(showFileFinder(QMap<QString, bool>)));
+    connect(this->messanger, SIGNAL(addFileNames(QMap<QString, bool>)), this, SLOT(addFileNames(QMap<QString, bool>)));
     connect(this->messanger, SIGNAL(timeout()), this, SLOT(timeout()));
 }
 
@@ -265,7 +265,7 @@ void Controller::showRegistration(){
  * This method recives the list of files
  * @param fileList
  */
-void Controller::showFileFinder(const std::map<QString, bool>& fileList){
+void Controller::showFileFinder(const QMap<QString, bool>& fileList){
     stopLoadingPopup();
 
     if (now != editor){
@@ -308,6 +308,13 @@ void Controller::requestForFile(const QString& filename){
     std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
     requestFFile = true;
     qDebug() << "requestForFile" << filename;
+    auto res = this->user->getFileList().find(user->getUsername() + "%_##$$$##_%" + filename);
+
+    if (res != this->user->getFileList().end()){
+        QMessageBox::warning(GUI, "Error", "File già esistente");
+        return;
+    }
+
     bool result = this->messanger->requestForFile(filename);
 
     if (result) {
@@ -350,9 +357,10 @@ void Controller::openFile(const std::vector<std::vector<Character>>& initialStru
     this->editor->formatText(alignment_block);
 
     /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
+    //QMap<QString, bool> mappa{this->user->getFileList()};
     auto result = this->user->getFileList().find(filename);
 
-    if (result != this->user->getFileList().end()){
+    if (/*result->first.isNull() ||*/ result == this->user->getFileList().end()){
         this->user->addFile(filename);
         this->showFiles->addFiles(this->user->getFileList());
     }
@@ -428,7 +436,7 @@ void Controller::shareCodeFailed(){
  * This method is called in the case of file sharing was successful
  * @param filenames
  */
-void Controller::addFileNames(std::map<QString, bool> filenames){
+void Controller::addFileNames(QMap<QString, bool> filenames){
     showFiles->addFile(std::move(filenames));
     showFiles->closeAddFile();
     stopLoadingPopup();

@@ -83,7 +83,7 @@ signals:
     void loginFailed();
     void registrationFailed();
     void newMessage(Message message);
-    void fileNames(std::map<QString, bool> fileList);
+    void fileNames(QMap<QString, bool> fileList);
     void logout();
     void setUsers(QStringList);
     void removeUser(QString);
@@ -95,7 +95,7 @@ signals:
     void editAccountFailed();
     void okEditAccount();
     void shareCodeFailed();
-    void addFileNames(std::map<QString, bool> fileList);
+    void addFileNames(QMap<QString, bool> fileList);
     void reciveUsernameList(QString filename, QStringList userlist);
     void timeout();
 };

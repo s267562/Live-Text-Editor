@@ -62,7 +62,7 @@ public:
 private:
     QString siteId;
     std::vector<std::vector<Character>> structure;
-    std::map<QString, int> versionsVector; // map<username, counter>
+    QMap<QString, int> versionsVector; // map<username, counter>
     static const int base = 32;
     std::vector<std::pair<Character,int>> style;
     Messanger *messanger;

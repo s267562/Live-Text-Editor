@@ -9,23 +9,24 @@
 #include <QStringList>
 #include <map>
 #include <QPixmap>
+#include <QMap>
 
 class User {
     QString username;
-    std::map<QString, bool> fileList;
+    QMap<QString, bool> fileList;
     bool isLogged{};
     QPixmap avatar;
 
 public:
     User(QString username, const QPixmap& avatar);
     void setUsername(const QString &username);
-    void setFileList(std::map<QString, bool> fileList);
+    void setFileList(QMap<QString, bool> fileList);
     void setIsLogged(bool isLogged);
     bool isIsLogged() const;
     const QString &getUsername() const;
     const QPixmap &getAvatar() const;
     void setAvatar(const QPixmap &avatar);
-    std::map<QString, bool> getFileList() const;
+    QMap<QString, bool> getFileList() const;
     void addFile(const QString& file);
 };
 

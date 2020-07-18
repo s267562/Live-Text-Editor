@@ -46,41 +46,41 @@ void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
 	emit newFile(filename);
 }
 
-void ShowFiles::addFiles(std::map<QString, bool> l) {
+void ShowFiles::addFiles(QMap<QString, bool> l) {
 	this->ui->listWidget->clear();
 
-	for (std::pair<QString, bool> filename : l) {
+	for (auto filename : l.keys()) {
 		QString shareCode = "ERROR";
 		// If user is owner for that file create a sharecode
-		if (filename.second) {
+		if (l[filename]) {
 			QString username = controller->getUser()->getUsername();
-			qDebug() << username << filename.first;
-			shareCode = getShareCode(username, filename.first);
+			//qDebug() << username << filename.first;
+			shareCode = getShareCode(username, filename);
 		}
 
-		QString fname = filename.first.split("%_##$$$##_%")[1];
-        QString owner = filename.first.split("%_##$$$##_%")[0];
-		CustomWidget *myItem = new CustomWidget(this, fname, owner,filename.second, shareCode, this->controller);
-		QListWidgetItem *item = new QListWidgetItem(filename.first);
+		QString fname = filename.split("%_##$$$##_%")[1];
+        QString owner = filename.split("%_##$$$##_%")[0];
+		CustomWidget *myItem = new CustomWidget(this, fname, owner,l[filename], shareCode, this->controller);
+		QListWidgetItem *item = new QListWidgetItem(filename);
 		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
 		this->ui->listWidget->setItemWidget(item, myItem);
 	}
 }
 
-void ShowFiles::addFile(std::map<QString, bool> l) {
-	for (std::pair<QString, bool> filename : l) {
+void ShowFiles::addFile(QMap<QString, bool> l) {
+	for (auto filename : l.keys()) {
 		QString shareCode = "ERROR";
 		// If user is owner for that file create a sharecode
-		if (filename.second) {
+		if (l[filename]) {
 			QString username = controller->getUser()->getUsername();
-			shareCode = getShareCode(username, filename.first);
+			shareCode = getShareCode(username, filename);
 		}
 
-        QString fname = filename.first.split("%_##$$$##_%")[1];
-        QString owner = filename.first.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.first.split("%_##$$$##_%")[0];
-        CustomWidget *myItem = new CustomWidget(this, fname, owner, filename.second, shareCode, this->controller);
-		QListWidgetItem *item = new QListWidgetItem(filename.first);
+        QString fname = filename.split("%_##$$$##_%")[1];
+        QString owner = filename.split("%_##$$$##_%")[0] == controller->getUser()->getUsername()? "You" : filename.split("%_##$$$##_%")[0];
+        CustomWidget *myItem = new CustomWidget(this, fname, owner, l[filename], shareCode, this->controller);
+		QListWidgetItem *item = new QListWidgetItem(filename);
 		item->setSizeHint(QSize(0, 60));
 		this->ui->listWidget->addItem(item);
 		this->ui->listWidget->setItemWidget(item, myItem);

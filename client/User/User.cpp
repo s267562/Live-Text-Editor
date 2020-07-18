@@ -8,11 +8,11 @@
 
 User::User(QString username, const QPixmap& avatar): username(std::move(username)), avatar(avatar){}
 
-void User::setFileList(std::map<QString, bool> fileList) {
+void User::setFileList(QMap<QString, bool> fileList) {
     this->fileList = fileList;
 }
 
-std::map<QString, bool> User::getFileList() const{
+QMap<QString, bool> User::getFileList() const{
     return fileList;
 }
 

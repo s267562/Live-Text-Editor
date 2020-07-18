@@ -8,6 +8,8 @@
 #include "CreateFile/createfile.h"
 #include "AddFile/addfile.h"
 #include <QKeyEvent>
+#include <QMap>
+#include <QPair>
 
 namespace Ui {
 class ShowFiles;
@@ -22,8 +24,8 @@ class ShowFiles : public QMainWindow
 public:
     explicit ShowFiles(QWidget *parent = nullptr, Controller *controller = nullptr);
     ~ShowFiles();
-    void addFiles(std::map<QString, bool> l);
-    void addFile(std::map<QString, bool> l);
+    void addFiles(QMap<QString, bool> l);
+    void addFile(QMap<QString, bool> l);
     void closeEditAccount();
     QString getFile(QString filename);
     void closeCreateFile();

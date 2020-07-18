@@ -106,10 +106,10 @@ public slots:
     void showRegistration();
 
     /* ------------------------------------------------------------- SHOW FILES */
-    void showFileFinder(const std::map<QString, bool>&);
+    void showFileFinder(const QMap<QString, bool>&);
     void showFileFinderOtherView();
     void requestForFile(const QString& filename);
-    void addFileNames(std::map<QString, bool> filenames);
+    void addFileNames(QMap<QString, bool> filenames);
     void requestForUsernameList(QString filename, CustomWidget *customWideget);
     void reciveUsernameList(const QString& filename, QStringList userlist);
 

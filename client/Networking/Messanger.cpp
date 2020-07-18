@@ -375,7 +375,7 @@ bool Messanger::readUser() {
 bool Messanger::readFileNames() {
     qDebug() << "Messanger.cpp - readFileName()     ---------- READ FILE NAME ----------";
     QStringList fileList;
-    std::map<QString, bool> files; // pair : (filename , ownership)
+    QMap<QString, bool> files; // pair : (filename , ownership)
 
     if (!readSpace(socket))
         return false;
@@ -922,7 +922,7 @@ bool Messanger::sendShareCode(const QString& shareCode) {
 bool Messanger::readAddFile() {
     qDebug() << "Messanger.cpp - readAddFile()     ---------- READ ADDFILE ----------";
 
-    std::map<QString, bool> files;                      // pair : (filename , ownership)
+    QMap<QString, bool> files;                      // pair : (filename , ownership)
     if (!readSpace(socket))
         return false;
     int fileNameSize = readNumberFromSocket(socket);
