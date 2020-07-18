@@ -682,13 +682,13 @@ bool Thread::writeDelete(QTcpSocket *soc, Character &character) {
 		}
 	}
 	QTextCharFormat cf;
-	Identifier i(0,"Server");
+	Identifier i(0, "Server");
 	std::vector<Identifier> in_pos;
 	in_pos.emplace_back(i);
-	Character initialBlock=Character('\r',cf,-1,"None",in_pos);
-	crdt->handleAlignmentChanged(17,0);
+	Character initialBlock = Character('\r', cf, -1, "None", in_pos);
+	crdt->handleAlignmentChanged(17, 0);
 	if (crdt->getStructure().size() == 0) {
-		writeAlignmentChanged(soc,17,initialBlock);
+		writeAlignmentChanged(soc, 17, initialBlock);
 	}
 	return true;
 }
@@ -805,28 +805,50 @@ bool Thread::sendFile(QTcpSocket *soc) {
 	QByteArray filenameByteArray = convertionQString(filename);
 	QByteArray filenameSize = convertionNumber(filenameByteArray.size());
 	QByteArray numLines = convertionNumber(file.size());
+	int maxChar = 5;
 
 	message.append(" " + filenameSize + " " + filenameByteArray + " " + numLines);
-
 	for (const auto &i : file) {
 		std::vector<Character> line = i;
 		QByteArray numChar = convertionNumber(i.size());
-
 		message.append(" " + numChar);
+		writeMessage(soc,message);
+		message.clear();
+		int count = 0;
 		for (auto character : line) {
+
 			QByteArray characterByteFormat = character.toQByteArray();
 			QByteArray sizeOfMessage = convertionNumber(characterByteFormat.size());
 
 			message.append(" " + sizeOfMessage + " " + characterByteFormat);
+			count++;
+			if (count == maxChar) {
+				QByteArray datas;
+				QByteArray datas2;
+				datas2.append(" " + convertionNumber(count) + message);
+				if (!writeMessage(soc, datas2)) {
+					return false;
+				}
+				if (!readChunck(soc, datas, 5)) {
+					return false;
+				}
+				count = 0;
+				message.clear();
+			}
+
 		}
-		QByteArray datas;
-		if (!writeMessage(soc, message)) {
-			return false;
+		if (count != 0) {
+			QByteArray datas;
+			QByteArray datas2;
+			datas2.append(" " +  convertionNumber(count) + message);
+			if (!writeMessage(soc, datas2)) {
+				return false;
+			}
+			if (!readChunck(soc, datas, 5)) {
+				return false;
+			}
+			message.clear();
 		}
-		if (!readChunck(soc, datas, 5)) {
-			return false;
-		}
-		message.clear();
 	}
 
 	QByteArray numBlocks = convertionNumber(blockFormat.size());
