@@ -69,6 +69,13 @@ void Server::connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectRea
 void Server::readyRead(QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected,
 					   QTcpSocket *soc, qintptr socketDescriptor) {
 	QByteArray data;
+    if (soc == nullptr)
+        return;
+
+	if (soc->bytesAvailable() == 0) {
+        return;
+    }
+
 	if (!readChunck(soc, data, 5)) {
 		writeErrMessage(soc);
 		return;

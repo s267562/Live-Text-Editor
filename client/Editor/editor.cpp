@@ -703,6 +703,10 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 	//qDebug() << "bold" << format.isBold();
 	//qDebug() << "underline" << format.isUnderline();
 	//qDebug() << "italic" << format.isItalic();
+    QTextCursor tmpTextCursor(this->textEdit->textCursor());
+    QTextCursor otherCursor;
+    otherCursor.movePosition(QTextCursor::End);
+    textEdit->setTextCursor( otherCursor );
 	int oldCursorPos = textCursor.position();
 
 
@@ -712,7 +716,6 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 
 
 	QTextDocument *doc = textEdit->document();
-
 	disconnect(doc, &QTextDocument::contentsChange,
 			   this, &Editor::onTextChanged);
 
@@ -739,7 +742,8 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 
-	textCursor.setPosition(oldCursorPos);
+    textEdit->setTextCursor(tmpTextCursor);
+    textCursor.setPosition(oldCursorPos);
 }
 
 
