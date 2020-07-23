@@ -28,7 +28,7 @@ class Editor;
 class CRDT: public QObject {
     Q_OBJECT;
 public:
-    std::shared_mutex mutexIsWorking;
+    //std::shared_mutex mutexIsWorking;
     bool copy = false;
     bool waitForInvalidate = false;
     std::list<Character> queueInsertMessage;
@@ -114,7 +114,6 @@ public:
 
 public slots:
     void localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool invalid);
-    void totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars,  int position);
     void localStyleChange(QTextCharFormat textCharFormat, Pos pos);
     void localDelete(Pos startPos, Pos endPos);
     void alignChange(int alignment_type, int blockNumber);

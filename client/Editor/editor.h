@@ -108,12 +108,8 @@ private:
     QString siteId;
     Controller *controller;
     QStringList users;
-    QMovie *loadingMovie;
     bool loadingFlag = true;
     int colorIndex;
-    EditAccount *editA = nullptr;
-    
-
 
 public: //TODO : just to try
     QHash<QString, OtherCursor*> otherCursors;
@@ -155,8 +151,6 @@ private:
     QGraphicsDropShadowEffect *m_shadowEffect2;
     QString filename;
     bool isInvalid = false;
-
-
 };
 
 #endif //TEXTEDITOR_EDITOR_H

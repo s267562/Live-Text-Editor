@@ -775,9 +775,8 @@ bool Messanger::readInsert() {
 
 	Message message(character, socket->socketDescriptor(), INSERT, username);
 
-	std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
 	if (!controller->isRequestFFile())
-		QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+		crdt->newMessage(message);
 	return true;
 }
 
@@ -819,9 +818,8 @@ bool Messanger::readStyleChanged() {
 
 	Message message(character, socket->socketDescriptor(), STYLE_CHANGED, username);
 
-	std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
 	if (!controller->isRequestFFile())
-		QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+        crdt->newMessage(message);
 	return true;
 }
 
@@ -871,9 +869,8 @@ bool Messanger::readAlignmentChanged() {
 
 	Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
-	std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
 	if (!controller->isRequestFFile())
-		QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+        crdt->newMessage(message);
 	return true;
 }
 
@@ -912,9 +909,8 @@ bool Messanger::readDelete() {
 
 	Message message(character, socket->socketDescriptor(), DELETE, username);
 
-	std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
 	if (!controller->isRequestFFile())
-		QMetaObject::invokeMethod(crdt, "newMessage", Qt::QueuedConnection, Q_ARG(Message, message));
+        crdt->newMessage(message);
 	return true;
 }
 

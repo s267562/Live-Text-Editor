@@ -515,32 +515,27 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
 
 void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool ultimo) {
     qDebug() << "CRDT: " << QThread::currentThreadId();
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     localInsert(val, textCharFormat, pos);
 
     if (ultimo && copy && numJobs == 0) {
         for (auto c: queueInsertMessage) {
             pos = handleRemoteInsert(c);
-            //editor->pendingChar.push_back(c);
-            std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
-            /*QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, c.getValue()),
-                                      Q_ARG(QTextCharFormat, c.getTextCharFormat()), Q_ARG(Pos, pos),
-                                      Q_ARG(QString, c.getSiteId()), Q_ARG(Character, c));*/
+            //std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
         }
         queueInsertMessage.clear();
         copy = false;
     }
     if (ultimo) {
         waitForInvalidate = true;
-        QMetaObject::invokeMethod(controller, "inviledateTextEditor", Qt::QueuedConnection);
+        controller->inviledateTextEditor();
     }
 }
 
 void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat, const Pos &pos) {
-    Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
     // send insert at the server.
     try {
-        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character &, character));
+        Character character = handleLocalInsert(val.at(0).toLatin1(), textCharFormat, pos);
+        messanger->writeInsert(character);
         isWorking = false;
         numJobs--;
     }catch (...) {
@@ -548,42 +543,14 @@ void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat
     }
 }
 
-void CRDT::totalLocalInsert(int charsAdded, QTextCursor* cursor, QString chars, int position) {
-    qDebug() << "CRDT: " << QThread::currentThreadId();
-    qDebug() << "Pos"<<position << "Chars added"<< charsAdded;
-
-    for(int i=0; i<charsAdded; i++) {
-        // for each char added
-        qDebug()<< cursor->position();
-        cursor->setPosition(position + i);
-        int line = cursor->blockNumber();
-        int ch = cursor->positionInBlock();
-        Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-        // select char
-        cursor->setPosition(position + i + 1, QTextCursor::KeepAnchor);
-        QTextCharFormat charFormat = cursor->charFormat();
-
-        qDebug() <<"totalLocalInsert: "<< chars.at(i).toLatin1();
-        Character character = handleLocalInsert(chars.at(i).toLatin1(), charFormat, startPos);
-
-        // send insert at the server.
-        QMetaObject::invokeMethod(messanger, "writeInsert", Qt::QueuedConnection, Q_ARG(Character&, character));
-    }
-    delete cursor;
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-    isWorking = false;
-    numJobs--;
-}
-
 void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     qDebug() << "CRDT: " << QThread::currentThreadId();
     try {
         if(styleChanged(textCharFormat, pos)) {
             Character character = getCharacter(pos);
 
             // send insert at the server.
-            QMetaObject::invokeMethod(messanger, "writeStyleChanged", Qt::QueuedConnection, Q_ARG(Character &, character));
+            messanger->writeStyleChanged(character);
         }
         isWorking = false;
         numJobs--;
@@ -593,12 +560,11 @@ void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
 }
 
 void CRDT::localDelete(Pos startPos, Pos endPos) {
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     try {
         std::vector<Character> removedChars = handleLocalDelete(startPos, endPos);
 
         for(Character c : removedChars) {
-            QMetaObject::invokeMethod(messanger, "writeDelete", Qt::QueuedConnection, Q_ARG(Character&, c));
+            messanger->writeDelete(c);
         }
         isWorking = false;
         numJobs--;
@@ -608,13 +574,12 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
 }
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
     // send insert at the server.
     //TODO Check this
     Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
     handleAlignmentChanged(alignment_type, blockNumber);
     //this->messanger->writeAlignmentChanged(alignment_type, blockId);
-    QMetaObject::invokeMethod(messanger, "writeAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, alignment_type), Q_ARG(Character&, blockId));
+    messanger->writeAlignmentChanged(alignment_type, blockId);
 }
 
 void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
@@ -628,10 +593,6 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber){
 }
 
 void CRDT::newMessage(Message message) {
-    qDebug() << "CRDT: " << QThread::currentThreadId();
-    std::shared_lock<std::shared_mutex> sharedLock(controller->mutexRequestForFile);
-    std::unique_lock<std::shared_mutex> isWorkingLock(mutexIsWorking);
-
     if (controller->isRequestFFile())
         return;
     try {
@@ -649,9 +610,7 @@ void CRDT::newMessage(Message message) {
                     if (!waitForInvalidate) {
                         editor->pendingChar.push_back(character);
                         // remote insert - the char is to insert in the model and in the view. Insert into the editor.
-                        QMetaObject::invokeMethod(editor, "insertChar", Qt::QueuedConnection, Q_ARG(char, character.getValue()),
-                                                  Q_ARG(QTextCharFormat, character.getTextCharFormat()), Q_ARG(Pos, pos),
-                                                  Q_ARG(QString, message.getSender()), Q_ARG(Character, character));
+                        editor->insertChar(character.getValue(),character.getTextCharFormat(), pos,message.getSender(), character);
                     }
                 }
             }
@@ -660,7 +619,7 @@ void CRDT::newMessage(Message message) {
 
             if(pos) {
                 // delete from the editor.
-                QMetaObject::invokeMethod(editor, "changeStyle", Qt::QueuedConnection, Q_ARG(Pos, pos), Q_ARG(QTextCharFormat, message.getCharacter().getTextCharFormat()), Q_ARG(QString, message.getSender()));
+                editor->changeStyle(pos, message.getCharacter().getTextCharFormat(), message.getSender());
             }
         } else if(message.getType() == DELETE) {
             QString sender = message.getSender();
@@ -668,15 +627,14 @@ void CRDT::newMessage(Message message) {
 
             if(pos) {
                 // delete from the editor.
-                QMetaObject::invokeMethod(editor, "deleteChar", Qt::QueuedConnection, Q_ARG(Pos, pos),  Q_ARG(QString, message.getSender()));
+                editor->deleteChar(pos, message.getSender());
             }
         } else if(message.getType() == ALIGNMENT_CHANGED) {
             int row = getRow(message.getCharacter());
             handleAlignmentChanged(message.getAlignmentType(), row);
             if(row>=0){
-                QMetaObject::invokeMethod(editor, "remoteAlignmentChanged", Qt::QueuedConnection, Q_ARG(int, message.getAlignmentType()),  Q_ARG(int, row));
+                editor->remoteAlignmentChanged(message.getAlignmentType(), row);
             }
-
         }
     }catch (...) {
         QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);

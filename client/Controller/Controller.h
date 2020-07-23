@@ -16,11 +16,9 @@
 #include <iostream>
 #include "CustomWidget/customwidget.h"
 #include "../CRDT/CDRTThread.h"
-#include <shared_mutex>
 
 
 class Editor;
-class CDRTThread;
 class ShowFiles;
 class Login;
 class Registration;
@@ -37,7 +35,6 @@ class Controller : public QMainWindow {
 private:
     /* MODEL */
     CRDT *crdt;
-    CDRTThread *crdtThread;
     User *user;
     QString siteId;
     bool requestFFile = false;
@@ -74,8 +71,6 @@ public:
     void handleGUI(QMainWindow *window);
 
 public:
-    std::shared_mutex mutexRequestForFile;
-
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
     User* getUser();
@@ -89,7 +84,6 @@ public:
     QMainWindow *getGui() const;
     Messanger *getMessanger() const;
     void handleError();
-    ~Controller();
 
 public slots:
     /* ------------------------------------------------------------- NETWORKING */

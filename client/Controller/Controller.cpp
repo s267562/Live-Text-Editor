@@ -14,10 +14,7 @@
 Controller::Controller() : messanger(new Messanger(this, this)), connection(new Connection(this)) {
 	user = nullptr;
 	editor = nullptr;
-	crdt = new CRDT(nullptr, messanger, this);
-	crdtThread = new CDRTThread(this, crdt);
-	crdt->moveToThread(crdtThread);
-	crdtThread->start();
+	crdt = new CRDT(this, messanger, this);
 
 	/* creation connection and messanger object */
 	connect(this->connection, SIGNAL(connectToAddress(QString, QString)), this, SLOT(connectClient(QString, QString)));
@@ -311,7 +308,6 @@ void Controller::showFileFinderOtherView() {
  * @param filename
  */
 void Controller::requestForFile(const QString &filename) {
-	std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
 	requestFFile = true;
 	qDebug() << "requestForFile" << filename;
 //    auto res = this->user->getFileList().find(user->getUsername() + "%_##$$$##_%" + filename);
@@ -352,7 +348,6 @@ void Controller::showEditor() {
  */
 void Controller::openFile(const std::vector<std::vector<Character>> &initialStructure,
 						  std::vector<std::pair<Character, int>> styleBlocks, QString filename) {
-	std::unique_lock<std::shared_mutex> requestLock(mutexRequestForFile);
 	requestFFile = false;
 	crdt->setStructure(initialStructure);           // fare un segnale
 	crdt->setStyle(styleBlocks);                    // fare un segnale
@@ -497,13 +492,6 @@ void Controller::sendDeleteFile(QString filename) {
 	startLoadingPopup();
 }
 
-Controller::~Controller() {
-	this->crdtThread->quit();
-	this->crdtThread->wait();
-	this->crdtThread->deleteLater();
-	this->crdt->deleteLater();
-}
-
 CRDT *Controller::getCrdt() const {
 	return crdt;
 }
@@ -549,14 +537,8 @@ void Controller::reciveExternalErrorOrException() {
 }
 
 void Controller::handleError() {
-	crdtThread->quit();
-	crdtThread->wait();
-	crdtThread->deleteLater();
 	/* restart crdt */
-	crdt = new CRDT(nullptr, messanger, this);
-	crdtThread = new CDRTThread(this, crdt);
-	crdt->moveToThread(crdtThread);
-	crdtThread->start();
+	crdt = new CRDT(this, messanger, this);
 
 	if (editor != nullptr) {
 		editorDisconnection();
@@ -565,8 +547,6 @@ void Controller::handleError() {
 }
 
 void Controller::inviledateTextEditor() {
-	std::shared_lock<std::shared_mutex> requestLock(mutexRequestForFile);
-	std::shared_lock<std::shared_mutex> isWorkingLock(getCrdt()->mutexIsWorking);
 	editor->replaceText(this->crdt->getStructure());
 
 	// TODO: vedere se mantiene l'alineamento!
