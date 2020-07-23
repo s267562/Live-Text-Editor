@@ -337,6 +337,7 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	connect(textDocument, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 	this->updateAlignmentPushButton();
+    this->updateOtherCursorPosition();
 }
 
 
