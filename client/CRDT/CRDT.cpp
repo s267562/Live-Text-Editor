@@ -306,6 +306,9 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
     // print the structure for debugging
     printStructures();
 
+    if (structure.empty())
+        controller->inviledateTextEditor();
+
     return removedChars;
 }
 
@@ -340,10 +343,15 @@ std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
         qDebug() << "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
         qDebug() << ""; // newLine
     }
-    std::vector<Character> chars {structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
-    this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(), structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
-
-    return chars;
+    if (startPos.getLine() < structure.size()) {
+        std::vector<Character> chars{structure[startPos.getLine()].begin() + startPos.getCh(),
+                                     structure[startPos.getLine()].begin() + startPos.getCh() + charNum};
+        this->structure[startPos.getLine()].erase(structure[startPos.getLine()].begin() + startPos.getCh(),
+                                                  structure[startPos.getLine()].begin() + startPos.getCh() + charNum);
+        return chars;
+    }else {
+        return std::vector<Character>();
+    }
 }
 
 
@@ -373,7 +381,7 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
 
 Pos CRDT::findPosition(Character character) {
     // check if struct is empty or char is less than first char
-    if (this->structure.empty() || character.compareTo(this->structure[0][0]) < 0) {
+    if (this->structure.empty() || structure[0].empty() || character.compareTo(this->structure[0][0]) < 0) {
         return Pos {-1, -1}; // false obj
     }
 
