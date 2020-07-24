@@ -59,7 +59,7 @@ void Server::connectionSlot(QTcpSocket *soc, QMetaObject::Connection *connectRea
 	*connectDisconnected = connect(soc, &QTcpSocket::disconnected, this,
 								   [this, connectReadyRead, connectDisconnected, soc, socketDescriptor] {
 									   disconnected(connectReadyRead, connectDisconnected, soc, socketDescriptor);
-								   });
+								   }, Qt::QueuedConnection);
 }
 
 /**

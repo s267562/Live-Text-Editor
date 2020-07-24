@@ -703,14 +703,16 @@ bool Thread::sendListOfUsers(QTcpSocket *soc) {
 		return false;
 
 	QByteArray message(LIST_OF_USERS);
-	if (usernames.size() - 1 == 0) {
-		QByteArray usernamesSize = convertionNumber(0);
-		message.append(usernamesSize);
+
+    if (usernames.size() - 1 == 0) {
+        QByteArray usernamesSize = convertionNumber(0);
+		message.append(" " + usernamesSize);
 	} else {
 		QByteArray usernamesSize = convertionNumber(usernames.size() - 1 - pendingSocket.size());
 		message.append(" " + usernamesSize);
 		for (const auto &u : usernames) {
 			if (u.first != soc->socketDescriptor() && pendingSocket.find(u.first) == pendingSocket.end()) {
+			    qDebug() << "User: "<< u.second << " " << u.second.size();
 				QByteArray usernameByteArray = convertionQString(u.second);
 				QByteArray usernameSize = convertionNumber(usernameByteArray.size());
 
