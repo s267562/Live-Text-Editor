@@ -414,9 +414,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				isWorkingLock.unlock();
 
 				if (cursorPos != startSelection) { // Selection forward
-                    if(position==0){
-                        charsAdded++;
-                    }
+
 					for (int i = 0; i < charsAdded; i++) {
 						// for each char added
 						cursor.setPosition(position + i);
@@ -432,20 +430,16 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 												  Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
 					}
 				} else { // Selection backward
-                    if(position==0){
-                        charsAdded++;
-                    }
-					for (int i = charsAdded-1; i >= 0; i--) {
+					for (int i = charsAdded - 1; i >= 0; i--) {
 						// for each char added
-                        cursor.setPosition(position);
-                        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, i);
-						//cursor.setPosition(position + i);
+
+						cursor.setPosition(position + i);
 						int line = cursor.blockNumber();
 						int ch = cursor.positionInBlock();
 						Pos pos{ch, line}; // Pos(int ch, int line, const std::string);
 						// select char
 						cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-                        qDebug()<<"Char at: "<<cursor.document()->characterAt(cursor.position());
+
 						QTextCharFormat textCharFormat = cursor.charFormat();
 
 						QMetaObject::invokeMethod(controller->getCrdt(), "localStyleChange", Qt::QueuedConnection,
@@ -714,7 +708,6 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
     QTextCursor otherCursor;
     otherCursor.movePosition(QTextCursor::End);
     textEdit->setTextCursor( otherCursor );
-
 	int oldCursorPos = textCursor.position();
 
 
@@ -743,7 +736,6 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 			 << this->otherCursors[siteId]->getTextCursor().position();
 
 	textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
-	qDebug()<<"Char at: "<<textCursor.document()->characterAt(textCursor.position());
 	textCursor.mergeCharFormat(textCharFormat);
 	textEdit->mergeCurrentCharFormat(textCharFormat);
 	mergeFormatOnWordOrSelection(textCharFormat);
