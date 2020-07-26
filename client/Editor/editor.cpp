@@ -414,7 +414,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				isWorkingLock.unlock();
 
 				if (cursorPos != startSelection) { // Selection forward
-                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
+                    if(position==0){
                         charsAdded++;
                     }
 					for (int i = 0; i < charsAdded; i++) {
@@ -432,7 +432,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 												  Q_ARG(QTextCharFormat, textCharFormat), Q_ARG(Pos, pos));
 					}
 				} else { // Selection backward
-                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
+                    if(position==0){
                         charsAdded++;
                     }
 					for (int i = charsAdded-1; i >= 0; i--) {
