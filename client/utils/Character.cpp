@@ -25,7 +25,16 @@ int Character::compareTo(Character otherCharacter) {
 	for (int i = 0; i < std::min(pos1.size(), pos2.size()); i++) {
 		Identifier id1 = pos1[i];
 		Identifier id2 = pos2[i];
-		int comp = id1.compareTo(id2);
+
+		int comp = 0;
+
+		if (id1.getDigit() < id2.getDigit()) {
+            comp = -1;
+        } else if (id1.getDigit() > id2.getDigit()) {
+            comp = 1;
+        }
+
+        //int comp = id1.compareTo(id2);
 
 		if (comp != 0) {
 			return comp;
@@ -37,7 +46,11 @@ int Character::compareTo(Character otherCharacter) {
 	} else if (pos1.size() > pos2.size()) {
 		return 1;
 	} else {
-		return 0;
+	    if(pos1[0].getSiteId() < pos2[0].getSiteId()) {
+            return -1;
+        } else if(pos1[0].getSiteId() > pos2[0].getSiteId()) {
+            return 1;
+        }
 	}
 }
 

@@ -16,7 +16,10 @@ public:
 
     int getDigit() const;
     const QString &getSiteId() const;
-	void read(const QJsonObject &json);
+
+    void setSiteId(const QString &siteId);
+
+    void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
     int compareTo(Identifier otherIdentifier);
 

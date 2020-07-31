@@ -63,3 +63,7 @@ bool operator==(const Identifier &lhs, const Identifier &rhs) {
 bool operator!=(const Identifier &lhs, const Identifier &rhs) {
     return !(rhs == lhs);
 }
+
+void Identifier::setSiteId(const QString &siteId) {
+    Identifier::siteId = siteId;
+}
