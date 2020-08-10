@@ -139,7 +139,10 @@ Character CRDT::handleLocalInsert(char val, QTextCharFormat textCharFormat, Pos 
 const Character CRDT::generateChar(char val, QTextCharFormat textCharFormat, Pos pos, QString siteId) {
     const std::vector<Identifier> posBefore = findPosBefore(pos);
     const std::vector<Identifier> posAfter = findPosAfter(pos);
+
     const std::vector<Identifier> newPos = generatePosBetween(posBefore, posAfter, siteId);
+
+    printStructures();
 
     Character character(val, textCharFormat, this->versionsVector[siteId], siteId, newPos);
 
@@ -202,23 +205,27 @@ std::vector<Identifier> CRDT::generatePosBetween(std::vector<Identifier> pos1, s
         if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
         return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, siteId, newPos, level + 1);
 
-    } else /* if (id1.getDigit() == id2.getDigit()) */ {
+    } else if (id1.getDigit() == id2.getDigit()) {
         if (id1.getSiteId() < id2.getSiteId()) {
             // TODO check if correct...
             newPos.push_back(id1);
             std::vector<Identifier> pos1_2;
-            pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
+            if(pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
             return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, siteId, newPos, level + 1);
-        } else /* if (id1.getSiteId() == id2.getSiteId()) */ {
+        } else if (id1.getSiteId() == id2.getSiteId()) {
             // TODO check if correct...
             newPos.push_back(id1);
             std::vector<Identifier> pos1_2, pos2_2;
             if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
             if (pos2.size() > 0) pos2_2 = std::vector<Identifier>(pos2.begin() + 1, pos2.end());
             return this->generatePosBetween(pos1_2, pos2_2, siteId, newPos, level + 1);
-        } /* else {
-            // throw new Error("Fix Position Sorting"); // TODO capire quando può capitare questo caso e come gestirlo.
-        } */
+        } else {
+            newPos.push_back(id2);
+            std::vector<Identifier> pos2_2;
+            if (pos2.size() > 0) pos2_2 = std::vector<Identifier>(pos2.begin() + 1, pos2.end());
+            return this->generatePosBetween(std::vector<Identifier>{}, pos2_2, siteId, newPos, level + 1);
+            //throw "Fix Position Sorting"; // TODO capire quando può capitare questo caso e come gestirlo.
+        }
     }
 }
 
@@ -711,7 +718,7 @@ int CRDT::getRow(Character blockId) {
 
 
 void CRDT::printStructures() {
-    return;
+    //return;
     QDebug qD(QtDebugMsg);
     qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
     if (style.size() == 0)
