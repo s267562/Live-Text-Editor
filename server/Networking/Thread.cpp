@@ -687,9 +687,7 @@ bool Thread::writeDelete(QTcpSocket *soc, Character &character) {
 	in_pos.emplace_back(i);
 	Character initialBlock = Character('\r', cf, -1, "None", in_pos);
 	crdt->handleAlignmentChanged(17, 0);
-	if (crdt->getStructure().size() == 0) {
-		writeAlignmentChanged(soc, 17, initialBlock);
-	}
+
 	return true;
 }
 

@@ -546,7 +546,7 @@ void Controller::handleError() {
 	handleGUI(showFiles);
 }
 
-void Controller::inviledateTextEditor() {
+void Controller::invalidateTextEditor() {
 	editor->replaceText(this->crdt->getStructure());
 
 	// TODO: vedere se mantiene l'alineamento!

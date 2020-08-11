@@ -20,6 +20,7 @@ CRDT::CRDT(QObject *parent, Messanger *messanger, Controller *controller): QObje
     qRegisterMetaType<Character>("Character");
     qRegisterMetaType<Character>("Character&");
     qRegisterMetaType<QTextCharFormat>("QTextCharFormat");
+
 }
 
 void CRDT::setStructure(const std::vector<std::vector<Character>> &initialStructure) {
@@ -313,9 +314,6 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
     // print the structure for debugging
     printStructures();
 
-    if (structure.empty())
-        controller->inviledateTextEditor();
-
     return removedChars;
 }
 
@@ -542,7 +540,7 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
     }
     if (ultimo) {
         waitForInvalidate = true;
-        controller->inviledateTextEditor();
+        controller->invalidateTextEditor();
     }
 }
 
@@ -581,6 +579,17 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
         for(Character c : removedChars) {
             messanger->writeDelete(c);
         }
+
+        if(structure.empty()) {
+            QTextCharFormat cf;
+            Identifier i(0, "Server");
+            std::vector<Identifier> in_pos;
+            in_pos.emplace_back(i);
+            Character initialBlock = Character('\r', cf, -1, "None", in_pos);
+            this->handleAlignmentChanged(17, 0);
+            editor->remoteAlignmentChanged(17, 0);
+        }
+
         isWorking = false;
         numJobs--;
     }catch (...) {
@@ -645,11 +654,21 @@ void CRDT::newMessage(Message message) {
                 editor->deleteChar(pos, message.getSender());
             }
         } else if(message.getType() == ALIGNMENT_CHANGED) {
+
             int row = getRow(message.getCharacter());
             handleAlignmentChanged(message.getAlignmentType(), row);
             if(row>=0){
                 editor->remoteAlignmentChanged(message.getAlignmentType(), row);
             }
+        }
+        if(structure.empty()) {
+            QTextCharFormat cf;
+            Identifier i(0, "Server");
+            std::vector<Identifier> in_pos;
+            in_pos.emplace_back(i);
+            Character initialBlock = Character('\r', cf, -1, "None", in_pos);
+            this->handleAlignmentChanged(17, 0);
+            editor->remoteAlignmentChanged(17, 0);
         }
     }catch (...) {
         QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
