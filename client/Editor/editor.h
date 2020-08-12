@@ -20,6 +20,7 @@
 #include "../utils/OtherCursor.h"
 #include "EditAccount/editaccount.h"
 #include "TextEdit.h"
+#include <QListWidgetItem>
 
 
 
@@ -72,6 +73,7 @@ public slots:
     void changeStyle(Pos pos, const QTextCharFormat&format, QString siteId);
     void deleteChar(Pos pos, QString sender);
     void remoteAlignmentChanged(int alignment, int blockNumber);
+    void onListUsersItemClicked(QListWidgetItem* item);
 
 signals:
     void logout();

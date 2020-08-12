@@ -72,6 +72,9 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	m_shadowEffect1->setBlurRadius(12);
 	m_shadowEffect1->setEnabled(true);
 	ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
+
+    connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem*)),
+           this, SLOT(onListUsersItemClicked(QListWidgetItem*)));
 	
 	//qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
@@ -1133,6 +1136,12 @@ void Editor::updateAlignmentPushButton() {
 			this->actionAlignLeft->setChecked(true);
 			break;
 	}
+}
+
+
+void Editor::onListUsersItemClicked(QListWidgetItem* item) {
+    QString user = item->text();
+    qDebug() << "Utente Cliccato" << user;
 }
 
 
