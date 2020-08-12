@@ -72,9 +72,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	m_shadowEffect1->setBlurRadius(12);
 	m_shadowEffect1->setEnabled(true);
 	ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
-
-	textEdit->setUndoRedoEnabled(false);
-
+	
 	//qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
 
