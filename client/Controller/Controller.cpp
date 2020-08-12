@@ -351,17 +351,20 @@ void Controller::openFile(const std::vector<std::vector<Character>> &initialStru
 	requestFFile = false;
 	crdt->setStructure(initialStructure);           // fare un segnale
 	crdt->setStyle(styleBlocks);                    // fare un segnale
+    editor->setUndoRedoAvailable(false);
 
-	editor->replaceText(this->crdt->getStructure());
+    editor->replaceText(this->crdt->getStructure());
 	std::vector<int> alignment_block;
 	alignment_block.reserve(styleBlocks.size());
 
 	for (std::pair<Character, int> &block : styleBlocks) {
 		alignment_block.emplace_back(block.second);
 	}
-	this->editor->formatText(alignment_block);
 
-	/* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
+    this->editor->formatText(alignment_block);
+    editor->setUndoRedoAvailable(true);
+
+    /* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
 	//QMap<QString, bool> mappa{this->user->getFileList()};
 	auto res = this->user->getFileList().contains(filename);
 	qDebug() << "Openfile: " << filename;
@@ -554,10 +557,12 @@ void Controller::invalidateTextEditor() {
 	std::vector<int> alignment_block;
 	alignment_block.reserve(styleBlocks.size());
 
-	for (std::pair<Character, int> &block : styleBlocks) {
-		alignment_block.emplace_back(block.second);
+	if (!crdt->getStructure().empty()) {
+        for (std::pair<Character, int> &block : styleBlocks) {
+            alignment_block.emplace_back(block.second);
+        }
+        editor->formatText(alignment_block);
 	}
-	editor->formatText(alignment_block);
 	crdt->waitForInvalidate = false;
 }
 

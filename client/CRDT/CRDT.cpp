@@ -536,9 +536,9 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
             //std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
         }
         queueInsertMessage.clear();
-        copy = false;
     }
-    if (ultimo) {
+    if (ultimo && copy) {
+        copy = false;
         waitForInvalidate = true;
         controller->invalidateTextEditor();
     }
@@ -580,7 +580,7 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
             messanger->writeDelete(c);
         }
 
-        if(structure.empty()) {
+        /*if(structure.empty()) {
             QTextCharFormat cf;
             Identifier i(0, "Server");
             std::vector<Identifier> in_pos;
@@ -588,7 +588,11 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
             Character initialBlock = Character('\r', cf, -1, "None", in_pos);
             this->handleAlignmentChanged(17, 0);
             editor->remoteAlignmentChanged(17, 0);
-        }
+        }*/
+
+        if (structure.empty())
+            qDebug() << "Empty";
+            //editor->replaceText(structure);
 
         isWorking = false;
         numJobs--;
@@ -661,7 +665,7 @@ void CRDT::newMessage(Message message) {
                 editor->remoteAlignmentChanged(message.getAlignmentType(), row);
             }
         }
-        if(structure.empty()) {
+        /*if(structure.empty()) {
             QTextCharFormat cf;
             Identifier i(0, "Server");
             std::vector<Identifier> in_pos;
@@ -669,7 +673,7 @@ void CRDT::newMessage(Message message) {
             Character initialBlock = Character('\r', cf, -1, "None", in_pos);
             this->handleAlignmentChanged(17, 0);
             editor->remoteAlignmentChanged(17, 0);
-        }
+        }*/
     }catch (...) {
         QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
     }

@@ -638,7 +638,7 @@ bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character &bl
 
 	/* broadcast */
 	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-		if (pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end())
+		if (pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end() && socket.second != soc)
 			if (!writeMessage(socket.second, message)) {
 				//return false;
 			}
@@ -681,13 +681,13 @@ bool Thread::writeDelete(QTcpSocket *soc, Character &character) {
 			}
 		}
 	}
-	QTextCharFormat cf;
+	/*QTextCharFormat cf;
 	Identifier i(0, "Server");
 	std::vector<Identifier> in_pos;
 	in_pos.emplace_back(i);
 	Character initialBlock = Character('\r', cf, -1, "None", in_pos);
 	crdt->handleAlignmentChanged(17, 0);
-
+*/
 	return true;
 }
 

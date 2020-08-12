@@ -54,6 +54,8 @@ public:
 
     void updateAlignmentPushButton();
 
+    void setUndoRedoAvailable(bool flag);
+
     //void alignmentChanged(alignment_type at, int cursorPosition);
 
 public slots:

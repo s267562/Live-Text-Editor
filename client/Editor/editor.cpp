@@ -299,18 +299,19 @@ void Editor::textAlign(QAction *a) {
 	int startBlock = this->textCursor.blockNumber();
 
 	this->textCursor.setPosition(end);
-	int endBlock = this->textCursor.blockNumber();
-	for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
-		controller->getCrdt()->alignChange(alCode, blockNum);
-		qDebug() << alCode << blockNum;
-	}
+    int endBlock = this->textCursor.blockNumber();
+    for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
+        controller->getCrdt()->alignChange(alCode, blockNum);
+        qDebug() << alCode << blockNum;
+    }
 
 }
 
 void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	disconnect(textDocument, &QTextDocument::contentsChange,
-			   this, &Editor::onTextChanged);
-	int oldCursorPos = textCursor.position();
+                                                        this, &Editor::onTextChanged);
+
+    int oldCursorPos = textCursor.position();
 
 	int bc = this->textEdit->textCursor().document()->blockCount();
 
@@ -321,7 +322,7 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	int num = this->textCursor.blockNumber();
 
 	QTextBlockFormat f = QTextBlockFormat{textCursor.blockFormat()};
-
+    textEdit->setUndoRedoEnabled(true);
 	f.setAlignment(Qt::Alignment(alignment));
 
 	textCursor.setBlockFormat(f);
@@ -334,6 +335,7 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	textCursor.setPosition(oldCursorPos);
 	connect(textDocument, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
+
 	this->updateAlignmentPushButton();
     this->updateOtherCursorPosition();
 }
@@ -389,11 +391,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
 	saveCursor();
 
-
 	try {
 		if (validSignal(position, charsAdded, charsRemoved)) {
             QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
-			undo();
+            qDebug() << "TextAdded" << textAdded;
+            undo();
 			QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
 			redo();
 			if (charsAdded == charsRemoved && textAdded == textRemoved) {
@@ -555,8 +557,30 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				// text was selected... restore the selction
 				restoreCursorSelection();
 			} else {
-				restoreCursor();
-			}
+                disconnect(textDocument, &QTextDocument::contentsChange,
+                        this, &Editor::onTextChanged);
+                if (charsAdded == charsRemoved) {
+                    int start = position;
+                    int end = position + charsAdded - 1;
+
+                    this->textCursor.setPosition(start);
+                    int startBlock = this->textCursor.blockNumber();
+
+
+                    int alCode = textCursor.blockFormat().alignment();
+                    this->textCursor.setPosition(end);
+                    int endBlock = this->textCursor.blockNumber();
+                    for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
+                        controller->getCrdt()->alignChange(alCode, blockNum);
+                        qDebug() << "ALCODE" << alCode << blockNum;
+                    }
+
+                }
+                connect(textDocument, &QTextDocument::contentsChange,
+                        this, &Editor::onTextChanged);
+
+                restoreCursor();
+            }
 		}
 	} catch (...) {
 		controller->reciveExternalErrorOrException();
@@ -587,13 +611,7 @@ void Editor::updateOtherCursorPosition() {
 
 
 void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId, Character c) {
-	if (isInvalid) {
-		controller->invalidateTextEditor();
-		isInvalid = false;
-		return;
-	}
-
-	QTextDocument *doc = textEdit->document();
+    QTextDocument *doc = textEdit->document();
 	disconnect(doc, &QTextDocument::contentsChange,
 			   this, &Editor::onTextChanged);
 
@@ -1054,7 +1072,6 @@ void Editor::restoreCursorSelection() {
 
 void Editor::replaceText(const std::vector<std::vector<Character>> initialText) {
 	QTextDocument *doc = textEdit->document();
-
 	disconnect(doc, &QTextDocument::contentsChange,
 			   this, &Editor::onTextChanged);
 
@@ -1073,7 +1090,7 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 	QTextCursor newCursor = textEdit->textCursor();
 	newCursor.movePosition(QTextCursor::End);
 	textEdit->setTextCursor(newCursor);
-	qDebug() << "Alignment: " << textEdit->alignment();
+    qDebug() << "Alignment: " << textEdit->alignment();
 }
 
 void Editor::reset() {
@@ -1127,6 +1144,11 @@ void Editor::updateAlignmentPushButton() {
 			this->actionAlignLeft->setChecked(true);
 			break;
 	}
+}
+
+void Editor::setUndoRedoAvailable(bool flag) {
+    //this->textEdit->setUndoRedoEnabled(flag);
+    //textDocument->clearUndoRedoStacks();
 }
 
 
