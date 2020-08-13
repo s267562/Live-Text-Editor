@@ -73,16 +73,16 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	m_shadowEffect1->setEnabled(true);
 	ui->mainToolBar->setGraphicsEffect(m_shadowEffect1);
 
-    connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem*)),
-           this, SLOT(onListUsersItemClicked(QListWidgetItem*)));
-	
+	connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem * )),
+			this, SLOT(onListUsersItemClicked(QListWidgetItem * )));
+
 	//qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
 
 void Editor::setupTextActions() {
-    QToolBar *tbCopyCutPaste = addToolBar(tr("CopyCutPaste Actions"));
-    QMenu *menuCopyCutPaste = menuBar()->addMenu(tr("F&ormat"));
-    QToolBar *tb = addToolBar(tr("Format Actions"));
+	QToolBar *tbCopyCutPaste = addToolBar(tr("CopyCutPaste Actions"));
+	QMenu *menuCopyCutPaste = menuBar()->addMenu(tr("F&ormat"));
+	QToolBar *tb = addToolBar(tr("Format Actions"));
 	QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
 
 	tb->setStyleSheet("QToolBar{\n"
@@ -102,56 +102,56 @@ void Editor::setupTextActions() {
 					  "background-color: rgb(247, 245, 249);\n"
 					  "}");
 	tb->setMinimumHeight(60);
-    tbCopyCutPaste->setStyleSheet("QToolBar{\n"
-                      "border: none;\n"
-                      "background: rgb(255, 255, 255);\n"
-                      "}\n"
-                      "\n"
-                      "QToolButton:after{\n"
-                      "background-color: rgb(247, 245, 249);\n"
-                      "}\n"
-                      "\n"
-                      "QToolButton:hover{\n"
-                      "background-color: rgb(247, 245, 249);\n"
-                      "}\n"
-                      "\n"
-                      "QToolButton:focus{\n"
-                      "background-color: rgb(247, 245, 249);\n"
-                      "}");
-    tbCopyCutPaste->setMinimumHeight(60);
+	tbCopyCutPaste->setStyleSheet("QToolBar{\n"
+								  "border: none;\n"
+								  "background: rgb(255, 255, 255);\n"
+								  "}\n"
+								  "\n"
+								  "QToolButton:after{\n"
+								  "background-color: rgb(247, 245, 249);\n"
+								  "}\n"
+								  "\n"
+								  "QToolButton:hover{\n"
+								  "background-color: rgb(247, 245, 249);\n"
+								  "}\n"
+								  "\n"
+								  "QToolButton:focus{\n"
+								  "background-color: rgb(247, 245, 249);\n"
+								  "}");
+	tbCopyCutPaste->setMinimumHeight(60);
 	//tb->setMaximumHeight(60);
 
-    m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
-    m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
-    m_shadowEffect2->setXOffset(0);
-    m_shadowEffect2->setYOffset(4);
-    m_shadowEffect2->setBlurRadius(12);
-    // hide shadow
-    m_shadowEffect2->setEnabled(true);
-    tb->setGraphicsEffect(m_shadowEffect2);
-    m_shadowEffect3 = new QGraphicsDropShadowEffect(this);
-    m_shadowEffect3->setColor(QColor(0, 0, 0, 255 * 0.1));
-    m_shadowEffect3->setXOffset(0);
-    m_shadowEffect3->setYOffset(4);
-    m_shadowEffect3->setBlurRadius(12);
-    // hide shadow
-    m_shadowEffect3->setEnabled(true);
-    tbCopyCutPaste->setGraphicsEffect(m_shadowEffect3);
+	m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
+	m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
+	m_shadowEffect2->setXOffset(0);
+	m_shadowEffect2->setYOffset(4);
+	m_shadowEffect2->setBlurRadius(12);
+	// hide shadow
+	m_shadowEffect2->setEnabled(true);
+	tb->setGraphicsEffect(m_shadowEffect2);
+	m_shadowEffect3 = new QGraphicsDropShadowEffect(this);
+	m_shadowEffect3->setColor(QColor(0, 0, 0, 255 * 0.1));
+	m_shadowEffect3->setXOffset(0);
+	m_shadowEffect3->setYOffset(4);
+	m_shadowEffect3->setBlurRadius(12);
+	// hide shadow
+	m_shadowEffect3->setEnabled(true);
+	tbCopyCutPaste->setGraphicsEffect(m_shadowEffect3);
 
 	// Copy
-    const QIcon copyIcon = QIcon::fromTheme("Copy", QIcon(":/rec/img/copy2.png"));
-    actionCopy = menuCopyCutPaste->addAction(copyIcon, tr("&Copy"), this, &Editor::textCopy);
-    tbCopyCutPaste->addAction(actionCopy);
+	const QIcon copyIcon = QIcon::fromTheme("Copy", QIcon(":/rec/img/copy2.png"));
+	actionCopy = menuCopyCutPaste->addAction(copyIcon, tr("&Copy"), this, &Editor::textCopy);
+	tbCopyCutPaste->addAction(actionCopy);
 
-    // Cut
-    const QIcon cutIcon = QIcon::fromTheme("Cut", QIcon(":/rec/img/cut.png"));
-    actionCut = menuCopyCutPaste->addAction(cutIcon, tr("&Cut"), this, &Editor::textCut);
-    tbCopyCutPaste->addAction(actionCut);
+	// Cut
+	const QIcon cutIcon = QIcon::fromTheme("Cut", QIcon(":/rec/img/cut.png"));
+	actionCut = menuCopyCutPaste->addAction(cutIcon, tr("&Cut"), this, &Editor::textCut);
+	tbCopyCutPaste->addAction(actionCut);
 
-    // Paste
-    const QIcon pasteIcon = QIcon::fromTheme("Paste", QIcon(":/rec/img/paste.png"));
-    actionPaste = menuCopyCutPaste->addAction(pasteIcon, tr("&Paste"), this, &Editor::textPaste);
-    tbCopyCutPaste->addAction(actionPaste);
+	// Paste
+	const QIcon pasteIcon = QIcon::fromTheme("Paste", QIcon(":/rec/img/paste.png"));
+	actionPaste = menuCopyCutPaste->addAction(pasteIcon, tr("&Paste"), this, &Editor::textPaste);
+	tbCopyCutPaste->addAction(actionPaste);
 
 	// bold
 	const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/rec/img/bold.png"));
@@ -379,7 +379,7 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	connect(textDocument, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 	this->updateAlignmentPushButton();
-    this->updateOtherCursorPosition();
+	this->updateOtherCursorPosition();
 }
 
 
@@ -434,7 +434,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 	qDebug() << "PlainText" << textEdit->toPlainText();
 
 	saveCursor();
-    QString textAdded;
+	QString textAdded;
 	try {
 		if (validSignal(position, charsAdded, charsRemoved)) {
 			//qDebug() << "VALID SIGNAL";
@@ -543,15 +543,15 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						controller->getCrdt()->localDelete(startPos, endPos);
 					}
 				}
-                qDebug() << "PlainText" << textEdit->toPlainText();
+				qDebug() << "PlainText" << textEdit->toPlainText();
 
 				if (charsAdded) {
 					QTextCursor cursor = textEdit->textCursor();
 					QString chars = textEdit->toPlainText().mid(position, charsAdded);
 					bool charsIsEmpty = chars.isEmpty();
 					if (chars.isEmpty() && !textAdded.isEmpty()) {
-                        chars = textAdded;
-                    }
+						chars = textAdded;
+					}
 					qDebug() << "Editor: " << QThread::currentThreadId();
 
 					if (charsAdded == 1) {
@@ -576,52 +576,48 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						}
 
 					} else {
-                        controller->getCrdt()->setIsWorking(true);
-                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
-                        //controller->getCrdt()->copy = true;
-                        std::cout << "Position Cursor: " << textEdit->position << " " << position;
+						controller->getCrdt()->setIsWorking(true);
+						controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
+						//controller->getCrdt()->copy = true;
+						std::cout << "Position Cursor: " << textEdit->position << " " << position;
 
-                        if (charsIsEmpty && textDocument->isEmpty()) {
-                            int line = 0;
-                            int k = 0;
-                            cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
-                            QTextCharFormat charFormat = cursor.charFormat();
-                            for (int i = 0; i < charsAdded; i++) {
-                                qDebug() << cursor.position();
-                                if (chars.at(i) == '\n') {
-                                    k = 0;
-                                    line++;
-                                }
-                                int ch = k;
-                                Pos startPos{ch, line};
+						if (charsIsEmpty && textDocument->isEmpty()) {
+							int line = 0;
+							int k = 0;
+							cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+							QTextCharFormat charFormat = cursor.charFormat();
+							for (int i = 0; i < charsAdded; i++) {
+								qDebug() << cursor.position();
+								int ch = k;
+								Pos startPos{ch, line};
+								controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos,
+																   i == charsAdded - 1);
+								if (chars.at(i) == '\n') {
+									k = 0;
+									line++;
+								} else
+									k++;
+							}
+						} else {
+							for (int i = 0; i < charsAdded; i++) {
+								// for each char added
+								qDebug() << cursor.position();
+								cursor.setPosition(position + i);
+								int line = cursor.blockNumber();
+								int ch = cursor.positionInBlock();
+								Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+								// select char
+								cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+								QTextCharFormat charFormat = cursor.charFormat();
 
-                                if (i == charsAdded - 1) {
-                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
-                                } else {
-                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
-                                }
-                                k++;
-                            }
-                        } else {
-                            for (int i = 0; i < charsAdded; i++) {
-                                // for each char added
-                                qDebug() << cursor.position();
-                                cursor.setPosition(position + i);
-                                int line = cursor.blockNumber();
-                                int ch = cursor.positionInBlock();
-                                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-                                // select char
-                                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-                                QTextCharFormat charFormat = cursor.charFormat();
-
-                                if (i == charsAdded - 1) {
-                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
-                                } else {
-                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
-                                }
-                            }
-                        }
-                    }
+								if (i == charsAdded - 1) {
+									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
+								} else {
+									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -733,10 +729,10 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 	//qDebug() << "bold" << format.isBold();
 	//qDebug() << "underline" << format.isUnderline();
 	//qDebug() << "italic" << format.isItalic();
-    QTextCursor tmpTextCursor(this->textEdit->textCursor());
-    QTextCursor otherCursor;
-    otherCursor.movePosition(QTextCursor::End);
-    textEdit->setTextCursor( otherCursor );
+	QTextCursor tmpTextCursor(this->textEdit->textCursor());
+	QTextCursor otherCursor;
+	otherCursor.movePosition(QTextCursor::End);
+	textEdit->setTextCursor(otherCursor);
 	int oldCursorPos = textCursor.position();
 
 
@@ -772,8 +768,8 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 
-    textEdit->setTextCursor(tmpTextCursor);
-    textCursor.setPosition(oldCursorPos);
+	textEdit->setTextCursor(tmpTextCursor);
+	textCursor.setPosition(oldCursorPos);
 }
 
 
@@ -1051,6 +1047,8 @@ void Editor::removeUser(QString user) {
 		ui->userListWidget->addItems(users);
 		this->otherCursors[user]->hide();
 		this->otherCursors.remove(user);
+		QString onlineUsers = "Online users: " + QString::number(users.size());
+		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
 	} catch (...) {
 		controller->reciveExternalErrorOrException();
 	}
@@ -1069,7 +1067,8 @@ void Editor::setUsers(QStringList users) {
 			QColor color(colors[colorIndex]);
 			color.setAlpha(128); // opacity
 			otherCursors.insert(this->controller->getUser()->getUsername(),
-								new OtherCursor(this->controller->getUser()->getUsername(), this->textDocument, color,true,
+								new OtherCursor(this->controller->getUser()->getUsername(), this->textDocument, color,
+												true,
 												this->textEdit->viewport()));
 //			otherCursors[this->controller->getUser()->getUsername()]->hide();
 		}
@@ -1093,7 +1092,8 @@ void Editor::setUsers(QStringList users) {
 					QColor color(colors[colorIndex]);
 					color.setAlpha(128); // opacity
 					otherCursors.insert(user,
-										new OtherCursor(user, this->textDocument, color,false, this->textEdit->viewport()));
+										new OtherCursor(user, this->textDocument, color, false,
+														this->textEdit->viewport()));
 					colorIndex++;
 					if (colorIndex == 14) {
 						colorIndex = 0;
@@ -1105,6 +1105,8 @@ void Editor::setUsers(QStringList users) {
 			ui->userListWidget->clear();
 		}
 		controller->stopLoadingPopup();
+		QString onlineUsers = "Online users: " + QString::number(users.size());
+		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
 	} catch (...) {
 		// resest the status of application
 		controller->reciveExternalErrorOrException();
@@ -1210,19 +1212,19 @@ void Editor::updateAlignmentPushButton() {
 }
 
 
-void Editor::onListUsersItemClicked(QListWidgetItem* item) {
-    QString user = item->text();
-    qDebug() << "Utente Cliccato" << user;
+void Editor::onListUsersItemClicked(QListWidgetItem *item) {
+	QString user = item->text();
+	qDebug() << "Utente Cliccato" << user;
 }
 
 void Editor::textCopy() {
-    textEdit->copy();
+	textEdit->copy();
 }
 
 void Editor::textCut() {
-    textEdit->cut();
+	textEdit->cut();
 }
 
 void Editor::textPaste() {
-    textEdit->paste();
+	textEdit->paste();
 }

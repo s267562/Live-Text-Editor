@@ -163,7 +163,7 @@ margin: 2px 1px;
 }</string>
       </property>
       <property name="text">
-       <string>Registrati</string>
+       <string>Register</string>
       </property>
      </widget>
      <widget class="ClickableLabel" name="label">
@@ -179,7 +179,7 @@ margin: 2px 1px;
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="resources.qrc">:/icons/user_icon.jpg</pixmap>
+       <pixmap>:/icons/user_icon.jpg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -190,12 +190,12 @@ margin: 2px 1px;
        <rect>
         <x>270</x>
         <y>120</y>
-        <width>51</width>
+        <width>111</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Rimuovi</string>
+       <string>Remove</string>
       </property>
      </widget>
      <widget class="QLabel" name="error">
@@ -229,7 +229,7 @@ margin: 2px 1px;
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuREgistration">

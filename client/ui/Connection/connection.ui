@@ -62,7 +62,7 @@
        <rect>
         <x>10</x>
         <y>70</y>
-        <width>71</width>
+        <width>101</width>
         <height>31</height>
        </rect>
       </property>
@@ -75,7 +75,7 @@
        <rect>
         <x>10</x>
         <y>120</y>
-        <width>91</width>
+        <width>101</width>
         <height>31</height>
        </rect>
       </property>
@@ -102,9 +102,9 @@
      <widget class="QLineEdit" name="serverIP">
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>120</x>
         <y>70</y>
-        <width>321</width>
+        <width>311</width>
         <height>31</height>
        </rect>
       </property>
@@ -112,9 +112,9 @@
      <widget class="QLineEdit" name="serverPort">
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>120</x>
         <y>120</y>
-        <width>321</width>
+        <width>311</width>
         <height>31</height>
        </rect>
       </property>
@@ -157,7 +157,7 @@ QPushButton:hover
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConnessione">
