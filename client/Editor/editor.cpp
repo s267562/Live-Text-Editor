@@ -431,14 +431,17 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 	qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded
 			 << " chars removed: " << charsRemoved;
 
+	qDebug() << "PlainText" << textEdit->toPlainText();
+
 	saveCursor();
+    QString textAdded;
 	try {
 		if (validSignal(position, charsAdded, charsRemoved)) {
 			//qDebug() << "VALID SIGNAL";
 			//std::cout << "VALID SIGNAL" << std::endl;
 
 			// it is possible that user change only the style or the user re-paste the same letters... check it
-			QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+			textAdded = textEdit->toPlainText().mid(position, charsAdded);
 			undo();
 			QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
 			redo();
@@ -540,10 +543,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						controller->getCrdt()->localDelete(startPos, endPos);
 					}
 				}
+                qDebug() << "PlainText" << textEdit->toPlainText();
 
 				if (charsAdded) {
 					QTextCursor cursor = textEdit->textCursor();
 					QString chars = textEdit->toPlainText().mid(position, charsAdded);
+					if (chars.isEmpty() && !textAdded.isEmpty())
+					    chars = textAdded;
 					qDebug() << "Editor: " << QThread::currentThreadId();
 
 					if (charsAdded == 1) {
