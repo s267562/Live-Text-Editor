@@ -80,7 +80,9 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 }
 
 void Editor::setupTextActions() {
-	QToolBar *tb = addToolBar(tr("Format Actions"));
+    QToolBar *tbCopyCutPaste = addToolBar(tr("CopyCutPaste Actions"));
+    QMenu *menuCopyCutPaste = menuBar()->addMenu(tr("F&ormat"));
+    QToolBar *tb = addToolBar(tr("Format Actions"));
 	QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
 
 	tb->setStyleSheet("QToolBar{\n"
@@ -100,17 +102,56 @@ void Editor::setupTextActions() {
 					  "background-color: rgb(247, 245, 249);\n"
 					  "}");
 	tb->setMinimumHeight(60);
+    tbCopyCutPaste->setStyleSheet("QToolBar{\n"
+                      "border: none;\n"
+                      "background: rgb(255, 255, 255);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:after{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:hover{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}\n"
+                      "\n"
+                      "QToolButton:focus{\n"
+                      "background-color: rgb(247, 245, 249);\n"
+                      "}");
+    tbCopyCutPaste->setMinimumHeight(60);
 	//tb->setMaximumHeight(60);
 
-	m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
-	m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
-	m_shadowEffect2->setXOffset(0);
-	m_shadowEffect2->setYOffset(4);
-	m_shadowEffect2->setBlurRadius(12);
-	// hide shadow
-	m_shadowEffect2->setEnabled(true);
-	tb->setGraphicsEffect(m_shadowEffect2);
+    m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
+    m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
+    m_shadowEffect2->setXOffset(0);
+    m_shadowEffect2->setYOffset(4);
+    m_shadowEffect2->setBlurRadius(12);
+    // hide shadow
+    m_shadowEffect2->setEnabled(true);
+    tb->setGraphicsEffect(m_shadowEffect2);
+    m_shadowEffect3 = new QGraphicsDropShadowEffect(this);
+    m_shadowEffect3->setColor(QColor(0, 0, 0, 255 * 0.1));
+    m_shadowEffect3->setXOffset(0);
+    m_shadowEffect3->setYOffset(4);
+    m_shadowEffect3->setBlurRadius(12);
+    // hide shadow
+    m_shadowEffect3->setEnabled(true);
+    tbCopyCutPaste->setGraphicsEffect(m_shadowEffect3);
 
+	// Copy
+    const QIcon copyIcon = QIcon::fromTheme("Copy", QIcon(":/rec/img/copy2.png"));
+    actionCopy = menuCopyCutPaste->addAction(copyIcon, tr("&Copy"), this, &Editor::textCopy);
+    tbCopyCutPaste->addAction(actionCopy);
+
+    // Cut
+    const QIcon cutIcon = QIcon::fromTheme("Cut", QIcon(":/rec/img/cut.png"));
+    actionCut = menuCopyCutPaste->addAction(copyIcon, tr("&Cut"), this, &Editor::textCut);
+    tbCopyCutPaste->addAction(actionCut);
+
+    // Paste
+    const QIcon pasteIcon = QIcon::fromTheme("Paste", QIcon(":/rec/img/paste.png"));
+    actionPaste = menuCopyCutPaste->addAction(pasteIcon, tr("&Paste"), this, &Editor::textPaste);
+    tbCopyCutPaste->addAction(actionPaste);
 
 	// bold
 	const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(":/rec/img/bold.png"));
@@ -1144,4 +1185,14 @@ void Editor::onListUsersItemClicked(QListWidgetItem* item) {
     qDebug() << "Utente Cliccato" << user;
 }
 
+void Editor::textCopy() {
+    textEdit->copy();
+}
 
+void Editor::textCut() {
+    textEdit->cut();
+}
+
+void Editor::textPaste() {
+    textEdit->paste();
+}

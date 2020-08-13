@@ -24,5 +24,8 @@
     <file>img/menu_2.png</file>
     <file>img/substract.png</file>
     <file>img/add.png</file>
+    <file>img/copy2.png</file>
+    <file>img/cut.png</file>
+    <file>img/paste.png</file>
 </qresource>
 </RCC>

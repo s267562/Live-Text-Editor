@@ -91,6 +91,10 @@ public slots:
     void textItalic();
     void textAlign(QAction *a);
     void textColor();
+    void textCopy();
+    void textCut();
+    void textPaste();
+
 
     void textFamily(const QString &f);
     void textSize(const QString &p);
@@ -143,6 +147,9 @@ private:
     QAction *actionAlignCenter;
     QAction *actionAlignRight;
     QAction *actionAlignJustify;
+    QAction *actionCopy;
+    QAction *actionCut;
+    QAction *actionPaste;
 
     QAction *actionTextColor;
 
@@ -151,6 +158,8 @@ private:
 
     QGraphicsDropShadowEffect *m_shadowEffect1;
     QGraphicsDropShadowEffect *m_shadowEffect2;
+    QGraphicsDropShadowEffect *m_shadowEffect3;
+
     QString filename;
     bool isInvalid = false;
 };
