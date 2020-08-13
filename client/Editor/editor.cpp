@@ -81,7 +81,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 
 void Editor::setupTextActions() {
 	QToolBar *tbCopyCutPaste = addToolBar(tr("CopyCutPaste Actions"));
-	QMenu *menuCopyCutPaste = menuBar()->addMenu(tr("F&ormat"));
+	QMenu *menuCopyCutPaste = menuBar()->addMenu(tr("E&dit"));
 	QToolBar *tb = addToolBar(tr("Format Actions"));
 	QMenu *menu = menuBar()->addMenu(tr("F&ormat"));
 
