@@ -145,7 +145,7 @@ void Editor::setupTextActions() {
 
     // Cut
     const QIcon cutIcon = QIcon::fromTheme("Cut", QIcon(":/rec/img/cut.png"));
-    actionCut = menuCopyCutPaste->addAction(copyIcon, tr("&Cut"), this, &Editor::textCut);
+    actionCut = menuCopyCutPaste->addAction(cutIcon, tr("&Cut"), this, &Editor::textCut);
     tbCopyCutPaste->addAction(actionCut);
 
     // Paste
@@ -548,8 +548,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				if (charsAdded) {
 					QTextCursor cursor = textEdit->textCursor();
 					QString chars = textEdit->toPlainText().mid(position, charsAdded);
-					if (chars.isEmpty() && !textAdded.isEmpty())
-					    chars = textAdded;
+					if (chars.isEmpty() && !textAdded.isEmpty()) {
+                        chars = textAdded;
+                    }
 					qDebug() << "Editor: " << QThread::currentThreadId();
 
 					if (charsAdded == 1) {
@@ -570,7 +571,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						if (charsRemoved == 0) {
 							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
 						} else {
-							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, false);
+							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, true);
 						}
 
 					} else {
