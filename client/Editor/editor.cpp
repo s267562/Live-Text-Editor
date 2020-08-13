@@ -548,6 +548,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				if (charsAdded) {
 					QTextCursor cursor = textEdit->textCursor();
 					QString chars = textEdit->toPlainText().mid(position, charsAdded);
+					bool charsIsEmpty = chars.isEmpty();
 					if (chars.isEmpty() && !textAdded.isEmpty()) {
                         chars = textAdded;
                     }
@@ -571,34 +572,56 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						if (charsRemoved == 0) {
 							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
 						} else {
-							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, true);
+							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, charsIsEmpty);
 						}
 
 					} else {
-						controller->getCrdt()->setIsWorking(true);
-						controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
-						//controller->getCrdt()->copy = true;
-						std::cout << "Position Cursor: " << textEdit->position << " " << position;
+                        controller->getCrdt()->setIsWorking(true);
+                        controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
+                        //controller->getCrdt()->copy = true;
+                        std::cout << "Position Cursor: " << textEdit->position << " " << position;
 
-						for (int i = 0; i < charsAdded; i++) {
-							// for each char added
-							qDebug() << cursor.position();
-							cursor.setPosition(position + i);
-							int line = cursor.blockNumber();
-							int ch = cursor.positionInBlock();
-							Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
-							// select char
-							cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
-							QTextCharFormat charFormat = cursor.charFormat();
+                        if (charsIsEmpty && textDocument->isEmpty()) {
+                            int line = 0;
+                            int k = 0;
+                            cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+                            QTextCharFormat charFormat = cursor.charFormat();
+                            for (int i = 0; i < charsAdded; i++) {
+                                qDebug() << cursor.position();
+                                if (chars.at(i) == '\n') {
+                                    k = 0;
+                                    line++;
+                                }
+                                int ch = k;
+                                Pos startPos{ch, line};
 
-							if (i == charsAdded - 1) {
-								controller->getCrdt()->localInsert(chars.at(i),charFormat, startPos, true);
-							} else {
-								controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
-							}
-						}
-						//isInvalid = true;
-					}
+                                if (i == charsAdded - 1) {
+                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
+                                } else {
+                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
+                                }
+                                k++;
+                            }
+                        } else {
+                            for (int i = 0; i < charsAdded; i++) {
+                                // for each char added
+                                qDebug() << cursor.position();
+                                cursor.setPosition(position + i);
+                                int line = cursor.blockNumber();
+                                int ch = cursor.positionInBlock();
+                                Pos startPos{ch, line}; // Pos(int ch, int line, const std::string);
+                                // select char
+                                cursor.setPosition(position + i + 1, QTextCursor::KeepAnchor);
+                                QTextCharFormat charFormat = cursor.charFormat();
+
+                                if (i == charsAdded - 1) {
+                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
+                                } else {
+                                    controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
+                                }
+                            }
+                        }
+                    }
 				}
 			}
 
