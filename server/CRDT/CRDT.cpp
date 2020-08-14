@@ -22,6 +22,7 @@ bool CRDT::addInitialBlock() {
     in_pos.emplace_back(i);
     Character initialBlock=Character('\r',cf,-1,"None",in_pos);
     this->style.emplace_back(std::pair<Character,int> {initialBlock,17});
+    return true;
 }
 
 const std::vector<std::vector<Character>> &CRDT::getStructure() const {

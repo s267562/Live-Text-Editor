@@ -210,13 +210,11 @@ CRDT::generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> p
 
 	} else if (id1.getDigit() == id2.getDigit()) {
 		if (id1.getSiteId() < id2.getSiteId()) {
-			// TODO check if correct...
 			newPos.push_back(id1);
 			std::vector<Identifier> pos1_2;
 			if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
 			return this->generatePosBetween(pos1_2, std::vector<Identifier>{}, siteId, newPos, level + 1);
 		} else if (id1.getSiteId() == id2.getSiteId()) {
-			// TODO check if correct...
 			newPos.push_back(id1);
 			std::vector<Identifier> pos1_2, pos2_2;
 			if (pos1.size() > 0) pos1_2 = std::vector<Identifier>(pos1.begin() + 1, pos1.end());
@@ -227,9 +225,9 @@ CRDT::generatePosBetween(std::vector<Identifier> pos1, std::vector<Identifier> p
 			std::vector<Identifier> pos2_2;
 			if (pos2.size() > 0) pos2_2 = std::vector<Identifier>(pos2.begin() + 1, pos2.end());
 			return this->generatePosBetween(std::vector<Identifier>{}, pos2_2, siteId, newPos, level + 1);
-			//throw "Fix Position Sorting"; // TODO capire quando può capitare questo caso e come gestirlo.
 		}
 	}
+	return std::vector<Identifier>{};
 }
 
 int CRDT::generateIdBetween(int min, int max) {
@@ -313,7 +311,6 @@ std::vector<Character> CRDT::handleLocalDelete(Pos startPos, Pos endPos) {
 	this->removeEmptyLines();
 
 	if (newlineRemoved && startPos.getCh() > 0) {
-		//qDebug() << "need to merge line" << startPos.getLine();
 		this->mergeLines(startPos.getLine());
 	}
 
@@ -350,14 +347,8 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
 }
 
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
-	// TODO check if correct
 	int charNum = endPos.getCh() - startPos.getCh();
-	//qDebug() << "client/CRDT.cpp - deleteSingleLine()     charNum: " << charNum;
-	//qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh(): " << startPos.getCh();
-	//qDebug() << "client/CRDT.cpp - deleteSingleLine()     startPos.getCh() + charNum: " << startPos.getCh() + charNum;
-	//qDebug() << "client/CRDT.cpp - deleteSingleLine()     structure[startPos.getLine()].size(): " << structure[startPos.getLine()].size();
 	if (structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
-		// TODO lanciare un'eccezione per evitare crash?
 		qDebug()
 				<< "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
 		qDebug() << ""; // newLine
@@ -385,7 +376,6 @@ Pos CRDT::handleRemoteDelete(const Character &character) {
 
 	if (character.getValue() == '\n') {
 		this->mergeLines(pos.getLine());
-		//TODO: Some problem here
 		if (style.size() > pos.getLine() + 1) {
 			this->removeStyleLine(pos.getLine() + 1);
 		}
@@ -453,15 +443,9 @@ void CRDT::removeEmptyLines() {
 	for (line = 0; line < this->structure.size(); line++) {
 		if (this->structure[line].empty()) {
 			this->structure.erase(this->structure.begin() + line);
-			// this->style.erase(this->style.begin()+line+1);
 			line--;
 		}
 	}
-
-	/* if (this->structure[line].empty()) {
-		 this->structure.erase(this->structure.begin() + line);
-	 }
- */
 }
 
 void CRDT::mergeLines(int line) {
@@ -469,7 +453,6 @@ void CRDT::mergeLines(int line) {
 	if (structure.size() > line + 1 && !structure[line + 1].empty()) {
 		structure[line].insert(structure[line].end(), structure[line + 1].begin(), structure[line + 1].end());
 		structure.erase(structure.begin() + line + 1);
-		//style.erase(style.begin()+line+1);
 	}
 }
 
@@ -547,7 +530,6 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
 	if (ultimo && copy && numJobs == 0) {
 		for (auto c: queueInsertMessage) {
 			pos = handleRemoteInsert(c);
-			//std::cout << c.getValue() << " Pos new: " << pos.getCh() << " " << pos.getLine() << std::endl;
 		}
 		queueInsertMessage.clear();
 		copy = false;
@@ -602,10 +584,8 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
 
 void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire forse nel crdt
 	// send insert at the server.
-	//TODO Check this
 	Character blockId = getBlockIdentifier(blockNumber); // Retrieve the char used as unique identifier of row (block)
 	handleAlignmentChanged(alignment_type, blockNumber);
-	//this->messanger->writeAlignmentChanged(alignment_type, blockId);
 	messanger->writeAlignmentChanged(alignment_type, blockId);
 }
 
@@ -630,7 +610,6 @@ void CRDT::newMessage(Message message) {
 				// local insert - only in the model; the char is already in the view.
 			} else {
 				if (copy) {
-					//std::cout << character.getValue() << " Pos old: " << pos.getCh() << " " << pos.getLine()  <<std::endl;
 					queueInsertMessage.push_back(character);
 				} else {
 					Pos pos = handleRemoteInsert(character);

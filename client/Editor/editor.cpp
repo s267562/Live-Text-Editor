@@ -31,9 +31,6 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 																				  "#9932cc", "#ff1493", "#ffd700",
 																				  "#a52a2a", "#1e90ff", "#9370db",
 																				  "#006400", "#ff0000", "#008080"}) {
-	qRegisterMetaType<QTextCursor *>("QTextCursor*");
-	qRegisterMetaType<QTextCursor>("QTextCursor");
-	qRegisterMetaType<Pos>("Pos");
 
 	/* Setup UI */
 	ui->setupUi(this);
@@ -76,7 +73,6 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem * )),
 			this, SLOT(onListUsersItemClicked(QListWidgetItem * )));
 
-	//qDebug()<< "########################### Number of block in textEditor: " << this->textDocument->blockCount();
 }
 
 void Editor::setupTextActions() {
@@ -119,7 +115,6 @@ void Editor::setupTextActions() {
 								  "background-color: rgb(247, 245, 249);\n"
 								  "}");
 	tbCopyCutPaste->setMinimumHeight(60);
-	//tb->setMaximumHeight(60);
 
 	m_shadowEffect2 = new QGraphicsDropShadowEffect(this);
 	m_shadowEffect2->setColor(QColor(0, 0, 0, 255 * 0.1));
@@ -311,7 +306,6 @@ void Editor::colorChanged(const QColor &c) {
 
 
 void Editor::textAlign(QAction *a) {
-	// int at=LEFT;
 	int alCode = 0;
 
 	if (a == actionAlignLeft) {
@@ -321,17 +315,14 @@ void Editor::textAlign(QAction *a) {
 		qDebug() << alCode;
 	} else if (a == actionAlignCenter) {
 		textEdit->setAlignment(Qt::AlignHCenter);
-		// at = CENTER;
 		alCode = textEdit->alignment();
 		qDebug() << alCode;
 	} else if (a == actionAlignRight) {
 		textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-		// at = RIGHT;
 		alCode = textEdit->alignment();
 		qDebug() << alCode;
 	} else if (a == actionAlignJustify) {
 		textEdit->setAlignment(Qt::AlignJustify);
-		// at=JUSTIFY;
 		alCode = textEdit->alignment();
 		qDebug() << alCode;
 	}
@@ -369,11 +360,6 @@ void Editor::remoteAlignmentChanged(int alignment, int blockNumber) {
 	f.setAlignment(Qt::Alignment(alignment));
 
 	textCursor.setBlockFormat(f);
-	//this->textCursor.blockFormat().setAlignment(Qt::Alignment(alignment));
-
-	//Qt::Alignment a(alignment);
-	//this->textEdit->setTextCursor(this->textCursor);
-	//this->textEdit->setAlignment(a);
 
 	textCursor.setPosition(oldCursorPos);
 	connect(textDocument, &QTextDocument::contentsChange,
@@ -437,8 +423,6 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 	QString textAdded;
 	try {
 		if (validSignal(position, charsAdded, charsRemoved)) {
-			//qDebug() << "VALID SIGNAL";
-			//std::cout << "VALID SIGNAL" << std::endl;
 
 			// it is possible that user change only the style or the user re-paste the same letters... check it
 			textAdded = textEdit->toPlainText().mid(position, charsAdded);
@@ -716,9 +700,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 
-	//if (!controller->getCrdt()->copy) {
 	textCursor.setPosition(oldCursorPos);
-	//}
 
 	connect(textEdit, &QTextEdit::cursorPositionChanged,
 			this, &Editor::onCursorPositionChanged);
@@ -726,9 +708,6 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 }
 
 void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString siteId) {
-	//qDebug() << "bold" << format.isBold();
-	//qDebug() << "underline" << format.isUnderline();
-	//qDebug() << "italic" << format.isItalic();
 	QTextCursor tmpTextCursor(this->textEdit->textCursor());
 	QTextCursor otherCursor;
 	otherCursor.movePosition(QTextCursor::End);
@@ -826,12 +805,11 @@ void Editor::setFormat(CharFormat charFormat) {
 
 void Editor::onCursorPositionChanged() {
 	QTextCursor cursor = textEdit->textCursor();
-	// qDebug() << "Cursor Position: " << cursor.position();
 	if (!cursor.hasSelection()) {
 		int cursorPos = cursor.position();
 		if (cursorPos == 0) {
 			setFormat(
-					CharFormat()); // defaul character TODO: Default font is problem in non ubuntu users. We should find a more general default font
+					CharFormat());
 		} else if (cursorPos > 0) {
 			cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
 			QTextCharFormat textCharFormat = cursor.charFormat();
@@ -841,11 +819,9 @@ void Editor::onCursorPositionChanged() {
 								 textCharFormat.foreground().color(),
 								 textCharFormat.font().family(),
 								 textCharFormat.fontPointSize()));
-			//this->controller->cursorChanged(cursor);
 		}
 
 	}
-	// this->controller->cursorChanged(cursor);
 	this->updateAlignmentPushButton();
 }
 
@@ -916,7 +892,6 @@ void Editor::on_actionSave_as_PDF_triggered() {
 		printer.setOutputFormat(QPrinter::PdfFormat);
 		printer.setOutputFileName(fileName);
 		textEdit->document()->print(&printer);
-//	statusBar()->showMessage(tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
 
 		QMessageBox::information(controller->GUI, "PDF", "File Esportato");
 	} else
@@ -979,7 +954,6 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	if (validSignal && charsAdded == charsRemoved &&
 		currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
 		// wrong signal when editor gets focus and something happen.
-		//qDebug() << "WRONG SIGNAL 2";
 		validSignal = false;
 	}
 
@@ -1070,7 +1044,6 @@ void Editor::setUsers(QStringList users) {
 								new OtherCursor(this->controller->getUser()->getUsername(), this->textDocument, color,
 												true,
 												this->textEdit->viewport()));
-//			otherCursors[this->controller->getUser()->getUsername()]->hide();
 		}
 
 		bool isInsert = false;
@@ -1147,7 +1120,6 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 			this->textEdit->textCursor().insertText(QString::fromLatin1(&c, 1), character.getTextCharFormat());
 		}
 	}
-	//textEdit->setText(initialText);
 
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
