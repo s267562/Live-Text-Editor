@@ -432,7 +432,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 			 << " chars removed: " << charsRemoved;
 
 	qDebug() << "PlainText" << textEdit->toPlainText();
-
+//
 	saveCursor();
 	QString textAdded;
 	try {
