@@ -181,7 +181,9 @@ void Messanger::onReadyRead() {
 		}
 	}
 	qDebug() << state << EDIT_FILE_STATE;
-	onReadyRead();
+	if (socket->bytesAvailable() != 0) {
+		QMetaObject::invokeMethod(this, "onReadyRead", Qt::QueuedConnection);
+	}
 }
 
 /**
@@ -819,7 +821,7 @@ bool Messanger::readStyleChanged() {
 	Message message(character, socket->socketDescriptor(), STYLE_CHANGED, username);
 
 	if (!controller->isRequestFFile())
-        crdt->newMessage(message);
+		crdt->newMessage(message);
 	return true;
 }
 
@@ -870,7 +872,7 @@ bool Messanger::readAlignmentChanged() {
 	Message message(blockId, socket->socketDescriptor(), ALIGNMENT_CHANGED, username, alignType);
 
 	if (!controller->isRequestFFile())
-        crdt->newMessage(message);
+		crdt->newMessage(message);
 	return true;
 }
 
@@ -910,7 +912,7 @@ bool Messanger::readDelete() {
 	Message message(character, socket->socketDescriptor(), DELETE, username);
 
 	if (!controller->isRequestFFile())
-        crdt->newMessage(message);
+		crdt->newMessage(message);
 	return true;
 }
 
