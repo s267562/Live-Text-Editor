@@ -17,7 +17,7 @@
 #include <QMetaObject>
 #include <QMetaType>
 
-Q_DECLARE_METATYPE(QTextCursor*);
+Q_DECLARE_METATYPE(QTextCursor *);
 
 Q_DECLARE_METATYPE(QTextCursor);
 
@@ -242,7 +242,8 @@ void Editor::setupTextActions() {
 	comboSize->setEditable(true);
 
 	const QList<int> standardSizes = QFontDatabase::standardSizes();
-			foreach (int size, standardSizes)comboSize->addItem(QString::number(size));
+			foreach(int
+							size, standardSizes)comboSize->addItem(QString::number(size));
 	comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
 	connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
@@ -558,6 +559,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						} else {
 							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, charsIsEmpty);
 						}
+						this->unsetCharacterColorLocally(startPos, controller->getCrdt()->getSiteId());
+
 
 					} else {
 						controller->getCrdt()->setIsWorking(true);
@@ -581,6 +584,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 									line++;
 								} else
 									k++;
+
+								this->unsetCharacterColorLocally(startPos, controller->getCrdt()->getSiteId());
 							}
 						} else {
 							for (int i = 0; i < charsAdded; i++) {
@@ -599,6 +604,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 								} else {
 									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
 								}
+
+								this->unsetCharacterColorLocally(startPos, controller->getCrdt()->getSiteId());
 							}
 						}
 					}
@@ -647,12 +654,6 @@ void Editor::updateOtherCursorPosition() {
 
 
 void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos, QString siteId, Character c) {
-	if (isInvalid) {
-		controller->inviledateTextEditor();
-		isInvalid = false;
-		return;
-	}
-
 	QTextDocument *doc = textEdit->document();
 	disconnect(doc, &QTextDocument::contentsChange,
 			   this, &Editor::onTextChanged);
@@ -705,6 +706,11 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	connect(textEdit, &QTextEdit::cursorPositionChanged,
 			this, &Editor::onCursorPositionChanged);
 
+	if (this->otherCursors[siteId]->isSelected1()) {
+		this->setCharacterColorLocally(pos, siteId);
+	} else {
+		this->unsetCharacterColorLocally(pos, siteId);
+	}
 }
 
 void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString siteId) {
@@ -1020,6 +1026,8 @@ void Editor::removeUser(QString user) {
 		ui->userListWidget->clear();
 		ui->userListWidget->addItems(users);
 		this->otherCursors[user]->hide();
+		otherCursors[user]->setIsSelected(false);
+		this->hideUserText(user);
 		this->otherCursors.remove(user);
 		QString onlineUsers = "Online users: " + QString::number(users.size());
 		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
@@ -1114,11 +1122,32 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 			   this, &Editor::onTextChanged);
 
 	textEdit->clear();
+	int l = 0;
 	for (auto &line : initialText) {
+		int ch = 0;
 		for (auto &character : line) {
 			char c = character.getValue();
 			this->textEdit->textCursor().insertText(QString::fromLatin1(&c, 1), character.getTextCharFormat());
+			Pos pos{ch, l};
+
+			connect(doc, &QTextDocument::contentsChange,
+					this, &Editor::onTextChanged);
+
+			if (otherCursors.contains(character.getSiteId()) &&
+				character.getSiteId() != controller->getCrdt()->getSiteId() &&
+				otherCursors[character.getSiteId()]->isSelected1()) {
+				this->setCharacterColorLocally(pos, character.getSiteId());
+
+			} else {
+
+				this->unsetCharacterColorLocally(pos, character.getSiteId());
+			}
+
+			disconnect(doc, &QTextDocument::contentsChange,
+					   this, &Editor::onTextChanged);
+			ch++;
 		}
+		l++;
 	}
 
 	connect(doc, &QTextDocument::contentsChange,
@@ -1148,7 +1177,8 @@ void Editor::showError() {
 void Editor::setFilename(QString filename) {
 	this->filename = filename;
 	qDebug() << filename << controller->getUser()->getFileList()[filename];
-	if (filename.contains("%_##$$$##_%") && filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()) {
+	if (filename.contains("%_##$$$##_%") &&
+		filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()) {
 		ui->mainToolBar->actions().at(2)->setVisible(false);
 	}
 }
@@ -1187,6 +1217,12 @@ void Editor::updateAlignmentPushButton() {
 void Editor::onListUsersItemClicked(QListWidgetItem *item) {
 	QString user = item->text();
 	qDebug() << "Utente Cliccato" << user;
+	bool oldSelectedValue = this->otherCursors[user]->isSelected1();
+	this->otherCursors[user]->setIsSelected(!oldSelectedValue);
+	if (!oldSelectedValue)
+		this->showUserText(user);
+	else
+		this->hideUserText(user);
 }
 
 void Editor::textCopy() {
@@ -1199,4 +1235,123 @@ void Editor::textCut() {
 
 void Editor::textPaste() {
 	textEdit->paste();
+}
+
+void Editor::setCharacterColorLocally(Pos pos, QString user) {
+
+
+	int oldCursorPos = textCursor.position();
+
+	QTextCursor tmpTextCursor(this->textEdit->textCursor());
+	QTextCursor otherCursor;
+	otherCursor.movePosition(QTextCursor::End);
+	textEdit->setTextCursor(otherCursor);
+
+
+	textCursor.movePosition(QTextCursor::Start);
+	textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+	textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
+
+	QTextDocument *doc = textEdit->document();
+	disconnect(doc, &QTextDocument::contentsChange,
+			   this, &Editor::onTextChanged);
+
+
+	QTextCharFormat textCharFormat = textCursor.charFormat();
+	QColor color;
+
+	if (this->otherCursors.contains(user)) {
+		color = this->otherCursors[user]->getColor();
+	}
+
+	textCharFormat.setBackground(color);
+
+	textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
+	textCursor.mergeCharFormat(textCharFormat);
+	//textEdit->mergeCurrentCharFormat(textCharFormat);
+
+	connect(doc, &QTextDocument::contentsChange,
+			this, &Editor::onTextChanged);
+
+	textEdit->setTextCursor(tmpTextCursor);
+	textCursor.setPosition(oldCursorPos);
+	auto cursor = this->textEdit->textCursor();
+}
+
+void Editor::unsetCharacterColorLocally(Pos pos, QString user) {
+	int oldCursorPos = textCursor.position();
+
+	QTextCursor tmpTextCursor(this->textEdit->textCursor());
+	QTextCursor otherCursor;
+	otherCursor.movePosition(QTextCursor::End);
+	textEdit->setTextCursor(otherCursor);
+
+
+	textCursor.movePosition(QTextCursor::Start);
+	textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
+	textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
+
+
+	QTextDocument *doc = textEdit->document();
+	disconnect(doc, &QTextDocument::contentsChange,
+			   this, &Editor::onTextChanged);
+
+
+	QTextCharFormat textCharFormat = textCursor.charFormat();
+	/*QColor color;
+
+	if( this->otherCursors.contains(user)){
+		color=this->otherCursors[user]->getColor();
+	}
+*/
+	textCharFormat.setBackground(Qt::white);
+
+	textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
+	textCursor.mergeCharFormat(textCharFormat);
+	//textEdit->mergeCurrentCharFormat(textCharFormat);
+
+	connect(doc, &QTextDocument::contentsChange,
+			this, &Editor::onTextChanged);
+
+	textEdit->setTextCursor(tmpTextCursor);
+	textCursor.setPosition(oldCursorPos);
+	auto cursor = this->textEdit->textCursor();
+
+
+}
+
+
+void Editor::showUserText(QString &user) {
+	auto structure = this->controller->getCrdt()->getStructure();
+
+	int r = 0;
+	for (auto &row : structure) {
+		int c = 0;
+		for (auto &ch : row) {
+			if (ch.getSiteId() == user) {
+				Pos pos(c, r);
+				this->setCharacterColorLocally(pos, user);
+			}
+			c++;
+		}
+		r++;
+	}
+}
+
+void Editor::hideUserText(QString &user) {
+	auto structure = this->controller->getCrdt()->getStructure();
+
+	int r = 0;
+	for (auto &row : structure) {
+		int c = 0;
+		for (auto &ch : row) {
+			if (ch.getSiteId() == user) {
+				Pos pos(c, r);
+				this->unsetCharacterColorLocally(pos, user);
+			}
+			c++;
+		}
+		r++;
+	}
 }

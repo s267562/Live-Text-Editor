@@ -59,3 +59,11 @@ void OtherCursor::hide() {
 	this->username.hide();
 }
 
+bool OtherCursor::isSelected1() const {
+	return isSelected;
+}
+
+void OtherCursor::setIsSelected(bool isSelected) {
+	OtherCursor::isSelected = isSelected;
+}
+

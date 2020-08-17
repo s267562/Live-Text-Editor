@@ -19,6 +19,11 @@ private:
 	QLabel cursorLabel;
 	QLabel username;
 	bool owner;
+	bool isSelected = false;
+public:
+	bool isSelected1() const;
+
+	void setIsSelected(bool isSelected);
 
 public:
 	OtherCursor(QString name, QTextDocument *doc, QColor color, bool owner, QWidget *parent = nullptr);
