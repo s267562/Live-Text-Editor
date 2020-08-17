@@ -73,6 +73,9 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem * )),
 			this, SLOT(onListUsersItemClicked(QListWidgetItem * )));
 
+    connect(ui->offlineTextButton, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
+
+
 }
 
 void Editor::setupTextActions() {
@@ -442,7 +445,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
 
 				if (cursorPos != startSelection) { // Selection forward
-
+                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
+                        charsAdded++;
+                    }
 					for (int i = 0; i < charsAdded; i++) {
 						// for each char added
 						cursor.setPosition(position + i);
@@ -457,9 +462,12 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						controller->getCrdt()->localStyleChange(textCharFormat, pos);
 					}
 				} else { // Selection backward
+                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
+                        charsAdded++;
+                    }
+
 					for (int i = charsAdded - 1; i >= 0; i--) {
 						// for each char added
-
 						cursor.setPosition(position + i);
 						int line = cursor.blockNumber();
 						int ch = cursor.positionInBlock();
@@ -1031,6 +1039,9 @@ void Editor::removeUser(QString user) {
 		this->otherCursors.remove(user);
 		QString onlineUsers = "Online users: " + QString::number(users.size());
 		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
+        if (offlineTextEnabled) {
+            showOfflineUserText();
+        }
 	} catch (...) {
 		controller->reciveExternalErrorOrException();
 	}
@@ -1080,6 +1091,10 @@ void Editor::setUsers(QStringList users) {
 						colorIndex = 0;
 					}
 
+                    if (offlineTextEnabled) {
+                        hideUserText(user);
+                    }
+
 				});
 			}
 		} else {
@@ -1088,6 +1103,7 @@ void Editor::setUsers(QStringList users) {
 		controller->stopLoadingPopup();
 		QString onlineUsers = "Online users: " + QString::number(users.size());
 		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
+
 	} catch (...) {
 		// resest the status of application
 		controller->reciveExternalErrorOrException();
@@ -1263,6 +1279,8 @@ void Editor::setCharacterColorLocally(Pos pos, QString user) {
 
 	if (this->otherCursors.contains(user)) {
 		color = this->otherCursors[user]->getColor();
+	}else {
+	    color = Qt::gray;
 	}
 
 	textCharFormat.setBackground(color);
@@ -1354,4 +1372,49 @@ void Editor::hideUserText(QString &user) {
 		}
 		r++;
 	}
+}
+
+void Editor::showOfflineUserText() {
+    auto structure = this->controller->getCrdt()->getStructure();
+
+    int r = 0;
+    for (auto &row : structure) {
+        int c = 0;
+        for (auto &ch : row) {
+            if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
+                Pos pos(c, r);
+                this->setCharacterColorLocally(pos, ch.getSiteId());
+            }
+            c++;
+        }
+        r++;
+    }
+}
+
+void Editor::hideOfflineUserText() {
+    auto structure = this->controller->getCrdt()->getStructure();
+
+    int r = 0;
+    for (auto &row : structure) {
+        int c = 0;
+        for (auto &ch : row) {
+            if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
+                Pos pos(c, r);
+                this->unsetCharacterColorLocally(pos, ch.getSiteId());
+            }
+            c++;
+        }
+        r++;
+    }
+}
+
+
+void Editor::handleOfflineText() {
+    qDebug() << "handleOfflineText";
+    offlineTextEnabled = !offlineTextEnabled;
+    if (offlineTextEnabled) {
+        showOfflineUserText();
+    }else{
+        hideOfflineUserText();
+    }
 }

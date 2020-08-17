@@ -94,6 +94,8 @@ public slots:
 
 	void onListUsersItemClicked(QListWidgetItem *item);
 
+    void handleOfflineText();
+
 signals:
 
 	void logout();
@@ -151,7 +153,8 @@ private:
 	Controller *controller;
 	QStringList users;
 	bool loadingFlag = true;
-	int colorIndex;
+    bool offlineTextEnabled = false;
+    int colorIndex;
 
 public: //TODO : just to try
 	QHash<QString, OtherCursor *> otherCursors;
@@ -192,7 +195,13 @@ private:
 
 	void hideUserText(QString &user);
 
-	// actions
+    void showOfflineUserText();
+
+    void hideOfflineUserText();
+
+
+
+    // actions
 	QAction *actionTextBold;
 	QAction *actionTextUnderline;
 	QAction *actionTextItalic;
