@@ -1010,6 +1010,8 @@ void Editor::resizeEvent(QResizeEvent *event) {
 
 	ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 - 61, ui->userWidget->width(),
 								ui->userWidget->height());
+	ui->offlineTextButton->setGeometry(0, textEdit->geometry().height() - 18 - 61 - 32, ui->offlineTextButton->width(),
+                                       ui->offlineTextButton->height());
 	this->updateOtherCursorPosition();
 }
 
@@ -1414,7 +1416,10 @@ void Editor::handleOfflineText() {
     offlineTextEnabled = !offlineTextEnabled;
     if (offlineTextEnabled) {
         showOfflineUserText();
+        ui->offlineTextButton->setStyleSheet(QString("QPushButton{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
     }else{
         hideOfflineUserText();
+        ui->offlineTextButton->setStyleSheet(QString("QPushButton{  \nbackground-color: gray;  \nborder: none;\ncolor: white;\ntext-align: center;\nmargin: 4px 2px;\nopacity: 0.6;\ntext-decoration: none;\n}\nQPushButton:hover{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
+
     }
 }
