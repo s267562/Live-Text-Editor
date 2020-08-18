@@ -1153,9 +1153,9 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 			connect(doc, &QTextDocument::contentsChange,
 					this, &Editor::onTextChanged);
 
-			if (otherCursors.contains(character.getSiteId()) &&
+			if ((otherCursors.contains(character.getSiteId()) &&
 				character.getSiteId() != controller->getCrdt()->getSiteId() &&
-				otherCursors[character.getSiteId()]->isSelected1()) {
+				otherCursors[character.getSiteId()]->isSelected1()) || (offlineTextEnabled && character.getSiteId() != controller->getCrdt()->getSiteId())) {
 				this->setCharacterColorLocally(pos, character.getSiteId());
 
 			} else {
