@@ -339,6 +339,7 @@ void Editor::textAlign(QAction *a) {
 
 	this->textCursor.setPosition(end);
 	int endBlock = this->textCursor.blockNumber();
+
 	for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
 		controller->getCrdt()->alignChange(alCode, blockNum);
 		qDebug() << alCode << blockNum;
@@ -1065,6 +1066,7 @@ void Editor::setUsers(QStringList users) {
 								new OtherCursor(this->controller->getUser()->getUsername(), this->textDocument, color,
 												true,
 												this->textEdit->viewport()));
+			controller->getCrdt()->setNumJobs(0);
 		}
 
 		bool isInsert = false;
