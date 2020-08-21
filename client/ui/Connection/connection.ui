@@ -62,7 +62,7 @@
        <rect>
         <x>10</x>
         <y>70</y>
-        <width>101</width>
+        <width>161</width>
         <height>31</height>
        </rect>
       </property>
@@ -75,7 +75,7 @@
        <rect>
         <x>10</x>
         <y>120</y>
-        <width>101</width>
+        <width>161</width>
         <height>31</height>
        </rect>
       </property>
@@ -102,9 +102,9 @@
      <widget class="QLineEdit" name="serverIP">
       <property name="geometry">
        <rect>
-        <x>120</x>
+        <x>180</x>
         <y>70</y>
-        <width>311</width>
+        <width>251</width>
         <height>31</height>
        </rect>
       </property>
@@ -112,9 +112,9 @@
      <widget class="QLineEdit" name="serverPort">
       <property name="geometry">
        <rect>
-        <x>120</x>
+        <x>180</x>
         <y>120</y>
-        <width>311</width>
+        <width>251</width>
         <height>31</height>
        </rect>
       </property>
