@@ -43,7 +43,10 @@ ShowFiles::~ShowFiles() {
 
 void ShowFiles::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
 	QString filename = item->text();
-	emit newFile(filename);
+	controller->startLoadingPopup(true);
+//	emit newFile(filename);
+	QMetaObject::invokeMethod(controller, "requestForFile", Qt::QueuedConnection, Q_ARG(QString,filename));
+
 }
 
 void ShowFiles::addFiles(QMap<QString, bool> l) {
