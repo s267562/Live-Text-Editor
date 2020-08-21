@@ -1104,7 +1104,7 @@ void Editor::setUsers(QStringList users) {
 		} else {
 			ui->userListWidget->clear();
 		}
-		controller->stopLoadingPopup();
+		controller->stopLoadingPopup(true);
 		QString onlineUsers = "Online users: " + QString::number(users.size());
 		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
 

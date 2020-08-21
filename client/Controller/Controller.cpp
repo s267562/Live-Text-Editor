@@ -331,7 +331,7 @@ void Controller::requestForFile(const QString &filename) {
 		disconnect(this, SIGNAL(userRecived()), this->showFiles, SLOT(changeImage()));
 		now = editor;
 		handleGUI(editor);
-		startLoadingPopup();
+		startLoadingPopup(true);
 	}
 }
 
@@ -348,6 +348,10 @@ void Controller::showEditor() {
  */
 void Controller::openFile(const std::vector<std::vector<Character>> &initialStructure,
 						  std::vector<std::pair<Character, int>> styleBlocks, QString filename) {
+    if (pd != nullptr) {
+        pd->setValue(50);
+    }
+
 	requestFFile = false;
 	crdt->setStructure(initialStructure);           // fare un segnale
 	crdt->setStyle(styleBlocks);                    // fare un segnale
@@ -373,6 +377,9 @@ void Controller::openFile(const std::vector<std::vector<Character>> &initialStru
 	}
 
 	showFiles->closeCreateFile();
+	if (pd != nullptr) {
+	    pd->setValue(75);
+	}
 }
 
 /**
@@ -405,17 +412,26 @@ void Controller::okEditAccount() {
 /**
  * This mathod starts the loading pop up
  */
-void Controller::startLoadingPopup() {
-	loading = new Loading(GUI);
-	loadingPoPupIsenabled = true;
-	loading->show();
+void Controller::startLoadingPopup(bool loadingFile) {
+    if (loadingFile) {
+        pd = new QProgressDialog("Operation in progress.", "", 0, 100);
+        pd->setCancelButton(nullptr);
+        pd->show();
+    }else{
+        loading = new Loading(GUI);
+        loadingPoPupIsenabled = true;
+        loading->show();
+    }
 }
 
 /**
  * This method stops the loading pop up
  */
-void Controller::stopLoadingPopup() {
-	if (loadingPoPupIsenabled && loading != nullptr) {
+void Controller::stopLoadingPopup(bool loadingFile) {
+    if (loadingFile) {
+        pd->setParent(GUI);
+        pd->close();
+    }else if (loadingPoPupIsenabled && loading != nullptr) {
 		loadingPoPupIsenabled = false;
 		loading->setParent(GUI);
 		loading->close();

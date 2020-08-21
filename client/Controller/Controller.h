@@ -14,6 +14,7 @@
 #include "../Networking/Messanger.h"
 #include "Loading/loading.h"
 #include <iostream>
+#include <QProgressDialog>
 #include "CustomWidget/customwidget.h"
 #include "../CRDT/CDRTThread.h"
 
@@ -38,6 +39,7 @@ private:
     User *user;
     QString siteId;
     bool requestFFile = false;
+    QProgressDialog *pd = nullptr;
 
 public:
     /* VIEWS */
@@ -74,8 +76,8 @@ public:
     Controller(CRDT *crdt, Editor *editor, Messanger *messanger);
     Controller();
     User* getUser();
-    void startLoadingPopup();
-    void stopLoadingPopup();
+    void startLoadingPopup(bool loadingFile = false);
+    void stopLoadingPopup(bool loadingFile = false);
     void sendFileInformationChanges(QString oldFileaname, QString newFileaname, const QStringList& usernames);
     void sendDeleteFile(QString filename);
     CRDT *getCrdt() const;
