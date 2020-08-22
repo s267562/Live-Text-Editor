@@ -16,9 +16,14 @@
 
 #ifndef TEXTEDITOR_TOGGLESWITCH_H
 #define TEXTEDITOR_TOGGLESWITCH_H
-#include <QtWidgets>
 
-#include <QtWidgets>
+//#include <QtWidgets>
+#include <QtCore/QVariantAnimation>
+#include <QtWidgets/QAbstractButton>
+#include <QPointer>
+#include <QObject>
+#include <QEvent>
+#include <QCoreApplication>
 #include "style.h"
 
 class Animator : public QVariantAnimation {

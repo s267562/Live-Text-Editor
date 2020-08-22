@@ -77,7 +77,9 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	ui->ToggleSwitchOffline->setWindowFlags(Qt::FramelessWindowHint);
     QHBoxLayout layout;
     ui->ToggleSwitchOffline->setLayout(&layout);
-    ToggleSwitch *_switch = new ToggleSwitch("Other users",this);
+    ToggleSwitch *_switch = new ToggleSwitch(this);
+    _switch->setToolTip("Toggle offline users text");
+//    _switch->setToolTipDuration(100);
     layout.addWidget(_switch);
     ui->ToggleSwitchOffline->show();
     connect(_switch, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
