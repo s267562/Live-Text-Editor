@@ -323,13 +323,14 @@ void Controller::requestForFile(const QString &filename) {
 	bool result = this->messanger->requestForFile(filename);
 
 	if (result) {
-		now = editor;
 		siteId = user->getUsername();
 		editor = new Editor(siteId, this, this);
 		editor->setFilename(filename);
-		editorConnection();
+        editorConnection();
+        now = editor;
 
-		disconnect(this, SIGNAL(userRecived()), this->showFiles, SLOT(changeImage()));
+
+        disconnect(this, SIGNAL(userRecived()), this->showFiles, SLOT(changeImage()));
 		handleGUI(editor);
 	} else {
 		stopLoadingPopup(true);
@@ -415,7 +416,7 @@ void Controller::okEditAccount() {
  */
 void Controller::startLoadingPopup(bool loadingFile) {
 	if (loadingFile) {
-		pd = new QProgressDialog("Operation in progress.", "", 0, 100);
+		pd = new QProgressDialog("File download in process...", "", 0, 100);
 		pd->setCancelButton(nullptr);
 		pd->show();
 	} else {
@@ -430,8 +431,11 @@ void Controller::startLoadingPopup(bool loadingFile) {
  */
 void Controller::stopLoadingPopup(bool loadingFile) {
 	if (loadingFile) {
-		pd->setParent(GUI);
-		pd->close();
+        if (pd != nullptr) {
+            pd->setValue(100);
+            pd->setParent(GUI);
+            pd->close();
+        }
 	} else if (loadingPoPupIsenabled && loading != nullptr) {
 		loadingPoPupIsenabled = false;
 		loading->setParent(GUI);
