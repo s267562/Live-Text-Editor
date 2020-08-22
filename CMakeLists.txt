@@ -63,7 +63,7 @@ add_executable(client
         client/ui/AddFile/addfile.ui client/ui/AddFile/addfile.cpp
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
         client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h
-        client/utils/OtherCursor.h client/utils/OtherCursor.cpp client/Editor/TextEdit.cpp client/Editor/TextEdit.h)
+        client/utils/OtherCursor.h client/utils/OtherCursor.cpp client/Editor/TextEdit.cpp client/Editor/TextEdit.h client/Editor/toggle_switch/ToggleSwitch.cpp client/Editor/toggle_switch/ToggleSwitch.h client/Editor/toggle_switch/style.h)
 
 add_executable(client2
         client/textEditor.qrc
@@ -98,7 +98,7 @@ add_executable(client2
         client/ui/FileInformation/fileinformation.ui client/ui/FileInformation/fileinformation.cpp
         client/ui/CustomWidgetUsername/customwidgetusername.ui client/ui/CustomWidgetUsername/customwidgetusername.cpp
         client/CRDT/CDRTThread.cpp client/CRDT/CDRTThread.h
-        client/utils/OtherCursor.h client/utils/OtherCursor.cpp client/Editor/TextEdit.cpp client/Editor/TextEdit.h)
+        client/utils/OtherCursor.h client/utils/OtherCursor.cpp client/Editor/TextEdit.cpp client/Editor/TextEdit.h client/Editor/toggle_switch/ToggleSwitch.cpp client/Editor/toggle_switch/ToggleSwitch.h client/Editor/toggle_switch/style.h)
 
 add_executable(server
         server/main.cpp

@@ -5,6 +5,7 @@
 #include "editor.h"
 #include "ui_editor.h"
 #include "../../server/SimpleCrypt/SimpleCrypt.h"
+#include "toggle_switch/ToggleSwitch.h"
 #include <QMenu>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -73,9 +74,13 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem * )),
 			this, SLOT(onListUsersItemClicked(QListWidgetItem * )));
 
-	connect(ui->offlineTextButton, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
-
-
+	ui->ToggleSwitchOffline->setWindowFlags(Qt::FramelessWindowHint);
+    QHBoxLayout layout;
+    ui->ToggleSwitchOffline->setLayout(&layout);
+    ToggleSwitch *_switch = new ToggleSwitch("Other users",this);
+    layout.addWidget(_switch);
+    ui->ToggleSwitchOffline->show();
+    connect(_switch, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
 }
 
 void Editor::setupTextActions() {
@@ -1012,8 +1017,8 @@ void Editor::resizeEvent(QResizeEvent *event) {
 
 	ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 - 61, ui->userWidget->width(),
 								ui->userWidget->height());
-	ui->offlineTextButton->setGeometry(0, textEdit->geometry().height() - 18 - 61 - 32, ui->offlineTextButton->width(),
-									   ui->offlineTextButton->height());
+	ui->ToggleSwitchOffline->setGeometry(0, textEdit->geometry().height() - 18 - 61 - 61, ui->ToggleSwitchOffline->width(),
+									   ui->ToggleSwitchOffline->height());
 	this->updateOtherCursorPosition();
 }
 
@@ -1420,10 +1425,8 @@ void Editor::hideAllUserText() {
 	for (auto &row : structure) {
 		int c = 0;
 		for (auto &ch : row) {
-//			if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
 			Pos pos(c, r);
 			this->unsetCharacterColorLocally(pos, ch.getSiteId());
-//			}
 			c++;
 		}
 		r++;
@@ -1436,12 +1439,7 @@ void Editor::handleOfflineText() {
 	offlineTextEnabled = !offlineTextEnabled;
 	if (offlineTextEnabled) {
 		showOfflineUserText();
-		ui->offlineTextButton->setStyleSheet(
-				QString("QPushButton{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
 	} else {
 		hideOfflineUserText();
-		ui->offlineTextButton->setStyleSheet(
-				QString("QPushButton{  \nbackground-color: gray;  \nborder: none;\ncolor: white;\ntext-align: center;\nmargin: 4px 2px;\nopacity: 0.6;\ntext-decoration: none;\n}\nQPushButton:hover{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
-
 	}
 }

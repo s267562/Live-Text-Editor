@@ -147,7 +147,7 @@ background: rgb(255, 255, 255);
        <x>0</x>
        <y>0</y>
        <width>150</width>
-       <height>411</height>
+       <height>381</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -223,32 +223,17 @@ border-radius: 10px;
       </property>
      </widget>
     </widget>
-    <widget class="QPushButton" name="offlineTextButton">
+    <widget class="QWidget" name="ToggleSwitchOffline" native="true">
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>410</y>
-       <width>151</width>
-       <height>32</height>
+       <y>380</y>
+       <width>161</width>
+       <height>61</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton{  
-background-color: gray;  
-border: none;
-color: white;
-text-align: center;
-margin: 4px 2px;
-opacity: 0.6;
-text-decoration: none;
-}
-QPushButton:hover{
-background-color: white;
-border: 1px solid gray;
-color : gray;}</string>
-     </property>
-     <property name="text">
-      <string>Offline</string>
+      <string notr="true"/>
      </property>
     </widget>
    </widget>
