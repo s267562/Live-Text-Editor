@@ -5,58 +5,97 @@
 #include <QTcpSocket>
 #include <queue>
 #include <QtCore/QTimer>
-#include "../Utils/Constants.h"
+#include "../../common/Constants.h"
 #include "../../client/utils/Identifier.h"
 #include "../../client/utils/Character.h"
-#include "common/commonFunctions.h"
-#include "message/Message.h"
+#include "../../common/commonFunctions.h"
+#include "../../common/Message.h"
 #include "../../client/utils/Pos.h"
-#include "../CRDT.h"
+#include "../CRDT/CRDT.h"
 #include "Server.h"
+#include <shared_mutex>
 
 class Identifier;
+
 class Character;
+
 class Server;
 
 class Thread : public QThread {
 Q_OBJECT
 private:
-    std::map<qintptr, QTcpSocket*> sockets;  /* TO-DO: sincronizzazione con il thread principale */
-    std::map<qintptr, QString> usernames;
-    std::mutex mutexSockets;
-    std::queue<Message> messagesQueue;
-    CRDT *crdt;
-    QString filename;
-    QTimer *saveTimer;
-    Server *server;
-    int saveInterval = 2 * 60 * 1000; // 2 min (in ms) // TODO decidere intervallo
-    bool needToSaveFile = false;
-    bool timerStarted = true;  // TODO SETTARE A FALSE!!!! MESSO TRUE SOLO PER DEBUG PER NON FARE MAI PARTIRE IL TIMER
+    /* ATTRIBUTES */
+    std::map<qintptr, QTcpSocket *> sockets;                        // sync
+	std::map<qintptr, QString> usernames;                           // sync
+	std::map<qintptr, QTcpSocket *> pendingSocket;                  // sync
+	CRDT *crdt;
+	QString filename;                                               // sync
+	QString usernameOwner;
+	QTimer *saveTimer;
+	Server *server;
+	int saveInterval = 2 * /*60 **/ 1000; // 2 min (in ms) // TODO decidere intervallo
+	int counterBackupSave = 0;
+	bool needToSaveFile = false;
+	bool timerStarted = false;
+	bool fileDeleted = false;
+
+    /* METHODS */
+    bool readInsert(QTcpSocket *soc);
+    bool readStyleChanged(QTcpSocket *soc);
+    bool readDelete(QTcpSocket *soc);
+    bool readAlignmentChanged(QTcpSocket *soc);
+    bool writeInsert(QTcpSocket *soc, Character& character);
+    bool writeStyleChanged(QTcpSocket *soc, Character& character);
+    bool writeDelete(QTcpSocket *soc, Character& character);
+    bool writeAlignmentChanged(QTcpSocket *soc, int alignment, Character& blockId);
+    bool sendNewUser(QTcpSocket *soc);                                              // sync ok
+    bool sendFile(QTcpSocket *soc);
+    bool readShareCode(QTcpSocket *soc);                                            // sync ok
+    static bool sendAddFile(QTcpSocket *soc, const QString& filename);
+    bool readEditAccount(QTcpSocket *soc);                                          // sync ok
+    bool sendUser(QTcpSocket *soc);                                                 // sync ok
+    static bool readRequestUsernameList(QTcpSocket *soc);
+    bool readFileInformationChanges(QTcpSocket *soc);                               // sync ok
+    bool readDeleteFile(QTcpSocket *soc);                                           // sync ok
+    bool readFileName(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
+
+    void connectSlot(QTcpSocket *soc, QMetaObject::Connection *connectReadyRead, QMetaObject::Connection *connectDisconnected);
 
 public:
-    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", Server *server = nullptr);
-    void run();
-    void addSocket(QTcpSocket *soc, QString username);
-    void sendListOfUsers(QTcpSocket *soc);
-private:
-    bool readInsert(QTcpSocket *soc);
-    bool readDelete(QTcpSocket *soc);
-    void insert(QString str, QString siteId, std::vector<Identifier> pos);
-    void insert(Character character);
-    void deleteChar(QString str, QString siteId, std::vector<Identifier> pos);
-    void deleteChar(QTcpSocket *soc, Character character);
-    void sendNewUser(QTcpSocket *soc);
-    void sendRemoveUser(qintptr socketDescriptor, QString username);
-    void sendFile(QTcpSocket *soc);
+    /* ATTRIBUTES */
+    std::shared_mutex mutexSockets;
+    std::shared_mutex mutexUsernames;
+    std::shared_mutex mutexPendingSockets;
+    std::shared_mutex mutexFilename;
+    std::shared_mutex mutexNeedToSave;
+    std::shared_mutex mutexFileDeleted;
+
+    /* METHODS */
+    explicit Thread(QObject *parent = nullptr, CRDT *crdt = nullptr, QString filename = "", QString usernameOwner = "",
+					Server *server = nullptr);
+	void run();
+	bool addSocket(QTcpSocket *soc, QString username);                              // sync ok
+	bool sendListOfUsers(QTcpSocket *soc);                                          // sync ok
+    std::map<qintptr, QTcpSocket *> getSockets();                                   // sync
+    void changeFileName(QString filename);                                          // sync ok
+    bool sendRemoveUser(qintptr socketDescriptor, const QString& username);               // sync ok
+    bool sendRemoveUser(const QString& username);
+    void addPendingSocket(qintptr socketDescriptor);                                // sync ok
+    const std::map<qintptr, QString> &getUsernames() const;                         // sync ok
+    void deleteFile();                                                              // sync ok
+    ~Thread();
 
 signals:
     void error(QTcpSocket::SocketError socketerror);
-    void newMessage();
+	void newMessage();
+	void removeThread(QString filename);
 
 public slots:
-    void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);
-    void disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);
-    void saveCRDTToFile();
+	void readyRead(QTcpSocket *soc, QMetaObject::Connection *c, QMetaObject::Connection *d);                                            // sync
+	void
+	disconnected(QTcpSocket *socket, qintptr socketDescriptor, QMetaObject::Connection *c, QMetaObject::Connection *d);                 // sync
+	void saveCRDTToFile();                                                                                                              // sync ok
+    void deleteThisThread();
 };
 
 #endif // THREAD_H

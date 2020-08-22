@@ -8,15 +8,20 @@
 #include <QtGlobal>
 #include "../../../client/utils/Character.h"
 
-enum TypeMessage {INSERT,DELETE};
+enum TypeMessage {INSERT,DELETE,STYLE_CHANGED,ALIGNMENT_CHANGED};
 
 class Message {
     Character character;
     qintptr socketID;
     TypeMessage type;
+
+    int alignment;
+    QString sender;
     /* adding timestamp? */
 public:
-    Message(Character character, qintptr socketID, TypeMessage type): character(character), socketID(socketID), type(type){}
+    Message(){}
+    Message(Character character, qintptr socketID, TypeMessage type, QString sender, int alignment=0x1):
+    character(character), socketID(socketID), type(type), alignment(alignment), sender(sender) {}
 
 
     const Character &getCharacter() const {
@@ -29,6 +34,14 @@ public:
 
     TypeMessage getType() const {
         return type;
+    }
+
+    int getAlignmentType()const {
+        return alignment;
+    }
+
+    const QString &getSender() const {
+        return sender;
     }
 
 };

@@ -20,6 +20,10 @@ public:
 	void write( QJsonObject &json) const;
     int compareTo(Identifier otherIdentifier);
 
+    friend bool operator==(const Identifier &lhs, const Identifier &rhs);
+
+    friend bool operator!=(const Identifier &lhs, const Identifier &rhs);
+
 private:
     int digit;
     QString siteId;

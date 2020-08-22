@@ -1,10 +1,31 @@
 <RCC>
-    <qresource prefix="/rec">
-        <file>img/share.png</file>
-        <file>img/logout.png</file>
-        <file>img/new-file.png</file>
-        <file>img/open-archive.png</file>
-        <file>img/pdf.png</file>
-        <file>img/avatar.png</file>
-    </qresource>
+<qresource prefix="/rec">
+    <file>img/share.png</file>
+    <file>img/logout.png</file>
+    <file>img/new-file.png</file>
+    <file>img/addfile.png</file>
+    <file>img/folder.png</file>
+    <file>img/pdf.png</file>
+    <file>img/avatar.png</file>
+    <file>img/loading.gif</file>
+    <file>img/user.png</file>
+    <file>img/network.png</file>
+    <file>img/copy.png</file>
+    <file>img/bold.png</file>
+    <file>img/italic.png</file>
+    <file>img/underline.png</file>
+    <file>img/bold.png</file>
+    <file>img/align.png</file>
+    <file>img/align-right.png</file>
+    <file>img/align-left.png</file>
+    <file>img/align-center.png</file>
+    <file>img/document_2.png</file>
+    <file>img/user singolo.png</file>
+    <file>img/menu_2.png</file>
+    <file>img/substract.png</file>
+    <file>img/add.png</file>
+    <file>img/copy2.png</file>
+    <file>img/cut.png</file>
+    <file>img/paste.png</file>
+</qresource>
 </RCC>

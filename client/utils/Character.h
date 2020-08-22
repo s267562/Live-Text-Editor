@@ -11,31 +11,38 @@
 #include "Identifier.h"
 #include "CharFormat.h"
 #include <QJsonDocument>
+#include <QtGui/QTextCharFormat>
+#include <QLabel>
 
 class Character {
 public:
-    Character(char value, CharFormat charFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
+    Character(char value, QTextCharFormat textCharFormat, int counter, const QString &siteId, const std::vector<Identifier> &position);
 	Character();
     char getValue() const;
-    const CharFormat &getCharFormat() const;
-    void setCharFormat(const CharFormat &charFormat);
+    const QTextCharFormat &getTextCharFormat() const;
+    void setTextCharFormat(const QTextCharFormat &textCharFormat);
     int getCounter() const;
     const QString &getSiteId() const;
     const std::vector<Identifier> &getPosition() const;
+    int compareTo(Character otherCharacter);
+
 	void read(const QJsonObject &json);
 	void write( QJsonObject &json) const;
-    int compareTo(Character otherCharacter);
-    QByteArray toQByteArrayInsertVersion();
-    static Character toCharacterInsertVersion(QJsonDocument jsonDocument);
-	QByteArray toQByteArrayDeleteVersion();
-	static Character toCharacterDeleteVersion(QJsonDocument jsonDocument);
+	QByteArray toQByteArray();
+	static Character toCharacter(QJsonDocument jsonDocument);
+	static CharFormat generateCharFormat(QTextCharFormat textCharFormat);
+
+    friend bool operator==(const Character &lhs, const Character &rhs);
+
+    friend bool operator!=(const Character &lhs, const Character &rhs);
 
 private:
     char value;
-    CharFormat charFormat;
+    QTextCharFormat textCharFormat;
     int counter;
     QString siteId;
     std::vector<Identifier> position;
+    QTextBlockFormat textBlockFormat;
 };
 
 

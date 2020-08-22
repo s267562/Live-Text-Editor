@@ -17,3 +17,5 @@ cmake-build-debug/textEditor\.cbp
 cmake-build-debug/
 
 \.idea/
+
+.DS_Store
