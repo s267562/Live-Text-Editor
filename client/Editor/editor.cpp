@@ -73,7 +73,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	connect(ui->userListWidget, SIGNAL(itemClicked(QListWidgetItem * )),
 			this, SLOT(onListUsersItemClicked(QListWidgetItem * )));
 
-    connect(ui->offlineTextButton, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
+	connect(ui->offlineTextButton, SIGNAL(clicked()), this, SLOT(handleOfflineText()));
 
 
 }
@@ -446,9 +446,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
 
 				if (cursorPos != startSelection) { // Selection forward
-                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
-                        charsAdded++;
-                    }
+					if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
+						charsAdded++;
+					}
 					for (int i = 0; i < charsAdded; i++) {
 						// for each char added
 						cursor.setPosition(position + i);
@@ -463,9 +463,9 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						controller->getCrdt()->localStyleChange(textCharFormat, pos);
 					}
 				} else { // Selection backward
-                    if(position == 0 && textDocument->characterCount() - 1 != charsAdded){
-                        charsAdded++;
-                    }
+					if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
+						charsAdded++;
+					}
 
 					for (int i = charsAdded - 1; i >= 0; i--) {
 						// for each char added
@@ -896,6 +896,7 @@ void Editor::on_actionOpen_triggered() {
 void Editor::on_actionSave_as_PDF_triggered() {
 	if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() &&
 		controller->getCrdt()->getNumJobs() == 0) {
+		hideAllUserText();
 		QFileDialog fileDialog(this, tr("Export PDF"));
 		fileDialog.setAcceptMode(QFileDialog::AcceptSave);
 		fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
@@ -907,7 +908,7 @@ void Editor::on_actionSave_as_PDF_triggered() {
 		printer.setOutputFormat(QPrinter::PdfFormat);
 		printer.setOutputFileName(fileName);
 		textEdit->document()->print(&printer);
-
+		controller->inviledateTextEditor();
 		QMessageBox::information(controller->GUI, "PDF", "File Esportato");
 	} else
 		QMessageBox::information(controller->GUI, "Wait!", "The program is finishing processing the data!");
@@ -1012,7 +1013,7 @@ void Editor::resizeEvent(QResizeEvent *event) {
 	ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 - 61, ui->userWidget->width(),
 								ui->userWidget->height());
 	ui->offlineTextButton->setGeometry(0, textEdit->geometry().height() - 18 - 61 - 32, ui->offlineTextButton->width(),
-                                       ui->offlineTextButton->height());
+									   ui->offlineTextButton->height());
 	this->updateOtherCursorPosition();
 }
 
@@ -1042,9 +1043,9 @@ void Editor::removeUser(QString user) {
 		this->otherCursors.remove(user);
 		QString onlineUsers = "Online users: " + QString::number(users.size());
 		ui->dockWidget->setTitleBarWidget(new QLabel(onlineUsers));
-        if (offlineTextEnabled) {
-            showOfflineUserText();
-        }
+		if (offlineTextEnabled) {
+			showOfflineUserText();
+		}
 	} catch (...) {
 		controller->reciveExternalErrorOrException();
 	}
@@ -1095,9 +1096,9 @@ void Editor::setUsers(QStringList users) {
 						colorIndex = 0;
 					}
 
-                    if (offlineTextEnabled) {
-                        hideUserText(user);
-                    }
+					if (offlineTextEnabled) {
+						hideUserText(user);
+					}
 
 				});
 			}
@@ -1154,8 +1155,9 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 					this, &Editor::onTextChanged);
 
 			if ((otherCursors.contains(character.getSiteId()) &&
-				character.getSiteId() != controller->getCrdt()->getSiteId() &&
-				otherCursors[character.getSiteId()]->isSelected1()) || (offlineTextEnabled && character.getSiteId() != controller->getCrdt()->getSiteId())) {
+				 character.getSiteId() != controller->getCrdt()->getSiteId() &&
+				 otherCursors[character.getSiteId()]->isSelected1()) ||
+				(offlineTextEnabled && character.getSiteId() != controller->getCrdt()->getSiteId())) {
 				this->setCharacterColorLocally(pos, character.getSiteId());
 
 			} else {
@@ -1283,8 +1285,8 @@ void Editor::setCharacterColorLocally(Pos pos, QString user) {
 
 	if (this->otherCursors.contains(user)) {
 		color = this->otherCursors[user]->getColor();
-	}else {
-	    color = Qt::gray;
+	} else {
+		color = Qt::gray;
 	}
 
 	textCharFormat.setBackground(color);
@@ -1327,7 +1329,7 @@ void Editor::unsetCharacterColorLocally(Pos pos, QString user) {
 		color=this->otherCursors[user]->getColor();
 	}
 */
-	textCharFormat.setBackground(Qt::white);
+	textCharFormat.setBackground(Qt::transparent);
 
 	textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
 	textCursor.mergeCharFormat(textCharFormat);
@@ -1379,49 +1381,67 @@ void Editor::hideUserText(QString &user) {
 }
 
 void Editor::showOfflineUserText() {
-    auto structure = this->controller->getCrdt()->getStructure();
+	auto structure = this->controller->getCrdt()->getStructure();
 
-    int r = 0;
-    for (auto &row : structure) {
-        int c = 0;
-        for (auto &ch : row) {
-            if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
-                Pos pos(c, r);
-                this->setCharacterColorLocally(pos, ch.getSiteId());
-            }
-            c++;
-        }
-        r++;
-    }
+	int r = 0;
+	for (auto &row : structure) {
+		int c = 0;
+		for (auto &ch : row) {
+			if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
+				Pos pos(c, r);
+				this->setCharacterColorLocally(pos, ch.getSiteId());
+			}
+			c++;
+		}
+		r++;
+	}
 }
 
 void Editor::hideOfflineUserText() {
-    auto structure = this->controller->getCrdt()->getStructure();
+	auto structure = this->controller->getCrdt()->getStructure();
 
-    int r = 0;
-    for (auto &row : structure) {
-        int c = 0;
-        for (auto &ch : row) {
-            if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
-                Pos pos(c, r);
-                this->unsetCharacterColorLocally(pos, ch.getSiteId());
-            }
-            c++;
-        }
-        r++;
-    }
+	int r = 0;
+	for (auto &row : structure) {
+		int c = 0;
+		for (auto &ch : row) {
+			if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
+				Pos pos(c, r);
+				this->unsetCharacterColorLocally(pos, ch.getSiteId());
+			}
+			c++;
+		}
+		r++;
+	}
+}
+
+void Editor::hideAllUserText() {
+	auto structure = this->controller->getCrdt()->getStructure();
+	int r = 0;
+	for (auto &row : structure) {
+		int c = 0;
+		for (auto &ch : row) {
+//			if (ch.getSiteId() != controller->getCrdt()->getSiteId() && !otherCursors.contains(ch.getSiteId())) {
+			Pos pos(c, r);
+			this->unsetCharacterColorLocally(pos, ch.getSiteId());
+//			}
+			c++;
+		}
+		r++;
+	}
 }
 
 
 void Editor::handleOfflineText() {
-    qDebug() << "handleOfflineText";
-    offlineTextEnabled = !offlineTextEnabled;
-    if (offlineTextEnabled) {
-        showOfflineUserText();
-        ui->offlineTextButton->setStyleSheet(QString("QPushButton{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
-    }else{
-        hideOfflineUserText();
-        ui->offlineTextButton->setStyleSheet(QString("QPushButton{  \nbackground-color: gray;  \nborder: none;\ncolor: white;\ntext-align: center;\nmargin: 4px 2px;\nopacity: 0.6;\ntext-decoration: none;\n}\nQPushButton:hover{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
+	qDebug() << "handleOfflineText";
+	offlineTextEnabled = !offlineTextEnabled;
+	if (offlineTextEnabled) {
+		showOfflineUserText();
+		ui->offlineTextButton->setStyleSheet(
+				QString("QPushButton{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
+	} else {
+		hideOfflineUserText();
+		ui->offlineTextButton->setStyleSheet(
+				QString("QPushButton{  \nbackground-color: gray;  \nborder: none;\ncolor: white;\ntext-align: center;\nmargin: 4px 2px;\nopacity: 0.6;\ntext-decoration: none;\n}\nQPushButton:hover{\nbackground-color: white;\nborder: 1px solid gray;\ncolor : gray;}"));
 
-    }
+	}
 }

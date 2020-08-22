@@ -171,7 +171,7 @@ width: 40px;
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -180,13 +180,7 @@ width: 40px;
     </property>
     <addaction name="actionNew_File"/>
    </widget>
-   <widget class="QMenu" name="menuAccount">
-    <property name="title">
-     <string>Account</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuAccount"/>
   </widget>
   <action name="actionNew_File">
    <property name="checkable">

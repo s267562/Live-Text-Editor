@@ -199,6 +199,8 @@ private:
 
     void hideOfflineUserText();
 
+    void hideAllUserText();
+
 
 
     // actions
