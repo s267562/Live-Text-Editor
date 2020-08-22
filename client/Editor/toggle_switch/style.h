@@ -45,7 +45,7 @@ namespace Style {
     struct Switch {
         Switch() :
                 height{ 36 },
-                font{ QFont("Roboto medium", 13) },
+                font{ QFont("Roboto medium", 7) },
                 indicatorMargin{ QMargins(8, 8, 8, 8) },
                 thumbOnBrush{ cyan500 },
                 thumbOnOpacity{ 1 },

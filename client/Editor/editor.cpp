@@ -77,7 +77,7 @@ Editor::Editor(QString siteId, QWidget *parent, Controller *controller) : textEd
 	ui->ToggleSwitchOffline->setWindowFlags(Qt::FramelessWindowHint);
     QHBoxLayout layout;
     ui->ToggleSwitchOffline->setLayout(&layout);
-    ToggleSwitch *_switch = new ToggleSwitch(this);
+    ToggleSwitch *_switch = new ToggleSwitch("Other users",this);
     _switch->setToolTip("Toggle offline users text");
 //    _switch->setToolTipDuration(100);
     layout.addWidget(_switch);
@@ -1019,7 +1019,7 @@ void Editor::resizeEvent(QResizeEvent *event) {
 
 	ui->userWidget->setGeometry(0, textEdit->geometry().height() - 18 - 61, ui->userWidget->width(),
 								ui->userWidget->height());
-	ui->ToggleSwitchOffline->setGeometry(0, textEdit->geometry().height() - 18 - 61 - 61, ui->ToggleSwitchOffline->width(),
+	ui->ToggleSwitchOffline->setGeometry(-8, textEdit->geometry().height() - 18 - 61 - 61, ui->ToggleSwitchOffline->width(),
 									   ui->ToggleSwitchOffline->height());
 	this->updateOtherCursorPosition();
 }
