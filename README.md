@@ -66,8 +66,6 @@ The Editor class allows the management of the content inserted within the docume
 
 The networking part is handled by the Messanger class, which uses a socket of the QTcpSocket class.
 
-### Editor
-
 ---
 
 ## CRDT - Conflict-Free Replicated Data Type
@@ -82,7 +80,7 @@ We have designed our CRDT strucure as a two-dimensional array of characters. Wit
 With the two-dimensional array the search operation is O(log L + log C) — L being the number of lines and C being the number of characters in that line. For the insertion and deletion the complexity is O(C), while the worst-case time complexity for the linear arrays is O(N) due to shifting.
 
 ### CRDT implementation
-- **Local Insert:** when inserting a character locally, the only information needed is the character value and the QTextEditor index at which it is inserted. In the *HandleLocalInsert* function a new character object will be created and spliced into the CRDT array. Finally, the new character is returned so it can be sent to the other users. The *generateChar* function determines the globally unique fractional index position of the new character. 
+- **Local Insert:** when inserting a character locally, the only information needed is the character value and the editor index at which it is inserted. In the *HandleLocalInsert* function a new character object will be created and spliced into the CRDT array. Finally, the new character is returned so it can be sent to the other users. The *generateChar* function determines the globally unique fractional index position of the new character. 
 - **Local Delete:** deleting a character from the CRDT is a simple operation because all that is needed is to find the index of the character in the structure.That index is used to splice out the character object from the strcture. Using a two-dimensional structure, in the *handleLocalDelete* function we need to differentiate the single-line deletes to the multiple-line deletes.
-- **Remote Insert:** when a user receives an insert operation from another user, a binary search algorithm, in the *findInsertPosition* function, is used to find where it should be inserted in the structure and in the QTextEditor (the *handleRemoteInsert* function return the computed position). 
+- **Remote Insert:** when a user receives an insert operation from another user, a binary search algorithm, in the *findInsertPosition* function, is used to find where it should be inserted in the structure and in the editor (the *handleRemoteInsert* function return the computed position). 
 - **Remote Delete:** the remote delete messages are managed as the remote insert messages.
