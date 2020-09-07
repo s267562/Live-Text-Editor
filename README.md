@@ -43,8 +43,7 @@ file (0B dimension) while an empty file (from the application point of view) res
 basic structures. In this way we can check the JSON status by watching his size and try to recover one of the previous backups
 in case of corruption.
 
-
-### CRDT
+---
 
 ## Client side
 
@@ -66,3 +65,24 @@ They are managed thanks to the use of the Controller class.
 The Editor class allows the management of the content inserted within the document, by entering the characters within the CRDT structure. Once the characters are processed by the CRDT class, they are sent to the server which will send the inserted characters to the other active users.
 
 The networking part is handled by the Messanger class, which uses a socket of the QTcpSocket class.
+
+### Editor
+
+---
+
+## CRDT - Conflict-Free Replicated Data Type
+CRDT is a strategy for achieving consistent data between replicas of data without any kind of coordination between the replicas. For the Live Text Editor there are two critical requirements:
+* **Globally Unique Characters**  
+With globally unique characters, the delete opeation, received from another user, looks for a globally unique character to delete. The idempotency of delete operations is reached. It is achieved by using the Site ID.
+* **Globally Ordered Characters**  
+Every character inserted in the text editor will be placed in the same position on every user’s copy of the shared document. We have used fractional indices to represent the position of a character in the CRDT structure. With globally ordered characters insertion and deletion operations commute: deleting a particular character has no effect on the insertion of a new character.
+
+### CRDT structure
+We have designed our CRDT strucure as a two-dimensional array of characters. With respect to a linear array structure, our solution is  more efficient for bigger documents. This is primarily due to shifting of the array when splicing characters into and out of a linear array. Moreover, whenever a character is inserted or deleted in the editor, QTextDocument returns a position object that indicates the row and the column on which that change was made.  
+With the two-dimensional array the search operation is O(log L + log C) — L being the number of lines and C being the number of characters in that line. For the insertion and deletion the complexity is O(C), while the worst-case time complexity for the linear arrays is O(N) due to shifting.
+
+### CRDT implementation
+- **Local Insert:** when inserting a character locally, the only information needed is the character value and the QTextEditor index at which it is inserted. In the *HandleLocalInsert* function a new character object will be created and spliced into the CRDT array. Finally, the new character is returned so it can be sent to the other users. The *generateChar* function determines the globally unique fractional index position of the new character. 
+- **Local Delete:** deleting a character from the CRDT is a simple operation because all that is needed is to find the index of the character in the structure.That index is used to splice out the character object from the strcture. Using a two-dimensional structure, in the *handleLocalDelete* function we need to differentiate the single-line deletes to the multiple-line deletes.
+- **Remote Insert:** when a user receives an insert operation from another user, a binary search algorithm, in the *findInsertPosition* function, is used to find where it should be inserted in the structure and in the QTextEditor (the *handleRemoteInsert* function return the computed position). 
+- **Remote Delete:** the remote delete messages are managed as the remote insert messages.
