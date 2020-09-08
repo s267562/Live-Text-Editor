@@ -84,3 +84,29 @@ With the two-dimensional array the search operation is O(log L + log C) — L be
 - **Local Delete:** deleting a character from the CRDT is a simple operation because all that is needed is to find the index of the character in the structure.That index is used to splice out the character object from the strcture. Using a two-dimensional structure, in the *handleLocalDelete* function we need to differentiate the single-line deletes to the multiple-line deletes.
 - **Remote Insert:** when a user receives an insert operation from another user, a binary search algorithm, in the *findInsertPosition* function, is used to find where it should be inserted in the structure and in the editor (the *handleRemoteInsert* function return the computed position). 
 - **Remote Delete:** the remote delete messages are managed as the remote insert messages.
+
+
+### Style
+Differents styles can be applied to the text document. These operations can be divide into two categories: 
+* style operations applied to characters: these are handled as attributes of Character class;
+* style operations applied to lines: these are handled with an additional data structure, called *Style*.
+
+The *style* data structures is an array whose elements take trace of style appied to a certain line. Each element of these vector is made by an unique identifier and the corresponding line style: right alignment, left alignement, etc.
+These data structure is necessary to manage the style consistency (for the lines) among different clients (as for insert and delete case).
+
+As for insert and delete case, these operations are managed locally at two different levels:
+* QTextDocument level: the view of the application (showing the document) is modified immediately by means of UI tools (Bold,Italic,etc);
+* Structure level: the style is saved into the character structure or line structure.
+
+In the end the style change is sent to server.
+
+
+## Cursors
+During the document editing, a client can see other clients operations. Each remote client has an associated **cursor** inside a local client. 
+Whenever a remote operations is applied to the document, these cursors positions are udated.
+Cursors are mangaged by means of the **OtherCursor** class. The latter is made by:
+* a QTextCursor object, that allow the editing operations;
+* a QColor object, that is the color associated (only locally) to remote user
+* two QLabel:
+  * a narrow *rectangle* that emulate a common text editor cursor
+  * a label showing the name of user
