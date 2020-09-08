@@ -6,7 +6,6 @@
 #include <cmath>
 #include "CRDT.h"
 #include "../Networking/Messanger.h"
-#include <qDebug>
 #include <QTextCursor>
 
 Q_DECLARE_METATYPE(Character);

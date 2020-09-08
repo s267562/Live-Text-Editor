@@ -3,7 +3,6 @@
 //
 
 #include "TextEdit.h"
-#include <qDebug>
 
 void TextEdit::insertFromMimeData(const QMimeData * source)
 {

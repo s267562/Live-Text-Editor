@@ -11,7 +11,7 @@
 
 
 #include <QtCore/QFile>
-#include <qDebug>
+#include <qdebug.h>
 #include <QtCore/QDir>
 
 QString directories[] = {"saveData", "backup1", "backup2"};
