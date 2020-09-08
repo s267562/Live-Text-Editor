@@ -715,7 +715,8 @@ int CRDT::getRow(Character blockId) {
 
 
 void CRDT::printStructures() {
-	//return;
+	return;
+	/*
 	QDebug qD(QtDebugMsg);
 	qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
 	if (style.size() == 0)
@@ -759,7 +760,7 @@ void CRDT::printStructures() {
 
 	qD << "\nNumber of rows in STYLE: " << this->style.size() << "\tNumber of rows in STRUCTURE: "
 	   << this->structure.size() << "\n\n"; // newLine
-
+*/
 }
 
 void CRDT::removeStyleLine(int i) {
