@@ -531,12 +531,14 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
 		for (auto c: queueInsertMessage) {
 			pos = handleRemoteInsert(c);
 		}
-		queueInsertMessage.clear();
 		copy = false;
 	}
 	if (ultimo) {
 		waitForInvalidate = true;
-		controller->inviledateTextEditor();
+		if (!queueInsertMessage.empty()) {
+			queueInsertMessage.clear();
+			controller->inviledateTextEditor();
+		}
 	}
 }
 
@@ -547,7 +549,7 @@ void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat
 		messanger->writeInsert(character);
 		isWorking = false;
 		if (numJobs > 0)
-		    numJobs--;
+			numJobs--;
 	} catch (...) {
 		QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
 	}
@@ -563,8 +565,8 @@ void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
 			messanger->writeStyleChanged(character);
 		}
 		isWorking = false;
-        if (numJobs > 0)
-            numJobs--;
+		if (numJobs > 0)
+			numJobs--;
 	} catch (...) {
 		QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
 	}
@@ -578,8 +580,8 @@ void CRDT::localDelete(Pos startPos, Pos endPos) {
 			messanger->writeDelete(c);
 		}
 		isWorking = false;
-        if (numJobs > 0)
-            numJobs--;
+		if (numJobs > 0)
+			numJobs--;
 	} catch (...) {
 		QMetaObject::invokeMethod(parent(), "reciveExternalErrorOrException", Qt::DirectConnection);
 	}

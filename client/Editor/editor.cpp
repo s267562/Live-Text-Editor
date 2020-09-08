@@ -619,7 +619,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 								QTextCharFormat charFormat = cursor.charFormat();
 
 								if (i == charsAdded - 1) {
-									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
+									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, true);
 								} else {
 									controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos, false);
 								}
