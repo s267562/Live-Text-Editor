@@ -9,8 +9,8 @@ void TextEdit::insertFromMimeData(const QMimeData * source)
 {
     if (source->hasText())
     {
-        controller->getCrdt()->copy = true;
-        controller->editor->copyFlag = true;
+        controller->getCrdt()->copy = false;
+        controller->editor->copyFlag = false;
         if (!controller->editor->pendingChar.empty()) {
             controller->editor->count = controller->editor->pendingChar.size();
         }
