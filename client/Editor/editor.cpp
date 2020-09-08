@@ -318,6 +318,7 @@ void Editor::colorChanged(const QColor &c) {
 
 void Editor::textAlign(QAction *a) {
 	int alCode = 0;
+	isAlign = true;
 
 	if (a == actionAlignLeft) {
 		textEdit->setAlignment(
@@ -467,7 +468,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
 						QTextCharFormat textCharFormat = cursor.charFormat();
 
-						controller->getCrdt()->localStyleChange(textCharFormat, pos);
+						if (!isAlign || i == charsAdded - 1)
+						    controller->getCrdt()->localStyleChange(textCharFormat, pos);
 					}
 				} else { // Selection backward
 					if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
@@ -485,7 +487,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 
 						QTextCharFormat textCharFormat = cursor.charFormat();
 
-						controller->getCrdt()->localStyleChange(textCharFormat, pos);
+                        if (!isAlign || i == 0)
+						    controller->getCrdt()->localStyleChange(textCharFormat, pos);
 					}
 				}
 

@@ -155,6 +155,7 @@ private:
 	bool loadingFlag = true;
     bool offlineTextEnabled = false;
     int colorIndex;
+    bool isAlign = false;
 
 public: //TODO : just to try
 	QHash<QString, OtherCursor *> otherCursors;
