@@ -3,7 +3,7 @@
 //
 
 #include "TextEdit.h"
-#include <QDebug>
+#include <qDebug>
 
 void TextEdit::insertFromMimeData(const QMimeData * source)
 {
@@ -15,7 +15,7 @@ void TextEdit::insertFromMimeData(const QMimeData * source)
             controller->editor->count = controller->editor->pendingChar.size();
         }
         position = textCursor().position();
-        qDebug() << "Dati inseriti!" << source->text();
+        //qDebug() << "Dati inseriti!" << source->text();
         textCursor().insertText(source->text());
     }
 }

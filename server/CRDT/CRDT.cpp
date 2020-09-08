@@ -416,7 +416,7 @@ void CRDT::handleAlignmentChanged(int alignment, int blockNumber) {
 
 	Qt::Alignment a(alignment);
 
-	qDebug() << a;
+	//qDebug() << a;
 
 	if (blockNumber < this->style.size()) {
 		this->style[blockNumber].second = alignment;

@@ -6,7 +6,7 @@
 #include <cmath>
 #include "CRDT.h"
 #include "../Networking/Messanger.h"
-#include <QDebug>
+#include <qDebug>
 #include <QTextCursor>
 
 Q_DECLARE_METATYPE(Character);
@@ -247,7 +247,7 @@ int CRDT::generateIdBetween(int min, int max) {
 // common function for model insertion
 void CRDT::insertChar(Character character, Pos pos) {
 
-	qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
+	//qDebug() << "Char: " << character.getValue() << "inserted in pos " << pos.getLine() << pos.getCh();
 
 	if (structure.empty() || pos.getLine() == structure.size()) {
 		structure.emplace_back(std::vector<Character>{}); // pushing a new line.
@@ -256,11 +256,11 @@ void CRDT::insertChar(Character character, Pos pos) {
 
 	// if inserting a newline, split line into two lines.
 	if (character.getValue() == '\n') {
-		qDebug() << "Splitting line into two lines";
+		//qDebug() << "Splitting line into two lines";
 		std::vector<Character> lineAfter(structure[pos.getLine()].begin() + pos.getCh(),
 										 structure[pos.getLine()].end()); // get line after.
 		if (!lineAfter.empty()) {
-			qDebug().noquote() << "There is something after the newLine inserted";
+			//qDebug().noquote() << "There is something after the newLine inserted";
 			structure[pos.getLine()].erase(structure[pos.getLine()].begin() + pos.getCh(),
 										   structure[pos.getLine()].end()); // delete line after.
 			structure.insert(structure.begin() + pos.getLine() + 1, lineAfter);
@@ -270,7 +270,7 @@ void CRDT::insertChar(Character character, Pos pos) {
 							   std::pair<Character, int>(character, alignment));
 
 		} else {
-			qDebug().noquote() << "There is nothing after the char \n inserted";
+			//qDebug().noquote() << "There is nothing after the char \n inserted";
 			auto previousLine = this->style.begin() + pos.getLine();
 			int alignment = previousLine->second; // Get only alignment
 			style.emplace_back(std::pair<Character, int>(character, alignment));
@@ -349,9 +349,9 @@ std::vector<Character> CRDT::deleteMultipleLines(Pos startPos, Pos endPos) {
 std::vector<Character> CRDT::deleteSingleLine(Pos startPos, Pos endPos) {
 	int charNum = endPos.getCh() - startPos.getCh();
 	if (structure[startPos.getLine()].size() < startPos.getCh() + charNum) {
-		qDebug()
-				<< "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
-		qDebug() << ""; // newLine
+		//qDebug()
+//				<< "client/CRDT.cpp - deleteSingleLine()     ATTENZIONE: impossibile cancellare. Char/s non presente/i";
+		//qDebug() << ""; // newLine
 	}
 	if (startPos.getLine() < structure.size()) {
 		std::vector<Character> chars{structure[startPos.getLine()].begin() + startPos.getCh(),
@@ -524,7 +524,7 @@ Pos CRDT::handleRemoteStyleChanged(const Character &character) {
 
 
 void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, bool ultimo) {
-	qDebug() << "CRDT: " << QThread::currentThreadId();
+	//qDebug() << "CRDT: " << QThread::currentThreadId();
 	localInsert(val, textCharFormat, pos);
 
 	if (ultimo && copy && numJobs == 0) {
@@ -554,7 +554,7 @@ void CRDT::localInsert(const QString &val, const QTextCharFormat &textCharFormat
 }
 
 void CRDT::localStyleChange(QTextCharFormat textCharFormat, Pos pos) {
-	qDebug() << "CRDT: " << QThread::currentThreadId();
+	//qDebug() << "CRDT: " << QThread::currentThreadId();
 	try {
 		if (styleChanged(textCharFormat, pos)) {
 			Character character = getCharacter(pos);
@@ -595,7 +595,7 @@ void CRDT::alignChange(int alignment_type, int blockNumber) { // -> da gestire f
 void CRDT::handleAlignmentChanged(int alignment, int blockNumber) {
 	Qt::Alignment a(alignment);
 
-	qDebug() << a;
+	//qDebug() << a;
 
 	if (blockNumber < this->style.size()) {
 		this->style[blockNumber].second = alignment;
@@ -717,7 +717,7 @@ int CRDT::getRow(Character blockId) {
 void CRDT::printStructures() {
 	return;
 	/*
-	QDebug qD(QtDebugMsg);
+	//qDebug qD(QtDebugMsg);
 	qD << "\t\t\t\t\t\t---------- STRUCTURE ----------\n";
 	if (style.size() == 0)
 		return;

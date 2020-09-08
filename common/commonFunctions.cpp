@@ -17,8 +17,8 @@ bool readChunck(QTcpSocket *soc, QByteArray &result, qsizetype size) {
 	while (left != 0) {
 		if (soc->bytesAvailable() == 0) {
 			if (!soc->waitForReadyRead(TIMEOUT)) {
-				qDebug() << "server/Networking/common/commonFunctions.cpp - readChunck()     Timeout! " << soc;
-				qDebug() << ""; // newLine
+				//qDebug() << "server/Networking/common/commonFunctions.cpp - readChunck()     Timeout! " << soc;
+				//qDebug() << ""; // newLine
 				return false;
 			}
 		}
@@ -37,8 +37,8 @@ bool readSpace(QTcpSocket *soc) {
 
 	if (soc->bytesAvailable() == 0) {
 		if (!soc->waitForReadyRead(TIMEOUT)) {
-			qDebug() << "server/Networking/common/commonFunctions.cpp - readSpace()     Timeout! " << soc;
-			qDebug() << ""; // newLine
+			//qDebug() << "server/Networking/common/commonFunctions.cpp - readSpace()     Timeout! " << soc;
+			//qDebug() << ""; // newLine
 			return false;
 		}
 	}
@@ -72,12 +72,12 @@ bool writeOkMessage(QTcpSocket *soc) {
 
 	soc->write(OK_MESSAGE);
 	if (soc->waitForBytesWritten(TIMEOUT)) {
-		qDebug() << "server/Networking/common/commonFunctions.cpp - writeOkMessage()     \"Ok\" scritto";
-		qDebug() << ""; // newLine
+		//qDebug() << "server/Networking/common/commonFunctions.cpp - writeOkMessage()     \"Ok\" scritto";
+		//qDebug() << ""; // newLine
 		return true;
 	} else {
-		qDebug() << "server/Networking/common/commonFunctions.cpp - writeOkMessage()     \"Ok\" non scritto";
-		qDebug() << ""; // newLine
+		//qDebug() << "server/Networking/common/commonFunctions.cpp - writeOkMessage()     \"Ok\" non scritto";
+		//qDebug() << ""; // newLine
 		return false;
 	}
 }
@@ -97,12 +97,12 @@ bool writeErrMessage(QTcpSocket *soc, const QString& type) {
 	soc->write(message);
 	if (soc->waitForBytesWritten(TIMEOUT)) {
 
-		qDebug() << "server/Networking/common/commonFunctions.cpp - writeErrMessage()     \"Err\" scritto";
-		qDebug() << ""; // newLine
+		//qDebug() << "server/Networking/common/commonFunctions.cpp - writeErrMessage()     \"Err\" scritto";
+		//qDebug() << ""; // newLine
 		return true;
 	} else {
-		qDebug() << "server/Networking/common/commonFunctions.cpp - writeErrMessage()     \"Err\" non scritto";
-		qDebug() << ""; // newLine
+		//qDebug() << "server/Networking/common/commonFunctions.cpp - writeErrMessage()     \"Err\" non scritto";
+		//qDebug() << ""; // newLine
 		return false;
 	}
 }

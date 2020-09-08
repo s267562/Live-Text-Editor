@@ -309,10 +309,10 @@ void Controller::showFileFinderOtherView() {
  */
 void Controller::requestForFile(const QString &filename) {
 	requestFFile = true;
-	qDebug() << "requestForFile" << filename;
+	//qDebug() << "requestForFile" << filename;
 //    auto res = this->user->getFileList().find(user->getUsername() + "%_##$$$##_%" + filename);
 	auto res = this->user->getFileList().contains(user->getUsername() + "%_##$$$##_%" + filename);
-	qDebug() << "File list " << this->user->getFileList().keys();
+	//qDebug() << "File list " << this->user->getFileList().keys();
 
 //    if (res != this->user->getFileList().end()){
 	if (res) {
@@ -370,7 +370,7 @@ void Controller::openFile(const std::vector<std::vector<Character>> &initialStru
 	/* aggiunta del file name nella lista presente nell' oggetto user se non è presente */
 	//QMap<QString, bool> mappa{this->user->getFileList()};
 	auto res = this->user->getFileList().contains(filename);
-	qDebug() << "Openfile: " << filename;
+	//qDebug() << "Openfile: " << filename;
 
 //    if (res != this->user->getFileList().end()){
 	if (!res) {

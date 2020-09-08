@@ -11,7 +11,7 @@
 
 
 #include <QtCore/QFile>
-#include <QDebug>
+#include <qDebug>
 #include <QtCore/QDir>
 
 QString directories[] = {"saveData", "backup1", "backup2"};
@@ -29,9 +29,9 @@ bool deleteFileSave(QString filename) {
 		if (savefile.exists()) {
 			if (!savefile.remove()) {
 				result = false;
-				qDebug() << "Error deleting: " << savefile.fileName();
+				//qDebug() << "Error deleting: " << savefile.fileName();
 			} else {
-				qDebug() << "Deleted: " + filename;
+				//qDebug() << "Deleted: " + filename;
 			}
 		}
 	}
@@ -50,9 +50,9 @@ bool renameFileSave(QString oldFilename, QString newFilename) {
 		if (savefile.exists()) {
 			if (!savefile.rename(dir + "/" + newFilename + ".json")) {
 				result = false;
-				qDebug() << "Error renaming: " << savefile.fileName();
+				//qDebug() << "Error renaming: " << savefile.fileName();
 			} else {
-				qDebug() << "Renamed '" + oldFilename + "' into '" + newFilename + "'";
+				//qDebug() << "Renamed '" + oldFilename + "' into '" + newFilename + "'";
 			}
 		}
 	}
@@ -103,8 +103,8 @@ void backupFile(QString filename, bool primary, bool binary) {
 	qDebug() << "File: " + filename + " " + primary;
 	if (backupDir.exists(filename)) {
 		backupDir.remove(filename);
-		qDebug() << "--Removed";
+		//qDebug() << "--Removed";
 	}
 	QFile::copy(dataDir.dirName() + "/" + filename, backupDir.dirName() + "/" + filename);
-	qDebug() << "++Copied";
+	//qDebug() << "++Copied";
 }

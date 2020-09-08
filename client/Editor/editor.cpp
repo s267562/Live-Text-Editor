@@ -262,7 +262,7 @@ void Editor::setupTextActions() {
 	QFont dFont(QString("Arial"), 12);
 
 	this->textEdit->document()->setDefaultFont(dFont);
-	qDebug() << "QFont default" << this->textEdit->textCursor().charFormat().font();
+	//qDebug() << "QFont default" << this->textEdit->textCursor().charFormat().font();
 
 }
 
@@ -323,19 +323,19 @@ void Editor::textAlign(QAction *a) {
 		textEdit->setAlignment(
 				Qt::AlignLeft | Qt::AlignAbsolute); //Absolute means that the "left" not depends on layout of widget
 		alCode = textEdit->alignment();
-		qDebug() << alCode;
+		//qDebug() << alCode;
 	} else if (a == actionAlignCenter) {
 		textEdit->setAlignment(Qt::AlignHCenter);
 		alCode = textEdit->alignment();
-		qDebug() << alCode;
+		//qDebug() << alCode;
 	} else if (a == actionAlignRight) {
 		textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
 		alCode = textEdit->alignment();
-		qDebug() << alCode;
+		//qDebug() << alCode;
 	} else if (a == actionAlignJustify) {
 		textEdit->setAlignment(Qt::AlignJustify);
 		alCode = textEdit->alignment();
-		qDebug() << alCode;
+		//qDebug() << alCode;
 	}
 
 	int start = this->startSelection;
@@ -349,7 +349,7 @@ void Editor::textAlign(QAction *a) {
 
 	for (int blockNum = startBlock; blockNum <= endBlock; blockNum++) {
 		controller->getCrdt()->alignChange(alCode, blockNum);
-		qDebug() << alCode << blockNum;
+		//qDebug() << alCode << blockNum;
 	}
 
 }
@@ -389,11 +389,11 @@ void Editor::formatText(std::vector<int> styleBlocks) {
 	disconnect(doc, &QTextDocument::contentsChange,
 			   this, &Editor::onTextChanged);
 
-	qDebug() << styleBlocks.size();
+	//qDebug() << styleBlocks.size();
 
 	for (int i = 0; i < styleBlocks.size(); i++) {
 		this->remoteAlignmentChanged(styleBlocks.at(i), i);
-		qDebug() << "Alignment:" << styleBlocks.at(i) << "Block:" << i;
+		//qDebug() << "Alignment:" << styleBlocks.at(i) << "Block:" << i;
 	}
 
 	connect(doc, &QTextDocument::contentsChange,
@@ -426,10 +426,10 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 	disconnect(textEdit, &QTextEdit::cursorPositionChanged,
 			   this, &Editor::onCursorPositionChanged);
 
-	qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded
-			 << " chars removed: " << charsRemoved;
+	//qDebug() << "editor.cpp - onTextChanged()     position: " << position << " chars added: " << charsAdded
+//			 << " chars removed: " << charsRemoved;
 
-	qDebug() << "PlainText" << textEdit->toPlainText();
+	//qDebug() << "PlainText" << textEdit->toPlainText();
 //
 	saveCursor();
 	QString textAdded;
@@ -442,7 +442,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 			QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
 			redo();
 			if (charsAdded == charsRemoved && textAdded == textRemoved) {
-				// qDebug() << "text doesn't change (maybe style changed)";
+				// //qDebug() << "text doesn't change (maybe style changed)";
 				if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {
 					// correction when paste something in first position.
 					charsAdded--;
@@ -517,7 +517,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						Pos endPos{ch, line}; // Pos(int ch, int line);
 						undo();
 
-						//qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+						////qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
 						//emit localDelete(startPos, endPos);
 						controller->getCrdt()->setIsWorking(true);
 						controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + 1);
@@ -538,13 +538,13 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						Pos endPos{ch, line}; // Pos(int ch, int line);
 						redo();
 
-						//qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
+						////qDebug() << "DELETING: startPos: (" << startPos.getLine() << ", " << startPos.getCh() << ") - endPos: ("  << endPos.getLine() << ", " << endPos.getCh() << ")";
 						controller->getCrdt()->setIsWorking(true);
 						controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + 1);
 						controller->getCrdt()->localDelete(startPos, endPos);
 					}
 				}
-				qDebug() << "PlainText" << textEdit->toPlainText();
+				//qDebug() << "PlainText" << textEdit->toPlainText();
 
 				if (charsAdded) {
 					QTextCursor cursor = textEdit->textCursor();
@@ -553,7 +553,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 					if (chars.isEmpty() && !textAdded.isEmpty()) {
 						chars = textAdded;
 					}
-					qDebug() << "Editor: " << QThread::currentThreadId();
+					//qDebug() << "Editor: " << QThread::currentThreadId();
 
 					if (charsAdded == 1) {
 						controller->getCrdt()->setIsWorking(true);
@@ -590,7 +590,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 							cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
 							QTextCharFormat charFormat = cursor.charFormat();
 							for (int i = 0; i < charsAdded; i++) {
-								qDebug() << cursor.position();
+								//qDebug() << cursor.position();
 								int ch = k;
 								Pos startPos{ch, line};
 								controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos,
@@ -606,7 +606,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 						} else {
 							for (int i = 0; i < charsAdded; i++) {
 								// for each char added
-								qDebug() << cursor.position();
+								//qDebug() << cursor.position();
 								cursor.setPosition(position + i);
 								int line = cursor.blockNumber();
 								int ch = cursor.positionInBlock();
@@ -631,8 +631,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 			restoreCursor();
 			// onCursorPositionChanged();
 		} else {
-			qDebug() << " "; // new Line
-			//qDebug() << "INVALID SIGNAL";
+			//qDebug() << " "; // new Line
+			////qDebug() << "INVALID SIGNAL";
 			//std::cout << "INVALID SIGNAL" << std::endl;
 			if (this->startSelection != this->endSelection) {
 				// text was selected... restore the selction
@@ -651,7 +651,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 	connect(textEdit, &QTextEdit::cursorPositionChanged,
 			this, &Editor::onCursorPositionChanged);
 
-	qDebug() << this->textEdit->document()->blockCount();
+	//qDebug() << this->textEdit->document()->blockCount();
 }
 
 void Editor::updateOtherCursorPosition() {
@@ -662,7 +662,7 @@ void Editor::updateOtherCursorPosition() {
 	int height = this->textEdit->cursorRect().height();
 
 	for (i = this->otherCursors.constBegin(); i != this->otherCursors.constEnd(); ++i) {
-		qDebug() << i.key() << ':' << i.value()->getTextCursor().position();
+		//qDebug() << i.key() << ':' << i.value()->getTextCursor().position();
 		QRect coord = this->textEdit->cursorRect(i.value()->getTextCursor());
 		i.value()->move(coord, width, height);
 	}
@@ -695,16 +695,16 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	QRect coord = this->textEdit->cursorRect(textCursor);
 	int width = this->textEdit->cursorRect().width();
 
-	qDebug() << "Cursor width: " << width;
+	//qDebug() << "Cursor width: " << width;
 	int height = this->textEdit->cursorRect().height();
-	qDebug() << "Cursor height: " << height;
+	//qDebug() << "Cursor height: " << height;
 
 	this->otherCursors[siteId]->move(coord, width, height);
 
 	this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
-	qDebug() << "Pos text cursor (after insert): " << textCursor.position();
-	qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
+	//qDebug() << "Pos text cursor (after insert): " << textCursor.position();
+	//qDebug() << "Pos other text cursor (after insert): " << this->otherCursors[siteId]->getTextCursor().position();
 
 
 	textCursor.setPosition(textCursor.position() - 1, QTextCursor::KeepAnchor);
@@ -712,7 +712,7 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	textEdit->mergeCurrentCharFormat(textCharFormat);
 
 
-	qDebug() << siteId;
+	//qDebug() << siteId;
 
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
@@ -749,17 +749,17 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 	QRect coord = this->textEdit->cursorRect(textCursor);
 	int width = this->textEdit->cursorRect().width();
 
-	qDebug() << "Cursor width: " << width;
+	//qDebug() << "Cursor width: " << width;
 	int height = this->textEdit->cursorRect().height();
-	qDebug() << "Cursor height: " << height;
+	//qDebug() << "Cursor height: " << height;
 
 	this->otherCursors[siteId]->move(coord, width, height);
 
 	this->otherCursors[siteId]->setOtherCursorPosition(textCursor.position());
 
-	qDebug() << "Pos text cursor (after style change): " << textCursor.position();
-	qDebug() << "Pos other text cursor (after style change): "
-			 << this->otherCursors[siteId]->getTextCursor().position();
+	//qDebug() << "Pos text cursor (after style change): " << textCursor.position();
+	//qDebug() << "Pos other text cursor (after style change): "
+//			 << this->otherCursors[siteId]->getTextCursor().position();
 
 	textCursor.setPosition(textCursor.position() + 1, QTextCursor::KeepAnchor);
 	textCursor.mergeCharFormat(textCharFormat);
@@ -776,15 +776,15 @@ void Editor::changeStyle(Pos pos, const QTextCharFormat &textCharFormat, QString
 
 void Editor::deleteChar(Pos pos, QString sender) {
 
-	qDebug() << "\nEditor.cpp - deleteChar():";
-	qDebug() << "\t\tDelete char at:\n";
-	qDebug() << "\t\t\tline:\t" << pos.getLine() << "\n\t\t\tch:\t" << pos.getCh();
-	qDebug() << "\n\t\tInserted by:\t" << siteId;
+	//qDebug() << "\nEditor.cpp - deleteChar():";
+	//qDebug() << "\t\tDelete char at:\n";
+	//qDebug() << "\t\t\tline:\t" << pos.getLine() << "\n\t\t\tch:\t" << pos.getCh();
+	//qDebug() << "\n\t\tInserted by:\t" << siteId;
 
 
 	int oldCursorPos = textCursor.position();
 
-	qDebug() << "\n\t\tInitial cursor position:\t" << oldCursorPos;
+	//qDebug() << "\n\t\tInitial cursor position:\t" << oldCursorPos;
 
 	textCursor.movePosition(QTextCursor::Start);
 	textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
@@ -799,7 +799,7 @@ void Editor::deleteChar(Pos pos, QString sender) {
 
 	textCursor.deleteChar();
 
-	qDebug() << "\n\t\tDeleted char:\t" << deletedChar;
+	//qDebug() << "\n\t\tDeleted char:\t" << deletedChar;
 
 	QRect coord = this->textEdit->cursorRect(textCursor);
 	int width = this->textEdit->cursorRect().width();
@@ -814,7 +814,7 @@ void Editor::deleteChar(Pos pos, QString sender) {
 
 	textCursor.setPosition(oldCursorPos);
 
-	qDebug() << "\n\t\tFinal cursor position:\t" << textCursor.position();
+	//qDebug() << "\n\t\tFinal cursor position:\t" << textCursor.position();
 
 	return;
 }
@@ -879,12 +879,12 @@ void Editor::on_actionShare_file_triggered() {
 		filenameForLabel = filenameFields[1]; //filename in form 2
 	}
 
-	qDebug() << "Filename: " + fileName;
-	qDebug() << "Filename label: " + filenameForLabel;
-	qDebug() << "Username : " + userName;
+	//qDebug() << "Filename: " + fileName;
+	//qDebug() << "Filename label: " + filenameForLabel;
+	//qDebug() << "Username : " + userName;
 
 	QString shareCode = crypto.encryptToString(userName + "%_##$$$##_%" + fileName);
-	qDebug() << "Sharecode : " + shareCode;
+	//qDebug() << "Sharecode : " + shareCode;
 	auto *shareFile = new ShareFile(this, filenameForLabel, shareCode);
 	shareFile->show();
 }
@@ -925,7 +925,7 @@ void Editor::on_actionSave_as_PDF_triggered() {
  * This method allows to log out from application.
  */
 void Editor::on_actionLogout_triggered() {
-	qDebug() << controller->getCrdt()->getNumJobs();
+	//qDebug() << controller->getCrdt()->getNumJobs();
 	if (controller->getMessanger()->messagesIsEmpty() && !controller->getCrdt()->isWorking1() &&
 		controller->getCrdt()->getNumJobs() == 0) {
 		emit logout();
@@ -965,7 +965,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	if (charsAdded == charsRemoved && position + charsAdded > textDocument->characterCount() - 1 &&
 		textAdded == textRemoved) {
 		// wrong signal when apply style in editor 1 (line 2) and then write something in editor2
-		qDebug() << "WRONG SIGNAL 1";
+		//qDebug() << "WRONG SIGNAL 1";
 		validSignal = false;
 	}
 
@@ -973,7 +973,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	undo();
 	int undoDocumentSize = textDocument->characterCount() - 1;
 	redo();
-	//qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
+	////qDebug() << "currentDocumentSize" << currentDocumentSize << " undoDocumentSize" <<undoDocumentSize;
 	if (validSignal && charsAdded == charsRemoved &&
 		currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
 		// wrong signal when editor gets focus and something happen.
@@ -981,7 +981,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	}
 
 	/*if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
-		//qDebug() << "WRONG SIGNAL";
+		////qDebug() << "WRONG SIGNAL";
 		// wrong signal when client add new line after it takes focus or when it move the cursor in the editor after the focus acquired
 		validSignal = false;
 	}*/
@@ -989,7 +989,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	QString test = textEdit->toPlainText().mid(position, charsAdded);
 	if (validSignal && charsAdded == charsRemoved && test.isEmpty()) {
 		// wrong signal when editor opens.
-		//qDebug() << "WRONG SIGNAL 3";
+		////qDebug() << "WRONG SIGNAL 3";
 		validSignal = false;
 	}
 
@@ -1003,7 +1003,7 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	}
 	if (validSignal && textSelected && charsAdded == charsRemoved && currentSize != 0) {
 		// this solve the bug when we select text (in multilines), when the textedit has not the fucus, and we delete them.
-		//qDebug() << "WRONG SIGNAL 4";
+		////qDebug() << "WRONG SIGNAL 4";
 		validSignal = false;
 	}
 
@@ -1033,8 +1033,8 @@ void Editor::removeUser(QString user) {
 		showFinder();
 		return;
 	}
-	qDebug() << "\nEditor.cpp - removeUsers():\n";
-	qDebug() << "\t\tUSER REMOVED:\t" << user;
+	//qDebug() << "\nEditor.cpp - removeUsers():\n";
+	//qDebug() << "\t\tUSER REMOVED:\t" << user;
 
 	try {
 		if (!users.isEmpty())
@@ -1063,7 +1063,7 @@ void Editor::removeUser(QString user) {
  * @param users
  */
 void Editor::setUsers(QStringList users) {
-	qDebug() << "\nEditor.cpp - setUsers(): ";
+	//qDebug() << "\nEditor.cpp - setUsers(): ";
 	try {
 		if (loadingFlag) {
 			ui->loading->close();
@@ -1185,7 +1185,7 @@ void Editor::replaceText(const std::vector<std::vector<Character>> initialText) 
 	QTextCursor newCursor = textEdit->textCursor();
 	newCursor.movePosition(QTextCursor::End);
 	textEdit->setTextCursor(newCursor);
-	qDebug() << "Alignment: " << textEdit->alignment();
+	//qDebug() << "Alignment: " << textEdit->alignment();
 }
 
 void Editor::reset() {
@@ -1205,7 +1205,7 @@ void Editor::showError() {
  */
 void Editor::setFilename(QString filename) {
 	this->filename = filename;
-	qDebug() << filename << controller->getUser()->getFileList()[filename];
+	//qDebug() << filename << controller->getUser()->getFileList()[filename];
 	if (filename.contains("%_##$$$##_%") &&
 		filename.split("%_##$$$##_%")[0] != controller->getUser()->getUsername()) {
 		ui->mainToolBar->actions().at(2)->setVisible(false);
@@ -1245,7 +1245,7 @@ void Editor::updateAlignmentPushButton() {
 
 void Editor::onListUsersItemClicked(QListWidgetItem *item) {
 	QString user = item->text();
-	qDebug() << "Utente Cliccato" << user;
+	//qDebug() << "Utente Cliccato" << user;
 	bool oldSelectedValue = this->otherCursors[user]->isSelected1();
 	this->otherCursors[user]->setIsSelected(!oldSelectedValue);
 	if (!oldSelectedValue)
@@ -1437,7 +1437,7 @@ void Editor::hideAllUserText() {
 
 
 void Editor::handleOfflineText() {
-	qDebug() << "handleOfflineText";
+	//qDebug() << "handleOfflineText";
 	offlineTextEnabled = !offlineTextEnabled;
 	if (offlineTextEnabled) {
 		showOfflineUserText();

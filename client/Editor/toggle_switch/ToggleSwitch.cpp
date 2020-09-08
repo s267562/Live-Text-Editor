@@ -37,7 +37,7 @@ void Animator::setTargetObject(QObject *_target) {
         return;
 
     if (isRunning()) {
-        qWarning("Animation::setTargetObject: you can't change the target of a running animation");
+        //qWarning("Animation::setTargetObject: you can't change the target of a running animation");
         return;
     }
 
@@ -58,14 +58,14 @@ void Animator::updateCurrentValue(const QVariant& value) {
 
 void Animator::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) {
     if (target.isNull() && oldState == Stopped) {
-        qWarning("Animation::updateState: Changing state of an animation without target");
+        //qWarning("Animation::updateState: Changing state of an animation without target");
         return;
     }
 
     QVariantAnimation::updateState(newState, oldState);
 
     if (!endValue().isValid() && direction() == Forward) {
-        qWarning("Animation::updateState (%s): starting an animation without end value", targetObject()->metaObject()->className());
+        //qWarning("Animation::updateState (%s): starting an animation without end value", targetObject()->metaObject()->className());
     }
 }
 
