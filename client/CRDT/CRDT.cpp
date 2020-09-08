@@ -527,16 +527,19 @@ void CRDT::localInsert(QString val, QTextCharFormat textCharFormat, Pos pos, boo
 	//qDebug() << "CRDT: " << QThread::currentThreadId();
 	localInsert(val, textCharFormat, pos);
 
+	bool invalidFlag = !queueInsertMessage.empty();
+
+
 	if (ultimo && copy && numJobs == 0) {
 		for (auto c: queueInsertMessage) {
 			pos = handleRemoteInsert(c);
 		}
+		queueInsertMessage.clear();
 		copy = false;
 	}
 	if (ultimo) {
-		waitForInvalidate = true;
-		if (!queueInsertMessage.empty()) {
-			queueInsertMessage.clear();
+		if (invalidFlag) {
+			waitForInvalidate = true;
 			controller->inviledateTextEditor();
 		}
 	}
