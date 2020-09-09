@@ -570,9 +570,7 @@ bool Thread::writeInsert(QTcpSocket *soc, Character &character) {
 		if (socket.first != soc->socketDescriptor() &&
 			pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
 			//qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
-			if (!writeMessage(socket.second, message)) {
-				//return false;
-			}
+			writeMessage(socket.second, message);
 		}
 	}
 	return true;
@@ -604,9 +602,7 @@ bool Thread::writeStyleChanged(QTcpSocket *soc, Character &character) {
 	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
 		if (socket.first != soc->socketDescriptor() &&
 				pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
-			if (!writeMessage(socket.second, message)) {
-				//return false;
-			}
+			writeMessage(socket.second, message);
 		}
 	}
 	return true;
@@ -639,9 +635,7 @@ bool Thread::writeAlignmentChanged(QTcpSocket *soc, int alignment, Character &bl
 	/* broadcast */
 	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
 		if (pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end())
-			if (!writeMessage(socket.second, message)) {
-				//return false;
-			}
+			writeMessage(socket.second, message);
 	}
 	return true;
 }
@@ -676,9 +670,7 @@ bool Thread::writeDelete(QTcpSocket *soc, Character &character) {
 		if (socket.first != soc->socketDescriptor() &&
 			pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
 			//qDebug() << "Sending to:" << usernames[socket.second->socketDescriptor()];
-			if (!writeMessage(socket.second, message)) {
-				//return false;
-			}
+			writeMessage(socket.second, message);
 		}
 	}
 	QTextCharFormat cf;
