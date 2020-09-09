@@ -338,6 +338,7 @@ void Editor::textAlign(QAction *a) {
 		alCode = textEdit->alignment();
 		//qDebug() << alCode;
 	}
+	isAlign = false;
 
 	int start = this->startSelection;
 	int end = this->endSelection;
