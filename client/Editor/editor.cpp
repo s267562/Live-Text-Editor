@@ -962,8 +962,10 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 	isRedoAvailable = textDocument->isRedoAvailable();
 
 	QString textAdded = textEdit->toPlainText().mid(position, charsAdded);
+	QString htmlBefore = textEdit->toHtml();
 	undo();
 	QString textRemoved = textEdit->toPlainText().mid(position, charsAdded);
+	QString htmlAfter = textEdit->toHtml();
 	redo();
 	if (charsAdded == charsRemoved && position + charsAdded > textDocument->characterCount() - 1 &&
 		textAdded == textRemoved) {
@@ -981,6 +983,13 @@ bool Editor::validSignal(int position, int charsAdded, int charsRemoved) {
 		currentDocumentSize != (undoDocumentSize + charsAdded - charsRemoved)) {
 		// wrong signal when editor gets focus and something happen.
 		validSignal = false;
+	}
+
+	if(validSignal && charsAdded == charsRemoved && htmlBefore == htmlAfter) {
+	    // wrong signal when user get focus and when user copy and past the same thing
+	    // this signal is not triggered when user change style!!
+	    //std::cout << "NEW WRONG SIGNAL" << std::endl;
+	    validSignal = false;
 	}
 
 	/*if(validSignal && charsAdded == charsRemoved && (position+charsRemoved) > (textDocument->characterCount()-1)) {
