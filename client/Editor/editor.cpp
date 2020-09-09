@@ -695,9 +695,14 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	}
 	controller->editor->pendingChar.pop_front();
 
-	int oldCursorPos = textCursor.position();
+    QTextCursor tmpTextCursor(this->textEdit->textCursor());
+    QTextCursor otherCursor;
+    otherCursor.movePosition(QTextCursor::End);
+    textEdit->setTextCursor(otherCursor);
+    int oldCursorPos = textCursor.position();
 
-	textCursor.movePosition(QTextCursor::Start);
+
+    textCursor.movePosition(QTextCursor::Start);
 	textCursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, pos.getLine());
 	textCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, pos.getCh());
 
@@ -728,7 +733,8 @@ void Editor::insertChar(char character, QTextCharFormat textCharFormat, Pos pos,
 	connect(doc, &QTextDocument::contentsChange,
 			this, &Editor::onTextChanged);
 
-	textCursor.setPosition(oldCursorPos);
+    textEdit->setTextCursor(tmpTextCursor);
+    textCursor.setPosition(oldCursorPos);
 
 	connect(textEdit, &QTextEdit::cursorPositionChanged,
 			this, &Editor::onCursorPositionChanged);
