@@ -452,7 +452,11 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 				QTextCursor cursor = textEdit->textCursor();
 
 				controller->getCrdt()->setIsWorking(true);
-				controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
+				if (isAlign){
+                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + 1);
+                }else{
+                    controller->getCrdt()->setNumJobs(controller->getCrdt()->getNumJobs() + charsAdded);
+                }
 
 				if (cursorPos != startSelection) { // Selection forward
 					if (position == 0 && textDocument->characterCount() - 1 != charsAdded) {

@@ -602,7 +602,7 @@ bool Thread::writeStyleChanged(QTcpSocket *soc, Character &character) {
 
 	/* broadcast */
 	for (std::pair<qintptr, QTcpSocket *> socket : sockets) {
-		if (/*socket.first != soc->socketDescriptor() &&*/
+		if (socket.first != soc->socketDescriptor() &&
 				pendingSocket.find(soc->socketDescriptor()) == pendingSocket.end()) {
 			if (!writeMessage(socket.second, message)) {
 				//return false;
