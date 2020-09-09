@@ -582,6 +582,7 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos);
 						} else {
 							controller->getCrdt()->localInsert(chars.at(0), charFormat, startPos, charsIsEmpty);
+							controller->inviledateTextEditor();
 						}
 						this->unsetCharacterColorLocally(startPos, controller->getCrdt()->getSiteId());
 
@@ -603,6 +604,8 @@ void Editor::onTextChanged(int position, int charsRemoved, int charsAdded) {
 								Pos startPos{ch, line};
 								controller->getCrdt()->localInsert(chars.at(i), charFormat, startPos,
 																   i == charsAdded - 1);
+								if(i==charsAdded-1)
+									controller->inviledateTextEditor();
 								if (chars.at(i) == '\n') {
 									k = 0;
 									line++;
