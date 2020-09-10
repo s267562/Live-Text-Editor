@@ -33,7 +33,7 @@ private:
 	QString usernameOwner;
 	QTimer *saveTimer;
 	Server *server;
-	int saveInterval = 2 * /*60 **/ 1000; // 2 min (in ms) // TODO decidere intervallo
+	int saveInterval = 5 * /*60 **/ 1000; // 2 min (in ms) // TODO decidere intervallo
 	int counterBackupSave = 0;
 	bool needToSaveFile = false;
 	bool timerStarted = false;

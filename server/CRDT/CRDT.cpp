@@ -388,12 +388,12 @@ bool CRDT::loadCRDT(QString filename) {
 	if (fileInfo.size() == 0) {
 		filePath = "backup1/" + filename;
 		fileInfo = QFileInfo(filePath);
-		if (fileInfo.size() == 0) {
+		/*if (fileInfo.size() == 0) {
 			filePath = "backup2/" + filename;
 			fileInfo = QFileInfo(filePath);
 			if (fileInfo.size() == 0)
 				return false;
-		}
+		}*/
 	}
 
 	QFile loadFile(filePath);

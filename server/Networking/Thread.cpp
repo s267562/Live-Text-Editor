@@ -267,6 +267,7 @@ void Thread::saveCRDTToFile() {
 		}
 	}
 
+	/*
 	// Backup SECONDARIO ogni 10 salvataggi TODO correggere se necessario
 	if (counterBackupSave % 10 == 0 && needToSaveFile) {
 		try {
@@ -276,7 +277,7 @@ void Thread::saveCRDTToFile() {
 			needToSaveFile = false;
 		}
 		counterBackupSave = 0;
-	}
+	}*/
 	needToSaveFile = false;
 
 }

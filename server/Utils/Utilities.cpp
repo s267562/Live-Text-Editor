@@ -14,7 +14,7 @@
 #include <qdebug.h>
 #include <QtCore/QDir>
 
-QString directories[] = {"saveData", "backup1", "backup2"};
+QString directories[] = {"saveData", "backup1" /*, "backup2" */} ;
 
 /**
  * This function delete a file from the server and also from all the backup directories
